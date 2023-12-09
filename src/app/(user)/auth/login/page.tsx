@@ -28,9 +28,12 @@ export default function LoginPage() {
           <Link href={'/auth/login/find/password'}>비밀번호 찾기</Link>
         </div>
         <SocialLogin />
-        <button className="p-3 border text-rose-400 border-rose-400">
+        <Link
+          href={'/auth/signup'}
+          className="p-3 text-center border text-rose-400 border-rose-400"
+        >
           회원가입
-        </button>
+        </Link>
       </div>
     </div>
   );
