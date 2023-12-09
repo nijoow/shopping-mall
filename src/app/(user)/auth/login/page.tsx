@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SocialLogin from './_compontents/SocialLogin';
 
 export default function LoginPage() {
   return (
@@ -26,6 +27,7 @@ export default function LoginPage() {
           <div className="w-0.5 h-3.5 bg-gray-300" />
           <Link href={'/auth/login/find/password'}>비밀번호 찾기</Link>
         </div>
+        <SocialLogin />
         <button className="p-3 border text-rose-400 border-rose-400">
           회원가입
         </button>
