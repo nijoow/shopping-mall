@@ -46,6 +46,7 @@ const RAW_RUNTIME_STATE =
           ["react", "npm:18.2.0"],\
           ["react-dom", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:18.2.0"],\
           ["react-i18next", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:13.5.0"],\
+          ["react-icons", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:4.12.0"],\
           ["tailwind-merge", "npm:2.0.0"],\
           ["tailwindcss", "npm:3.3.5"],\
           ["typescript", "patch:typescript@npm%3A5.3.2#optional!builtin<compat/typescript>::version=5.3.2&hash=e012d7"]\
@@ -4685,6 +4686,28 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["react-icons", [\
+      ["npm:4.12.0", {\
+        "packageLocation": "../../../.yarn/berry/cache/react-icons-npm-4.12.0-8fe2109eaf-10c0.zip/node_modules/react-icons/",\
+        "packageDependencies": [\
+          ["react-icons", "npm:4.12.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:4.12.0", {\
+        "packageLocation": "./.yarn/__virtual__/react-icons-virtual-ef7ffa7505/4/.yarn/berry/cache/react-icons-npm-4.12.0-8fe2109eaf-10c0.zip/node_modules/react-icons/",\
+        "packageDependencies": [\
+          ["react-icons", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:4.12.0"],\
+          ["@types/react", "npm:18.2.40"],\
+          ["react", "npm:18.2.0"]\
+        ],\
+        "packagePeers": [\
+          "@types/react",\
+          "react"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["react-is", [\
       ["npm:16.13.1", {\
         "packageLocation": "../../../.yarn/berry/cache/react-is-npm-16.13.1-a9b9382b4f-10c0.zip/node_modules/react-is/",\
@@ -4968,6 +4991,7 @@ const RAW_RUNTIME_STATE =
           ["react", "npm:18.2.0"],\
           ["react-dom", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:18.2.0"],\
           ["react-i18next", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:13.5.0"],\
+          ["react-icons", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:4.12.0"],\
           ["tailwind-merge", "npm:2.0.0"],\
           ["tailwindcss", "npm:3.3.5"],\
           ["typescript", "patch:typescript@npm%3A5.3.2#optional!builtin<compat/typescript>::version=5.3.2&hash=e012d7"]\
