@@ -1,5 +1,12 @@
 import type { Config } from 'tailwindcss';
 
+const fontSizeArray: number[] = [];
+for (let i = 0.75; i <= 5.5; i = i + 0.125) {
+  fontSizeArray.push(i);
+}
+const fontSize: Record<number, string> = {};
+fontSizeArray.forEach(value => (fontSize[value] = `${value}rem`));
+
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -14,6 +21,7 @@ const config: Config = {
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
     },
+    fontSize: fontSize,
   },
   plugins: [],
 };
