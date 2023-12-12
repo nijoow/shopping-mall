@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 type Step = 'ID' | 'PASSWORD' | 'NAME' | 'SUBMIT';
 
@@ -10,10 +10,11 @@ const nextStep = {
   NAME: 'SUBMIT' as Step,
 };
 
-const SignupPage = () => {
+const SignUpPage = () => {
   const [step, setStep] = useState<Step>('ID');
   const router = useRouter();
-
+  const idRef = useRef<HTMLInputElement>(null);
+  console.log(idRef.current?.value);
   return (
     <div className="flex items-center justify-center w-full h-full">
       <div className="flex flex-col w-full max-w-sm gap-6">
@@ -30,6 +31,7 @@ const SignupPage = () => {
                 <>
                   <span>로그인에 사용할 아이디를 입력해주세요</span>
                   <input
+                    ref={idRef}
                     type="text"
                     placeholder="아이디"
                     className="p-3 border border-gray-300"
@@ -70,7 +72,7 @@ const SignupPage = () => {
           className="p-3 text-white bg-rose-400"
           onClick={async () => {
             if (step === 'SUBMIT') {
-              const res = await fetch('/api/auth/signup', {
+              const res = await fetch('/api/auth/sign-up', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -82,7 +84,7 @@ const SignupPage = () => {
                 }),
               });
               const data = await res.json();
-
+              console.log(data);
               return;
               //   router.push('/auth/login');
             }
@@ -96,4 +98,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default SignUpPage;

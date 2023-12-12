@@ -29,7 +29,7 @@ export default function LoginPage() {
         </div>
         <SocialLogin />
         <Link
-          href={'/auth/signup'}
+          href={'/auth/sign-up'}
           className="p-3 text-center border text-rose-400 border-rose-400"
         >
           회원가입
