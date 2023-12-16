@@ -1,20 +1,46 @@
 'use client';
+import { cn } from '@/lib/utils/cn';
 import { useRouter } from 'next/navigation';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 
-type Step = 'ID' | 'PASSWORD' | 'NAME' | 'SUBMIT';
-
-const nextStep = {
-  ID: 'PASSWORD' as Step,
-  PASSWORD: 'NAME' as Step,
-  NAME: 'SUBMIT' as Step,
+type SignUpInput = {
+  userId: string;
+  password: string;
+  passwordConfirm: string;
+  name: string;
 };
 
+type Step = 'USER_ID' | 'PASSWORD' | 'NAME';
+
 const SignUpPage = () => {
-  const [step, setStep] = useState<Step>('ID');
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SignUpInput>();
+
+  const onSubmit: SubmitHandler<SignUpInput> = async submitData => {
+    const response = await fetch('/api/auth/sign-up', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: submitData.userId,
+        password: submitData.password,
+        name: submitData.name,
+      }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      router.push('/auth/login');
+    }
+  };
   const router = useRouter();
-  const idRef = useRef<HTMLInputElement>(null);
-  console.log(idRef.current?.value);
+  const [step, setStep] = useState<Step>('USER_ID');
+
   return (
     <div className="flex items-center justify-center w-full h-full">
       <div className="flex flex-col w-full max-w-sm gap-6">
@@ -24,75 +50,79 @@ const SignUpPage = () => {
         <div className="w-full h-1 bg-gray-200 ">
           <div className="w-1/2 h-1 bg-rose-400" />
         </div>
-        <div className="flex flex-col gap-2">
-          {
-            {
-              ID: (
-                <>
-                  <span>로그인에 사용할 아이디를 입력해주세요</span>
-                  <input
-                    ref={idRef}
-                    type="text"
-                    placeholder="아이디"
-                    className="p-3 border border-gray-300"
-                  />
-                </>
-              ),
-              PASSWORD: (
-                <>
-                  <span>로그인에 사용할 비밀번호를 입력해주세요</span>
-                  <input
-                    type="text"
-                    placeholder="비밀번호"
-                    className="p-3 border border-gray-300"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="비밀번호 확인"
-                    className="p-3 border border-gray-300"
-                  />
-                </>
-              ),
-              NAME: (
-                <>
-                  <span>이름을 입력해주세요</span>
-                  <input
-                    type="text"
-                    placeholder="이름"
-                    className="p-3 border border-gray-300"
-                  />
-                </>
-              ),
-              SUBMIT: 'SUBMIT',
-            }[step]
-          }
-        </div>
-        <button
-          className="p-3 text-white bg-rose-400"
-          onClick={async () => {
-            if (step === 'SUBMIT') {
-              const res = await fetch('/api/auth/sign-up', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  userId: 'test',
-                  password: 'test',
-                  name: 'test',
-                }),
-              });
-              const data = await res.json();
-              console.log(data);
-              return;
-              //   router.push('/auth/login');
-            }
-            setStep(nextStep[step]);
-          }}
+        <form
+          className="flex flex-col gap-0.5 overflow-hidden"
+          onSubmit={handleSubmit(onSubmit)}
         >
-          다음
-        </button>
+          <div
+            className={cn('h-full flex w-[300%]', {
+              'translate-x-0': step === 'USER_ID',
+              '-translate-x-1/3': step === 'PASSWORD',
+              '-translate-x-2/3': step === 'NAME',
+            })}
+          >
+            <div className="w-1/3 flex flex-col gap-0.5">
+              <label>아이디</label>
+              <input
+                {...register('userId', { required: true })}
+                className="p-3 border border-gray-300"
+              />
+              {errors.userId ? (
+                <span className="text-0.875 text-red-400">
+                  This field is required
+                </span>
+              ) : (
+                <span className="text-0.875">This field is required</span>
+              )}
+              <button
+                className="p-3 text-white bg-rose-400 disabled:opacity-50"
+                type="button"
+                disabled={!!errors.userId}
+                onClick={() => {
+                  setStep('PASSWORD');
+                }}
+              >
+                다음
+              </button>
+            </div>
+            <div className="w-1/3 bg-red-200 flex flex-col gap-0.5">
+              <label>패스워드</label>
+              <input
+                {...register('password', { required: true })}
+                className="p-3 border border-gray-300"
+              />
+              {errors.password && <span>This field is required</span>}
+
+              <label>패스워드 확인</label>
+              <input
+                {...register('passwordConfirm', { required: true })}
+                className="p-3 border border-gray-300"
+              />
+              {errors.passwordConfirm && <span>This field is required</span>}
+              <button
+                type="button"
+                className="p-3 text-white bg-rose-400"
+                onClick={() => {
+                  setStep('NAME');
+                }}
+              >
+                다음
+              </button>
+            </div>
+
+            <div className="w-1/3 bg-red-200 flex flex-col gap-0.5">
+              <label>이름</label>
+              <input
+                {...register('name', { required: true })}
+                className="p-3 border border-gray-300"
+              />
+              {errors.name && <span>This field is required</span>}{' '}
+              <button type="submit" className="p-3 text-white bg-rose-400">
+                다음
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   );
