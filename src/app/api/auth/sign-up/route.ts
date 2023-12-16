@@ -6,7 +6,8 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   const { userId, password, name } = body;
-  const duplicated = await sql`SELECT * FROM users WHERE userId = ${userId};`;
+  const duplicated =
+    (await sql`SELECT * FROM users WHERE userId = ${userId};`).rowCount > 0;
 
   if (duplicated)
     return NextResponse.json({ error: 'duplicated' }, { status: 400 });
