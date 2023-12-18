@@ -25,22 +25,26 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center w-full h-full">
       <div className="flex flex-col w-full max-w-sm gap-6">
-        <span className="mx-auto font-semibold text-2 text-rose-400">
-          로그인
-        </span>
-        <div className="w-full h-1 bg-rose-400" />
-        <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
-          <label>아이디</label>
-          <input
-            {...register('userId', { required: true })}
-            className="p-3 border border-gray-300"
-          />
-          <label>패스워드</label>
-          <input
-            {...register('password', { required: true })}
-            className="p-3 border border-gray-300"
-          />
-          <button type="submit" className="p-3 text-white bg-rose-400">
+        <span className="mx-auto font-semibold text-black text-2">로그인</span>
+        <div className="w-full h-1 bg-black" />
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+          <label className="flex flex-col gap-0.5">
+            <span>아이디</span>
+            <input
+              id="userId"
+              {...register('userId', { required: true })}
+              className="p-3 border border-gray-300"
+            />
+          </label>
+          <label className="flex flex-col gap-0.5">
+            <span>패스워드</span>
+            <input
+              id="password"
+              {...register('password', { required: true })}
+              className="p-3 border border-gray-300"
+            />
+          </label>
+          <button type="submit" className="p-3 text-white bg-black">
             로그인
           </button>
         </form>

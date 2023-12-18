@@ -61,19 +61,21 @@ const SignUpPage = () => {
               '-translate-x-2/3': step === 'NAME',
             })}
           >
-            <div className="w-1/3 flex flex-col gap-0.5">
-              <label>아이디</label>
-              <input
-                {...register('userId', { required: true })}
-                className="p-3 border border-gray-300"
-              />
-              {errors.userId ? (
-                <span className="text-0.875 text-red-400">
-                  This field is required
-                </span>
-              ) : (
-                <span className="text-0.875">This field is required</span>
-              )}
+            <div className="flex flex-col w-1/3 gap-4">
+              <label className="flex flex-col gap-0.5">
+                <span>아이디</span>
+                <input
+                  {...register('userId', { required: true })}
+                  className="p-3 border border-gray-300"
+                />
+                {errors.userId ? (
+                  <span className="text-0.875 text-red-400">
+                    This field is required
+                  </span>
+                ) : (
+                  <span className="text-0.875"></span>
+                )}
+              </label>
               <button
                 className="p-3 text-white bg-black disabled:opacity-50"
                 type="button"
@@ -85,20 +87,23 @@ const SignUpPage = () => {
                 다음
               </button>
             </div>
-            <div className="w-1/3 bg-red-200 flex flex-col gap-0.5">
-              <label>패스워드</label>
-              <input
-                {...register('password', { required: true })}
-                className="p-3 border border-gray-300"
-              />
-              {errors.password && <span>This field is required</span>}
-
-              <label>패스워드 확인</label>
-              <input
-                {...register('passwordConfirm', { required: true })}
-                className="p-3 border border-gray-300"
-              />
-              {errors.passwordConfirm && <span>This field is required</span>}
+            <div className="flex flex-col w-1/3 gap-4">
+              <label className="flex flex-col gap-0.5">
+                <span>패스워드</span>
+                <input
+                  {...register('password', { required: true })}
+                  className="p-3 border border-gray-300"
+                />
+                {errors.password && <span>This field is required</span>}
+              </label>
+              <label className="flex flex-col gap-0.5">
+                <span>패스워드 확인</span>
+                <input
+                  {...register('passwordConfirm', { required: true })}
+                  className="p-3 border border-gray-300"
+                />
+                {errors.passwordConfirm && <span>This field is required</span>}
+              </label>
               <button
                 type="button"
                 className="p-3 text-white bg-black"
@@ -109,15 +114,16 @@ const SignUpPage = () => {
                 다음
               </button>
             </div>
-
-            <div className="w-1/3 bg-red-200 flex flex-col gap-0.5">
-              <label>이름</label>
-              <input
-                {...register('name', { required: true })}
-                className="p-3 border border-gray-300"
-              />
-              {errors.name && <span>This field is required</span>}{' '}
-              <button type="submit" className="p-3 text-white bg-rose-400">
+            <div className="flex flex-col w-1/3 gap-4">
+              <label className="flex flex-col gap-0.5">
+                <span>이름</span>
+                <input
+                  {...register('name', { required: true })}
+                  className="p-3 border border-gray-300"
+                />
+                {errors.name && <span>This field is required</span>}
+              </label>
+              <button type="submit" className="p-3 text-white bg-black">
                 다음
               </button>
             </div>
