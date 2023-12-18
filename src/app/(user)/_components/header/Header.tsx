@@ -2,13 +2,16 @@ import { auth } from 'auth';
 import Link from 'next/link';
 import React from 'react';
 import LogoutButton from './LogoutButton';
+import Image from 'next/image';
 
 const Header = async () => {
   const session = await auth();
 
   return (
-    <div className="h-14 px-6 items-center gap-4 flex">
-      <Link href="/">LOGO</Link>
+    <div className="flex items-center flex-none gap-4 px-6 h-14">
+      <Link href="/" className="relative w-[96px] h-[54px]">
+        <Image src="/images/logo/nijoow.svg" alt={'nijoow logo'} fill />
+      </Link>
       <Link href="/shop">SHOP</Link>
       <Link href="/top">TOP</Link>
       <Link href="/features">FEATURES</Link>
