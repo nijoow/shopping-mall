@@ -52,7 +52,7 @@ export default function LoginPage() {
         <SocialLogin />
         <Link
           href={'/auth/sign-up'}
-          className="p-3 text-center border text-rose-400 border-rose-400"
+          className="p-3 text-center text-black border border-black"
         >
           회원가입
         </Link>

@@ -44,11 +44,11 @@ const SignUpPage = () => {
   return (
     <div className="flex items-center justify-center w-full h-full">
       <div className="flex flex-col w-full max-w-sm gap-6">
-        <span className="mx-auto font-semibold text-2 text-rose-400">
+        <span className="mx-auto font-semibold text-black text-2">
           회원가입
         </span>
         <div className="w-full h-1 bg-gray-200 ">
-          <div className="w-1/2 h-1 bg-rose-400" />
+          <div className="w-1/2 h-1 bg-black" />
         </div>
         <form
           className="flex flex-col gap-0.5 overflow-hidden"
@@ -75,7 +75,7 @@ const SignUpPage = () => {
                 <span className="text-0.875">This field is required</span>
               )}
               <button
-                className="p-3 text-white bg-rose-400 disabled:opacity-50"
+                className="p-3 text-white bg-black disabled:opacity-50"
                 type="button"
                 disabled={!!errors.userId}
                 onClick={() => {
@@ -101,7 +101,7 @@ const SignUpPage = () => {
               {errors.passwordConfirm && <span>This field is required</span>}
               <button
                 type="button"
-                className="p-3 text-white bg-rose-400"
+                className="p-3 text-white bg-black"
                 onClick={() => {
                   setStep('NAME');
                 }}
