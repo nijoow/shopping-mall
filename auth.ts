@@ -9,9 +9,9 @@ import Google from 'next-auth/providers/google';
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
 
-async function getUser(userId: string): Promise<User | undefined> {
+async function getUser(email: string): Promise<User | undefined> {
   try {
-    const user = await sql<User>`SELECT * FROM users WHERE userId=${userId}`;
+    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
     return user.rows[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);
@@ -25,17 +25,17 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     Credentials({
       name: 'Sign In',
       credentials: {
-        userId: { type: 'text' },
+        email: { type: 'text' },
         password: { type: 'password' },
       },
       async authorize(credentials) {
         const parsedCredentials = z
-          .object({ userId: z.string(), password: z.string() })
+          .object({ email: z.string().email(), password: z.string() })
           .safeParse(credentials);
 
         if (parsedCredentials.success) {
-          const { userId, password } = parsedCredentials.data;
-          const user = await getUser(userId);
+          const { email, password } = parsedCredentials.data;
+          const user = await getUser(email);
           if (!user) {
             throw new Error('userNotFound');
           }

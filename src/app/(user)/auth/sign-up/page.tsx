@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
 type SignUpInput = {
-  userId: string;
+  email: string;
   password: string;
   passwordConfirm: string;
   name: string;
@@ -19,7 +19,7 @@ const SignUpPage = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<SignUpInput>();
+  } = useForm<SignUpInput>({ mode: 'onChange' });
 
   const onSubmit: SubmitHandler<SignUpInput> = async submitData => {
     const response = await fetch('/api/auth/sign-up', {
@@ -28,7 +28,7 @@ const SignUpPage = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        userId: submitData.userId,
+        email: submitData.email,
         password: submitData.password,
         name: submitData.name,
       }),
@@ -63,23 +63,29 @@ const SignUpPage = () => {
           >
             <div className="flex flex-col w-1/3 gap-4">
               <label className="flex flex-col gap-0.5">
-                <span>아이디</span>
+                <span>이메일</span>
                 <input
-                  {...register('userId', { required: true })}
+                  placeholder="이메일을 입력해주세요"
+                  {...register('email', {
+                    required: true,
+                    pattern: {
+                      value:
+                        /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i,
+                      message: '올바른 이메일 형식이 아닙니다!',
+                    },
+                  })}
                   className="p-3 border border-gray-300"
                 />
-                {errors.userId ? (
+                {errors.email && (
                   <span className="text-0.875 text-red-400">
-                    This field is required
+                    {errors.email.message}
                   </span>
-                ) : (
-                  <span className="text-0.875"></span>
                 )}
               </label>
               <button
-                className="p-3 text-white bg-black disabled:opacity-50"
+                className="p-3 text-white bg-black disabled:bg-black/40"
                 type="button"
-                disabled={!!errors.userId}
+                disabled={!!errors.email}
                 onClick={() => {
                   setStep('PASSWORD');
                 }}
@@ -91,7 +97,13 @@ const SignUpPage = () => {
               <label className="flex flex-col gap-0.5">
                 <span>패스워드</span>
                 <input
-                  {...register('password', { required: true })}
+                  {...register('password', {
+                    required: true,
+                    minLength: {
+                      value: 8,
+                      message: 'Password must have at least 8 characters',
+                    },
+                  })}
                   className="p-3 border border-gray-300"
                 />
                 {errors.password && <span>This field is required</span>}

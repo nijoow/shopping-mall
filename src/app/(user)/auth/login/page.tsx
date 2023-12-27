@@ -6,7 +6,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { signIn } from 'next-auth/react';
 
 type LoginInput = {
-  userId: string;
+  email: string;
   password: string;
 };
 
@@ -29,10 +29,10 @@ export default function LoginPage() {
         <div className="w-full h-1 bg-black" />
         <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
           <label className="flex flex-col gap-0.5">
-            <span>아이디</span>
+            <span>이메일</span>
             <input
-              id="userId"
-              {...register('userId', { required: true })}
+              id="email"
+              {...register('email', { required: true })}
               className="p-3 border border-gray-300"
             />
           </label>
