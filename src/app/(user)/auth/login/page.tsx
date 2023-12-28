@@ -31,15 +31,17 @@ export default function LoginPage() {
           <label className="flex flex-col gap-0.5">
             <span>이메일</span>
             <input
-              id="email"
+              type="email"
+              placeholder="이메일을 입력해주세요"
               {...register('email', { required: true })}
               className="p-3 border border-gray-300"
             />
           </label>
           <label className="flex flex-col gap-0.5">
-            <span>패스워드</span>
+            <span>비밀번호</span>
             <input
-              id="password"
+              type="password"
+              placeholder="비밀번호를 입력해주세요"
               {...register('password', { required: true })}
               className="p-3 border border-gray-300"
             />
