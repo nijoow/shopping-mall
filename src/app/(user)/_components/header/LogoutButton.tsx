@@ -1,16 +1,20 @@
-import { signOut } from 'auth';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import React from 'react';
+import { logout } from '../../_lib/actions';
 
 const LogoutButton = () => {
-  const logOut = async () => {
-    'use server';
-    await signOut();
+  const router = useRouter();
+  const handleClickLogoutButton = async () => {
+    logout();
+    router.refresh();
   };
 
   return (
-    <form action={logOut}>
-      <button>LOGOUT</button>
-    </form>
+    <button type="button" onClick={handleClickLogoutButton}>
+      LOGOUT
+    </button>
   );
 };
 
