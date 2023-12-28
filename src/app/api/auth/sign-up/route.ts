@@ -1,25 +1,27 @@
 import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
 import * as bcrypt from 'bcrypt';
+import { fintUserByEmail } from '@/lib/database/user';
 
 export async function POST(request: Request) {
   const body = await request.json();
 
-  const { userId, password, name } = body;
-  const duplicated =
-    (await sql`SELECT * FROM users WHERE userId = ${userId};`).rowCount > 0;
-
-  if (duplicated)
-    return NextResponse.json({ error: 'duplicated' }, { status: 400 });
+  const { email, password, name } = body;
+  const existEmail = await fintUserByEmail(email);
 
   try {
-    if (!userId || !password) throw new Error('userId and password required');
+    if (!!existEmail) throw new Error('duplicated');
+    if (!email || !password) throw new Error('email and password required');
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    await sql`INSERT INTO users (userId, password, name) VALUES (${userId}, ${hashedPassword}, ${name});`;
+    await sql`INSERT INTO users (email, password, name) VALUES (${email}, ${hashedPassword}, ${name});`;
   } catch (error) {
     console.log(error);
-    return NextResponse.json({ error }, { status: 500 });
+    return NextResponse.json(
+      { message: (error as Error).message },
+      { status: 500 },
+    );
   }
 
-  return Response.json({ userId, password, name });
+  return NextResponse.json({ email, password, name });
 }

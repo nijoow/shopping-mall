@@ -1,6 +1,7 @@
 import { fintUserByEmail } from '@/lib/database/user';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const revalidate = 0;
 export async function GET(
   request: NextRequest,
   { params }: { params: { email: string } },
