@@ -7,7 +7,7 @@ import Kakao from 'next-auth/providers/kakao';
 import Naver from 'next-auth/providers/naver';
 import Google from 'next-auth/providers/google';
 import { z } from 'zod';
-// import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
@@ -39,10 +39,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           if (!user) {
             throw new Error('userNotFound');
           }
-          // const passwordsMatch = await bcrypt.compare(password, user.password);
-          // if (!passwordsMatch) {
-          //   throw new Error('passwordNotMatched');
-          // }
+          const passwordsMatch = await bcrypt.compare(password, user.password);
+          if (!passwordsMatch) {
+            throw new Error('passwordNotMatched');
+          }
 
           return user;
         }
