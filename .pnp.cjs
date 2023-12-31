@@ -30,6 +30,7 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:20.10.2"],\
           ["@types/react", "npm:18.2.40"],\
           ["@types/react-dom", "npm:18.2.17"],\
+          ["@types/uuid", "npm:9.0.7"],\
           ["@vercel/postgres", "npm:0.5.1"],\
           ["autoprefixer", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:10.4.16"],\
           ["bcrypt", "npm:5.1.1"],\
@@ -53,6 +54,7 @@ const RAW_RUNTIME_STATE =
           ["tailwind-merge", "npm:2.0.0"],\
           ["tailwindcss", "npm:3.3.5"],\
           ["typescript", "patch:typescript@npm%3A5.3.2#optional!builtin<compat/typescript>::version=5.3.2&hash=e012d7"],\
+          ["uuid", "npm:9.0.1"],\
           ["zod", "npm:3.22.4"]\
         ],\
         "linkType": "SOFT"\
@@ -608,6 +610,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../.yarn/berry/cache/@types-scheduler-npm-0.16.8-303819b439-10c0.zip/node_modules/@types/scheduler/",\
         "packageDependencies": [\
           ["@types/scheduler", "npm:0.16.8"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@types/uuid", [\
+      ["npm:9.0.7", {\
+        "packageLocation": "../../../.yarn/berry/cache/@types-uuid-npm-9.0.7-c380bb8654-10c0.zip/node_modules/@types/uuid/",\
+        "packageDependencies": [\
+          ["@types/uuid", "npm:9.0.7"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -5228,6 +5239,7 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:20.10.2"],\
           ["@types/react", "npm:18.2.40"],\
           ["@types/react-dom", "npm:18.2.17"],\
+          ["@types/uuid", "npm:9.0.7"],\
           ["@vercel/postgres", "npm:0.5.1"],\
           ["autoprefixer", "virtual:56e2f830d7b2e0ed21a5b97c3f05cd0367f2ed1006e685a21e839e324bc395ace017167b32015c18f71a0aac4dd85772e359562d5eabf0663b57804a7b675079#npm:10.4.16"],\
           ["bcrypt", "npm:5.1.1"],\
@@ -5251,6 +5263,7 @@ const RAW_RUNTIME_STATE =
           ["tailwind-merge", "npm:2.0.0"],\
           ["tailwindcss", "npm:3.3.5"],\
           ["typescript", "patch:typescript@npm%3A5.3.2#optional!builtin<compat/typescript>::version=5.3.2&hash=e012d7"],\
+          ["uuid", "npm:9.0.1"],\
           ["zod", "npm:3.22.4"]\
         ],\
         "linkType": "SOFT"\
@@ -5923,6 +5936,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../.yarn/berry/cache/util-deprecate-npm-1.0.2-e3fe1a219c-10c0.zip/node_modules/util-deprecate/",\
         "packageDependencies": [\
           ["util-deprecate", "npm:1.0.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["uuid", [\
+      ["npm:9.0.1", {\
+        "packageLocation": "../../../.yarn/berry/cache/uuid-npm-9.0.1-39a8442bc6-10c0.zip/node_modules/uuid/",\
+        "packageDependencies": [\
+          ["uuid", "npm:9.0.1"]\
         ],\
         "linkType": "HARD"\
       }]\
