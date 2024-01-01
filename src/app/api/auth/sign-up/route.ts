@@ -14,7 +14,10 @@ export async function POST(request: Request) {
     if (!email || !password) throw new Error('email and password required');
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await sql`INSERT INTO users (email, password, name) VALUES (${email}, ${hashedPassword}, ${name});`;
+    const result =
+      await sql`INSERT INTO member_users (username, email, login_provider) VALUES (${name}, ${email}, 'Credentials') RETURNING user_id;`;
+    const userId = result.rows[0].user_id;
+    await sql`INSERT INTO auth_credentials (user_id, password) VALUES (${userId}, ${hashedPassword});`;
   } catch (error) {
     console.log(error);
     return NextResponse.json(
