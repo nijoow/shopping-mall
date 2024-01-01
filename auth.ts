@@ -9,10 +9,24 @@ import Google from 'next-auth/providers/google';
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
 
-async function getUser(email: string): Promise<User | undefined> {
+async function getUserByEmail(email: string): Promise<User | undefined> {
   try {
     const user =
       await sql<User>`SELECT * FROM member_users WHERE email = ${email}`;
+    return user.rows[0];
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
+}
+
+async function getUserByEmailAndProvider(
+  email: string,
+  provider: string,
+): Promise<User | undefined> {
+  try {
+    const user =
+      await sql<User>`SELECT * FROM member_users WHERE email = ${email} and login_provider = ${provider}`;
     return user.rows[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);
@@ -47,7 +61,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data;
-          const user = await getUser(email);
+          const user = await getUserByEmail(email);
           if (!user) {
             throw new Error('userNotFound');
           }
@@ -76,10 +90,19 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   callbacks: {
     async signIn({ account, profile }) {
-      console.log('account', account);
-      console.log('profile', profile);
+      if (account?.provider === 'credentials') return true;
+
       if (account && profile) {
-        await sql`INSERT INTO member_users (email, username, login_provider) VALUES (${profile.email},  ${profile.name}, ${account.provider});`;
+        const existUser = await getUserByEmailAndProvider(
+          String(profile.email),
+          account.provider,
+        );
+        if (existUser) return true;
+
+        const result =
+          await sql`INSERT INTO member_users (username, email, login_provider) VALUES (${profile.name}, ${profile.email}, ${account.provider}) RETURNING user_id;`;
+        const userId = result.rows[0].user_id;
+        await sql`INSERT INTO auth_social_logins (user_id, account_id, type, access_token) VALUES (${userId}, ${account.providerAccountId}, ${account.provider}, ${account.access_token});`;
       }
       return true;
     },
