@@ -106,6 +106,19 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       }
       return true;
     },
+    async jwt({ token, account }) {
+      const user = await getUserByEmail(String(token.email));
+      token.name = user?.username;
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.name && session.user) {
+        session.user.name = token.name;
+      }
+
+      return session;
+    },
     async redirect() {
       return '/';
     },
