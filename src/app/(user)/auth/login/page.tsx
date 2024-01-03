@@ -50,12 +50,14 @@ export default function LoginPage() {
             로그인
           </button>
         </form>
-        <div className="flex items-center justify-center w-full gap-4 text-gray-400">
+        {/* <div className="flex items-center justify-center w-full gap-4 text-gray-400">
           <Link href={'/auth/login/find/id'}>아이디 찾기</Link>
           <div className="w-0.5 h-3.5 bg-gray-300" />
           <Link href={'/auth/login/find/password'}>비밀번호 찾기</Link>
+        </div> */}
+        <div className="w-full justify-center flex">
+          <SocialLogin />
         </div>
-        <SocialLogin />
         <Link
           href={'/auth/sign-up'}
           className="p-3 text-center text-black border border-black"
