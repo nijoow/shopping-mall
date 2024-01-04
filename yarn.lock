@@ -580,6 +580,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ag-grid-community@npm:^31.0.1, ag-grid-community@npm:~31.0.1":
+  version: 31.0.1
+  resolution: "ag-grid-community@npm:31.0.1"
+  checksum: 2e86a67e550ad3d0b0f6ba30b44e9bf90f8a369bbf47aed9da5359ea19278e8595e0298dadfbc577072364d13012dd35f89d430eb5dd1ab6d5fedd3fab647547
+  languageName: node
+  linkType: hard
+
+"ag-grid-react@npm:^31.0.1":
+  version: 31.0.1
+  resolution: "ag-grid-react@npm:31.0.1"
+  dependencies:
+    ag-grid-community: "npm:~31.0.1"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    react: ^16.3.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0
+  checksum: f18544ee82f6c0db3911830d9027418d9e2dbb19943b22e1665f997f60f322a0238dd3dbda5a420ba34e3822a675e2215003176819397cadfe75dda03ad9485d
+  languageName: node
+  linkType: hard
+
 "agent-base@npm:6":
   version: 6.0.2
   resolution: "agent-base@npm:6.0.2"
@@ -4307,6 +4327,8 @@ __metadata:
     "@types/react-dom": "npm:^18"
     "@types/uuid": "npm:^9"
     "@vercel/postgres": "npm:^0.5.1"
+    ag-grid-community: "npm:^31.0.1"
+    ag-grid-react: "npm:^31.0.1"
     autoprefixer: "npm:^10.0.1"
     bcrypt: "npm:^5.1.1"
     clsx: "npm:^2.0.0"
