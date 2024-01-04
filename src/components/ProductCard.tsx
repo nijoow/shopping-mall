@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
 
-const ProductCard = () => {
+const ProductCard = ({ ranking }: { ranking?: number }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const handleClickFavoriteButton = () => {
     setIsFavorite(!isFavorite);
@@ -10,6 +10,11 @@ const ProductCard = () => {
 
   return (
     <div className="col-span-4 border-r border-b relative">
+      {ranking && (
+        <div className="absolute left-0 top-0 w-12 h-12 text-white flex items-center justify-center bg-black">
+          <span className="text-1.25 font-medium">{ranking}</span>
+        </div>
+      )}
       <button
         className="absolute right-3 top-3 w-6 h-6"
         onClick={handleClickFavoriteButton}
