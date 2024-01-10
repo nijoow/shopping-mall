@@ -2,7 +2,8 @@ export type User = {
   id: string;
   user_id: number;
   email: string;
-  username: string;
+  name: string;
+  nickname: string;
   login_provider: string;
 };
 
