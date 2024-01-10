@@ -1,7 +1,7 @@
 import ProductCard from '@/components/ProductCard';
 import React from 'react';
 
-const ShopPage = () => {
+export default function ShopPage() {
   return (
     <div className="p-8 flex h-full w-full">
       <div className="gap-8 w-64 h-full flex flex-col">
@@ -26,6 +26,4 @@ const ShopPage = () => {
       </div>
     </div>
   );
-};
-
-export default ShopPage;
+}

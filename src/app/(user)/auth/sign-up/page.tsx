@@ -15,7 +15,7 @@ type SignUpInput = {
 
 type Step = 'EMAIL' | 'PASSWORD' | 'NICKNAME';
 
-const SignUpPage = () => {
+export default function SignUpPage() {
   // hooks
 
   const {
@@ -282,6 +282,4 @@ const SignUpPage = () => {
       </div>
     </div>
   );
-};
-
-export default SignUpPage;
+}

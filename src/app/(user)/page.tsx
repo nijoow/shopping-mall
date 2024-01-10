@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import React from 'react';
 
-const HomePage = () => {
+export default function HomePage() {
   return (
     <div className="flex flex-col w-full h-full ">
       <div className="w-full h-[800px] relative">
@@ -14,6 +14,4 @@ const HomePage = () => {
       </div>
     </div>
   );
-};
-
-export default HomePage;
+}

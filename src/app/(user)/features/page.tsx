@@ -1,7 +1,5 @@
 import React from 'react';
 
-const FeaturesPage = () => {
+export default function FeaturesPage() {
   return <div>FeaturesPage</div>;
-};
-
-export default FeaturesPage;
+}

@@ -1,7 +1,5 @@
 import React from 'react';
 
-const ShoppingBag = () => {
+export default function ShoppingBag() {
   return <div>ShoppingBag</div>;
-};
-
-export default ShoppingBag;
+}

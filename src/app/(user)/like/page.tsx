@@ -1,7 +1,5 @@
 import React from 'react';
 
-const LikePage = () => {
+export default function LikePage() {
   return <div>LikePage</div>;
-};
-
-export default LikePage;
+}

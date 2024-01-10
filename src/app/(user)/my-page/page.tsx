@@ -1,7 +1,7 @@
 import { auth } from 'auth';
 import React from 'react';
 
-const MyPage = async () => {
+export default async function MyPage() {
   const session = await auth();
 
   return (
@@ -19,6 +19,4 @@ const MyPage = async () => {
       <div className="w-full h-full bg-gray-50"> </div>
     </div>
   );
-};
-
-export default MyPage;
+}
