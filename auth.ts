@@ -1,6 +1,4 @@
 import NextAuth, { NextAuthConfig } from 'next-auth';
-import { AuthPassword, User } from '@/types/types';
-import { sql } from '@vercel/postgres';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 import Kakao from 'next-auth/providers/kakao';
@@ -8,42 +6,12 @@ import Naver from 'next-auth/providers/naver';
 import Google from 'next-auth/providers/google';
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
-
-async function getUserByEmail(email: string): Promise<User | undefined> {
-  try {
-    const user =
-      await sql<User>`SELECT * FROM member_users WHERE email = ${email}`;
-    return user.rows[0];
-  } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
-  }
-}
-
-async function getUserByEmailAndProvider(
-  email: string,
-  provider: string,
-): Promise<User | undefined> {
-  try {
-    const user =
-      await sql<User>`SELECT * FROM member_users WHERE email = ${email} and login_provider = ${provider}`;
-    return user.rows[0];
-  } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
-  }
-}
-
-async function getUserPassword(userId: number): Promise<string> {
-  try {
-    const password =
-      await sql<AuthPassword>`SELECT password FROM auth_credentials WHERE user_id = ${userId}`;
-    return password.rows[0].password;
-  } catch (error) {
-    console.error('Failed to fetch password:', error);
-    throw new Error('Failed to fetch password.');
-  }
-}
+import {
+  getUserByEmail,
+  getUserByEmailAndProvider,
+  getUserPassword,
+  registerUserBySocialLogin,
+} from '@/lib/database/user';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -99,10 +67,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         );
         if (existUser) return true;
 
-        const result =
-          await sql`INSERT INTO member_users (username, email, login_provider) VALUES (${profile.name}, ${profile.email}, ${account.provider}) RETURNING user_id;`;
-        const userId = result.rows[0].user_id;
-        await sql`INSERT INTO auth_social_logins (user_id, account_id, type, access_token) VALUES (${userId}, ${account.providerAccountId}, ${account.provider}, ${account.access_token});`;
+        await registerUserBySocialLogin({ account, profile });
       }
       return true;
     },

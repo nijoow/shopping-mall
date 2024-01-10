@@ -10,10 +10,10 @@ type SignUpInput = {
   email: string;
   password: string;
   passwordConfirm: string;
-  name: string;
+  nickname: string;
 };
 
-type Step = 'EMAIL' | 'PASSWORD' | 'NAME';
+type Step = 'EMAIL' | 'PASSWORD' | 'NICKNAME';
 
 const SignUpPage = () => {
   // hooks
@@ -34,7 +34,7 @@ const SignUpPage = () => {
   const email = watch('email');
   const password = watch('password');
   const passwordConfirm = watch('passwordConfirm');
-  const name = watch('name');
+  const nickname = watch('nickname');
 
   const hasUpperCase = /[A-Z]/.test(password);
   const hasLowerCase = /[a-z]/.test(password);
@@ -57,7 +57,7 @@ const SignUpPage = () => {
       isValidPassword &&
       !errors.passwordConfirm
     ),
-    name: !name && loading,
+    nickname: !nickname && loading,
   };
 
   // functions
@@ -95,7 +95,7 @@ const SignUpPage = () => {
         body: JSON.stringify({
           email: submitData.email,
           password: submitData.password,
-          name: submitData.name,
+          nickname: submitData.nickname,
         }),
       });
       if (response.ok) {
@@ -119,7 +119,7 @@ const SignUpPage = () => {
             className={cn('h-1 bg-black transition-all duration-300', {
               'w-1/3': step === 'EMAIL',
               'w-2/3': step === 'PASSWORD',
-              'w-full': step === 'NAME',
+              'w-full': step === 'NICKNAME',
             })}
           />
         </div>
@@ -131,7 +131,7 @@ const SignUpPage = () => {
             className={cn('h-full flex w-[300%]', {
               'translate-x-0': step === 'EMAIL',
               '-translate-x-1/3': step === 'PASSWORD',
-              '-translate-x-2/3': step === 'NAME',
+              '-translate-x-2/3': step === 'NICKNAME',
             })}
           >
             <div className="flex flex-col w-1/3 gap-4">
@@ -226,7 +226,7 @@ const SignUpPage = () => {
                 className="p-3 text-white bg-black disabled:bg-black/40"
                 onClick={() => {
                   if (!(isValidPassword || !errors.passwordConfirm)) return;
-                  setStep('NAME');
+                  setStep('NICKNAME');
                 }}
               >
                 다음
@@ -243,22 +243,22 @@ const SignUpPage = () => {
             </div>
             <div className="flex flex-col w-1/3 gap-4">
               <label className="flex flex-col gap-0.5">
-                <span>이름</span>
+                <span>닉네임</span>
                 <input
                   type="text"
-                  placeholder="이름을 입력해주세요"
-                  {...register('name', { required: true })}
+                  placeholder="닉네임을 입력해주세요"
+                  {...register('nickname', { required: true })}
                   className="p-3 border border-gray-300"
                 />
-                {errors.name && (
+                {errors.nickname && (
                   <span className="text-0.875 text-red-400">
-                    {errors.name.message}
+                    {errors.nickname.message}
                   </span>
                 )}
               </label>
               <button
                 type="submit"
-                disabled={disabledNextButton.name}
+                disabled={disabledNextButton.nickname}
                 className="p-3 text-white bg-black disabled:bg-black/40"
               >
                 {loading ? (
