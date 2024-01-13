@@ -62,7 +62,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
       if (account && profile) {
         const existUser = await getUserByEmailAndProvider(
-          String(profile.email),
+          profile.email as string,
           account.provider,
         );
         if (existUser) return true;
@@ -72,15 +72,17 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       return true;
     },
     async jwt({ token, account }) {
-      const user = await getUserByEmail(String(token.email));
+      const user = await getUserByEmail(token.email as string);
       token.nickname = user?.nickname;
       token.name = user?.name;
+      token.user_id = user?.user_id;
       return token;
     },
     async session({ session, token }) {
       if (token.name && session.user) {
         session.user.name = token.name;
-        session.user.nickname = String(token.nickname);
+        session.user.nickname = token.nickname as string;
+        session.user.user_id = token.user_id as number;
       }
       return session;
     },
