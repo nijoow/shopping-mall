@@ -1,6 +1,5 @@
 import { z } from 'zod';
-
-const phoneRegex = new RegExp(/^01([0|1|6|7|8|9])-([0-9]{3,4})-([0-9]{4})$/);
+import { phoneRegex } from '../utils/regex';
 
 export const userSchema = z.object({
   userId: z.number(),
