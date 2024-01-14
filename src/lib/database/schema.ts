@@ -2,14 +2,14 @@ import { z } from 'zod';
 import { phoneRegex } from '../utils/regex';
 
 export const userSchema = z.object({
-  userId: z.number(),
+  user_id: z.number(),
   email: z.string().email(),
   login_provider: z.enum(['SOCIAL_LOGIN', 'CREDENTIALS']),
   role: z.enum(['ADMIN', 'USER']),
   nickname: z.string(),
   name: z.string().nullable(),
   gender: z.enum(['MALE', 'FEMALE']).nullable(),
-  age: z.number().nullable(),
+  birth: z.string().nullable(),
   phone_number: z.string().regex(phoneRegex).nullable(),
   point: z.number(),
   created_date: z.date(),
