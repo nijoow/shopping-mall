@@ -6,7 +6,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
   const session = await auth();
 
   return (
-    <div className="p-8 flex h-full w-full">
+    <div className="py-24 px-8 max-w-5xl mx-auto flex h-full w-full">
       <div className="gap-8 w-64 h-full flex flex-col">
         <span className="text-2.25 font-semibold">
           {session?.user.nickname}
@@ -29,7 +29,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
           <span className="text-gray-500 font-light">포인트</span>
         </div>
       </div>
-      <div className="w-full h-full bg-gray-50 p-8 flex"> {children}</div>
+      <div className="w-full h-full flex flex-col">{children}</div>
     </div>
   );
 };
