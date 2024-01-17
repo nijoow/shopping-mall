@@ -15,11 +15,13 @@ const LogoutButton = () => {
   return (
     <button
       type="button"
-      className="gap-1 flex items-center"
+      className="gap-1 flex items-center group px-2"
       onClick={handleClickLogoutButton}
     >
       <IoLogOut size={20} />
-      <span className="text-0.75">LOGOUT</span>
+      <span className="text-0.75 group-hover:w-[50px] overflow-hidden w-0 transition-all">
+        LOGOUT
+      </span>
     </button>
   );
 };
