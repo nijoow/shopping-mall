@@ -31,9 +31,8 @@ export const getUserByEmailAndProvider = async (
   try {
     const user =
       await sql<User>`SELECT users.user_id, users.email, social_logins.type FROM users
-                      INNER JOIN social_logins ON users.user_id=social_logins.user_id
-                      WHERE users.email = ${email} AND social_logins.type = ${provider}
-                      `;
+        INNER JOIN social_logins ON users.user_id=social_logins.user_id
+        WHERE users.email = ${email} AND social_logins.type = ${provider}`;
     return user.rows[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);
@@ -61,11 +60,11 @@ export const registerUserBySocialLogin = async ({
 }) => {
   const result =
     await sql`INSERT INTO users (email, login_provider, name, nickname)
-              VALUES (${profile.email}, 'SOCIAL_LOGIN', ${profile.name}, ${profile.name}) 
-              RETURNING user_id;`;
+      VALUES (${profile.email}, 'SOCIAL_LOGIN', ${profile.name}, ${profile.name}) 
+      RETURNING user_id;`;
   const userId = result.rows[0].user_id;
   await sql`INSERT INTO social_logins (user_id, account_id, type) 
-            VALUES (${userId}, ${account.providerAccountId}, ${account.provider});`;
+    VALUES (${userId}, ${account.providerAccountId}, ${account.provider});`;
 };
 
 export const registerUserByCredentials = async ({
@@ -78,9 +77,22 @@ export const registerUserByCredentials = async ({
   password: string;
 }) => {
   const result = await sql`INSERT INTO users (nickname, email, login_provider) 
-              VALUES (${nickname}, ${email}, 'Credentials') 
-              RETURNING user_id;`;
+    VALUES (${nickname}, ${email}, 'Credentials') 
+    RETURNING user_id;`;
   const userId = result.rows[0].user_id;
   await sql`INSERT INTO credentials (user_id, password) 
-            VALUES (${userId}, ${password});`;
+    VALUES (${userId}, ${password});`;
+};
+
+export const getUserByUserId = async (
+  user_id: number,
+): Promise<User | undefined> => {
+  try {
+    const user =
+      await sql<User>`SELECT * FROM users WHERE user_id = ${user_id}`;
+    return user.rows[0];
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
 };
