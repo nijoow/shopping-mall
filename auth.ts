@@ -38,7 +38,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           if (!passwordsMatch) {
             throw new Error('passwordNotMatched');
           }
-          return user;
+          return user as any;
         }
         return null;
       },
