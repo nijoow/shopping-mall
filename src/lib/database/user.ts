@@ -96,3 +96,17 @@ export const getUserByUserId = async (
     throw new Error('Failed to fetch user.');
   }
 };
+
+export const updateUserInformation = async (
+  user_id: number,
+  targetsQuery: string,
+) => {
+  try {
+    await sql.query(
+      `UPDATE users SET ${targetsQuery} WHERE user_id = ${user_id}`,
+    );
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
+};
