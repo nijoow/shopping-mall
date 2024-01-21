@@ -28,6 +28,7 @@ export default async function InformationPage() {
         <Divider />
         <ProfileName user={user} />
         <Divider />
+        <ProfilePhoneNumber user={user} />
       </div>
     </>
   );
