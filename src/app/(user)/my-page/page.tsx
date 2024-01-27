@@ -14,7 +14,7 @@ const getProfileCompletion = (user: User) => {
     user.gender,
   ].reduce((count, value) => (!!value ? count + 1 : count), 0);
 
-  return (count / 6) * 100;
+  return ((count / 6) * 100).toFixed(1);
 };
 
 export default async function MyPage() {
