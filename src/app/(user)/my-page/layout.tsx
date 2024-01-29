@@ -26,6 +26,12 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
           >
             회원정보
           </Link>
+          <Link
+            href={'/my-page/addresses'}
+            className="text-gray-500 font-light"
+          >
+            배송지 목록
+          </Link>
           <span className="text-gray-500 font-light">포인트</span>
         </div>
       </div>
