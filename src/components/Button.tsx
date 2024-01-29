@@ -1,22 +1,22 @@
 import { cn } from '@/lib/utils/cn';
-import React, { HTMLAttributes } from 'react';
+import React, { ButtonHTMLAttributes, HTMLAttributes } from 'react';
 
 const Button = ({
   children,
-  type = 'contained',
+  variant = 'contained',
   className,
   ...rest
-}: HTMLAttributes<HTMLButtonElement> & {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
   children?: React.ReactNode;
-  type?: 'outlined' | 'contained';
+  variant?: 'outlined' | 'contained';
 }) => {
   return (
     <button
       className={cn(
         'rounded-md px-8 py-1 border-2 font-medium drop-shadow-sm',
         {
-          'border-gray-200 text-gray-500': type === 'outlined',
-          'border-black text-white bg-black': type === 'contained',
+          'border-gray-200 text-gray-500': variant === 'outlined',
+          'border-black text-white bg-black': variant === 'contained',
         },
         className,
       )}
