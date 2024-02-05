@@ -1,3 +1,4 @@
+import { AddressFormInput } from '@/app/(user)/my-page/addresses/_compontent.tsx/AddAddress';
 import { AuthPassword, User } from '@/types/types';
 import { sql } from '@vercel/postgres';
 import { Account, Profile } from 'next-auth';
@@ -106,7 +107,28 @@ export const updateUserInformation = async (
       `UPDATE users SET ${targetsQuery} WHERE user_id = ${user_id}`,
     );
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    console.error('Failed to Update Information:', error);
+    throw new Error('Failed to Update Information.');
+  }
+};
+
+export const addUserAddress = async ({
+  userId,
+  name,
+  phoneNumber,
+  postCode,
+  address,
+  detailAddress,
+}: AddressFormInput & { userId: number }) => {
+  try {
+    await sql.query(
+      `INSERT INTO 
+          address (user_id, name, phone_number, post_code, address, detail_address) 
+       VALUES 
+          ('${userId}', '${name}', '${phoneNumber}', '${postCode}', '${address}', '${detailAddress}')`,
+    );
+  } catch (error) {
+    console.error('Failed to Add Address:', error);
+    throw new Error('Failed to Add Address.');
   }
 };
