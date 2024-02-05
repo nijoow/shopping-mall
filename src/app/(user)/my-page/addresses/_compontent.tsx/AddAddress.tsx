@@ -8,6 +8,8 @@ import { phoneRegex } from '@/lib/utils/regex';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { formatPhoneNumber } from '@/lib/utils/formatPhoneNumber';
+import { User } from 'next-auth';
+import Spinner from '@/components/Spinner';
 
 const addressFormSchema = z.object({
   name: z.string(),
@@ -17,9 +19,9 @@ const addressFormSchema = z.object({
   detailAddress: z.string().nullable(),
 });
 
-type AddressFormInput = z.infer<typeof addressFormSchema>;
+export type AddressFormInput = z.infer<typeof addressFormSchema>;
 
-const AddAddress = () => {
+const AddAddress = ({ user }: { user: User }) => {
   const open = useDaumPostcodePopup();
 
   const {
@@ -34,6 +36,7 @@ const AddAddress = () => {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -62,8 +65,31 @@ const AddAddress = () => {
     setValue('address', fullAddress);
   };
 
-  const onSubmit: SubmitHandler<AddressFormInput> = submitData => {
-    console.log(submitData);
+  const onSubmit: SubmitHandler<AddressFormInput> = async submitData => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/user/address', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.user_id,
+          name: submitData.name,
+          phoneNumber: submitData.phoneNumber,
+          postCode: submitData.postCode,
+          address: submitData.address,
+          detailAddress: submitData.detailAddress,
+        }),
+      });
+      if (response.ok) {
+        closeModal();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -182,8 +208,8 @@ const AddAddress = () => {
               <Button variant="outlined" onClick={closeModal}>
                 취소
               </Button>
-              <Button type="submit" form="address-form">
-                저장
+              <Button type="submit" form="address-form" disabled={isLoading}>
+                {isLoading ? <Spinner fill="white" width={20} /> : '저장'}
               </Button>
             </div>
           </Modal.Footer>

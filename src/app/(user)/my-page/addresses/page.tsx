@@ -17,7 +17,7 @@ export default async function AddressesPage() {
       <h2 className="text-1.875">배송지 정보</h2>
       <div className="w-full h-0.5 bg-black" />
       <div className="flex flex-col py-6 gap-6 w-full">
-        <AddressList />
+        <AddressList user={session.user} />
       </div>
     </>
   );

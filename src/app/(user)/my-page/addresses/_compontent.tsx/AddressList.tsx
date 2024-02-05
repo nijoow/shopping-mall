@@ -1,10 +1,11 @@
 import React from 'react';
 import AddAddress from './AddAddress';
+import { User } from 'next-auth';
 
-const AddressList = () => {
+const AddressList = ({ user }: { user: User }) => {
   return (
     <div>
-      <AddAddress />
+      <AddAddress user={user} />
     </div>
   );
 };
