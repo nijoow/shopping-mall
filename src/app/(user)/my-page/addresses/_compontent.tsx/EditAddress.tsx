@@ -2,7 +2,7 @@
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import React, { useState } from 'react';
-import { IoAdd } from 'react-icons/io5';
+import { IoTrashOutline, IoCreateOutline } from 'react-icons/io5';
 import { z } from 'zod';
 import { phoneRegex } from '@/lib/utils/regex';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
@@ -95,10 +95,7 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
 
   return (
     <>
-      <div
-        className="cursor-pointer gap-2 bg-white flex flex-col col-span-1 rounded-lg p-4 w-full h-52 border border-gray-300"
-        onClick={openModal}
-      >
+      <div className="gap-2 bg-white flex flex-col col-span-1 rounded-lg p-4 w-full h-52 border border-gray-300">
         <span className="text-1.125 font-medium">{address.name}</span>
         <span className="text-0.875">
           [{address.post_code}] {address.address}
@@ -106,8 +103,26 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
         </span>
         <span className="text-0.875">{address.phone_number}</span>
         <div className="flex-auto" />
-        <IoAdd size={24} />
+        <div className="flex gap-6">
+          <button
+            type="button"
+            className="flex items-center gap-1.5"
+            onClick={openModal}
+          >
+            <IoCreateOutline size={20} />
+            <span className="text-0.875">수정</span>
+          </button>
+          <button
+            type="button"
+            className="flex items-center gap-1.5"
+            onClick={openModal}
+          >
+            <IoTrashOutline size={20} />
+            <span className="text-0.875">삭제</span>
+          </button>
+        </div>
       </div>
+
       {isModalOpen && (
         <Modal>
           <Modal.Title closeModal={closeModal}>배송지 추가</Modal.Title>

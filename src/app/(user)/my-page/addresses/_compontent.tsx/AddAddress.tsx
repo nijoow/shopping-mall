@@ -100,7 +100,9 @@ const AddAddress = ({ user }: { user: User }) => {
       >
         <span className="text-1.125 font-semibold">새 배송지</span>
         <div className="flex-auto" />
-        <IoAdd size={24} />
+        <div className="flex items-center gap-1.5">
+          <IoAdd size={20} /> <span className="text-0.875">추가</span>
+        </div>
       </div>
 
       {isModalOpen && (
