@@ -15,3 +15,13 @@ export const userSchema = z.object({
   created_date: z.date(),
   modified_date: z.date(),
 });
+
+export const addressSchema = z.object({
+  address_id: z.number(),
+  user_id: z.number(),
+  address: z.string(),
+  detail_address: z.string().nullable(),
+  post_code: z.string(),
+  name: z.string(),
+  phone_number: z.string().regex(phoneRegex).nullable(),
+});
