@@ -1,5 +1,5 @@
 import { AddressFormInput } from '@/app/(user)/my-page/addresses/_compontent.tsx/AddAddress';
-import { AuthPassword, User } from '@/types/types';
+import { Address, AuthPassword, User } from '@/types/types';
 import { sql } from '@vercel/postgres';
 import { Account, Profile } from 'next-auth';
 
@@ -130,5 +130,18 @@ export const addUserAddress = async ({
   } catch (error) {
     console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
+  }
+};
+
+export const getAddressesByUserId = async (
+  userId: number,
+): Promise<Address[] | undefined> => {
+  try {
+    const addresses =
+      await sql<Address>`SELECT * FROM address WHERE user_id = ${userId}`;
+    return addresses.rows;
+  } catch (error) {
+    console.error('Failed to fetch address:', error);
+    throw new Error('Failed to fetch address.');
   }
 };
