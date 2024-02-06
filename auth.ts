@@ -23,24 +23,31 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         password: { type: 'password' },
       },
       async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string() })
-          .safeParse(credentials);
+        try {
+          const parsedCredentials = z
+            .object({ email: z.string().email(), password: z.string() })
+            .safeParse(credentials);
 
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-          const user = await getUserByEmail(email);
-          if (!user) {
-            throw new Error('userNotFound');
+          if (parsedCredentials.success) {
+            const { email, password } = parsedCredentials.data;
+            const user = await getUserByEmail(email);
+            if (!user) {
+              throw new Error('userNotFound');
+            }
+            const hashedPassword = await getUserPassword(user.user_id);
+            const passwordsMatch = await bcrypt.compare(
+              password,
+              hashedPassword,
+            );
+            if (!passwordsMatch) {
+              throw new Error('passwordNotMatched');
+            }
+            return user as any;
           }
-          const hashedPassword = await getUserPassword(user.user_id);
-          const passwordsMatch = await bcrypt.compare(password, hashedPassword);
-          if (!passwordsMatch) {
-            throw new Error('passwordNotMatched');
-          }
-          return user as any;
+          return null;
+        } catch (error) {
+          console.log(error);
         }
-        return null;
       },
     }),
     Kakao({
