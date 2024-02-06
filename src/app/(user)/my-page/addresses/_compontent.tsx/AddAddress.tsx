@@ -95,14 +95,14 @@ const AddAddress = ({ user }: { user: User }) => {
   return (
     <>
       <div
-        className="grid space-x-4 grid-cols-2 cursor-pointer"
+        className="cursor-pointer gap-2 bg-white flex flex-col col-span-1 rounded-lg p-4 w-full h-52 border border-gray-300"
         onClick={openModal}
       >
-        <div className="bg-white justify-between col-span-1 rounded-lg p-4 w-full h-52 flex flex-col border border-gray-300">
-          <span>새 배송지</span>
-          <IoAdd size={24} />
-        </div>
+        <span className="text-1.125 font-semibold">새 배송지</span>
+        <div className="flex-auto" />
+        <IoAdd size={24} />
       </div>
+
       {isModalOpen && (
         <Modal>
           <Modal.Title closeModal={closeModal}>배송지 추가</Modal.Title>
