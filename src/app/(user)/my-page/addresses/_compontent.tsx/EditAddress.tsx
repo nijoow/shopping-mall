@@ -3,24 +3,13 @@ import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import React, { useState } from 'react';
 import { IoTrashOutline, IoCreateOutline } from 'react-icons/io5';
-import { z } from 'zod';
 import { phoneRegex } from '@/lib/utils/regex';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { formatPhoneNumber } from '@/lib/utils/formatPhoneNumber';
 import { User } from 'next-auth';
 import Spinner from '@/components/Spinner';
-import { Address } from '@/types/types';
-
-const addressFormSchema = z.object({
-  name: z.string(),
-  phoneNumber: z.string().regex(phoneRegex),
-  postCode: z.string(),
-  address: z.string(),
-  detailAddress: z.string().nullable(),
-});
-
-export type AddressFormInput = z.infer<typeof addressFormSchema>;
+import { Address, AddressFormInput } from '@/types/types';
 
 const EditAddress = ({ user, address }: { user: User; address: Address }) => {
   const open = useDaumPostcodePopup();

@@ -1,4 +1,6 @@
-import { addUserAddress } from '@/lib/database/user';
+import {
+  addUserAddress,
+} from '@/lib/database/address';
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 

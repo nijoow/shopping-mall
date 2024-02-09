@@ -10,16 +10,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { formatPhoneNumber } from '@/lib/utils/formatPhoneNumber';
 import { User } from 'next-auth';
 import Spinner from '@/components/Spinner';
-
-const addressFormSchema = z.object({
-  name: z.string(),
-  phoneNumber: z.string().regex(phoneRegex),
-  postCode: z.string(),
-  address: z.string(),
-  detailAddress: z.string().nullable(),
-});
-
-export type AddressFormInput = z.infer<typeof addressFormSchema>;
+import { AddressFormInput } from '@/types/types';
 
 const AddAddress = ({ user }: { user: User }) => {
   const open = useDaumPostcodePopup();
