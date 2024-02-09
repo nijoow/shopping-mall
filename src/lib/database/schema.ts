@@ -23,5 +23,5 @@ export const addressSchema = z.object({
   detail_address: z.string().nullable(),
   post_code: z.string(),
   name: z.string(),
-  phone_number: z.string().regex(phoneRegex).nullable(),
+  phone_number: z.string().regex(phoneRegex),
 });
