@@ -64,6 +64,7 @@ const AddAddress = ({ user }: { user: User }) => {
     setIsLoading(true);
     try {
       await addUserAddress({ ...submitData, userId: user.user_id });
+      closeModal();
     } catch (error) {
       console.log(error);
     } finally {
