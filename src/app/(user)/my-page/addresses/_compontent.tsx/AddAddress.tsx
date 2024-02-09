@@ -102,7 +102,7 @@ const AddAddress = ({ user }: { user: User }) => {
           <Modal.Body>
             <form
               id="address-form"
-              className="flex flex-col gap-4 w-full my-4"
+              className="flex flex-col gap-4 w-full"
               onSubmit={handleSubmit(onSubmit)}
             >
               <label className="flex flex-col gap-1 w-full">
@@ -197,7 +197,7 @@ const AddAddress = ({ user }: { user: User }) => {
             </form>
           </Modal.Body>
           <Modal.Footer>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3">
               <Button variant="outlined" onClick={closeModal}>
                 취소
               </Button>
