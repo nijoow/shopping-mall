@@ -1,5 +1,8 @@
+'use server';
+
 import { Address, AddressFormInput } from '@/types/types';
 import { sql } from '@vercel/postgres';
+import { revalidatePath } from 'next/cache';
 
 export const getAddressesByUserId = async (
   userId: number,
@@ -9,8 +12,9 @@ export const getAddressesByUserId = async (
         SELECT * FROM 
             address 
         WHERE 
-            user_id = ${userId}`;
-
+            user_id = ${userId}
+        ORDER BY address_id DESC
+    `;
     return addresses.rows;
   } catch (error) {
     console.error('Failed to fetch address:', error);
@@ -36,6 +40,8 @@ export const addUserAddress = async ({
   } catch (error) {
     console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
+  } finally {
+    revalidatePath('/my-page/addresses');
   }
 };
 
@@ -63,6 +69,8 @@ export const editUserAddress = async ({
   } catch (error) {
     console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
+  } finally {
+    revalidatePath('/my-page/addresses');
   }
 };
 
@@ -81,5 +89,7 @@ export const deleteUserAddress = async ({
   } catch (error) {
     console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
+  } finally {
+    revalidatePath('/my-page/addresses');
   }
 };

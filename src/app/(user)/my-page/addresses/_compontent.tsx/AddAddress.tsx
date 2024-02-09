@@ -3,7 +3,6 @@ import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import React, { useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
-import { z } from 'zod';
 import { phoneRegex } from '@/lib/utils/regex';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -11,6 +10,7 @@ import { formatPhoneNumber } from '@/lib/utils/formatPhoneNumber';
 import { User } from 'next-auth';
 import Spinner from '@/components/Spinner';
 import { AddressFormInput } from '@/types/types';
+import { addUserAddress } from '../action';
 
 const AddAddress = ({ user }: { user: User }) => {
   const open = useDaumPostcodePopup();
@@ -59,23 +59,7 @@ const AddAddress = ({ user }: { user: User }) => {
   const onSubmit: SubmitHandler<AddressFormInput> = async submitData => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/user/address', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.user_id,
-          name: submitData.name,
-          phoneNumber: submitData.phoneNumber,
-          postCode: submitData.postCode,
-          address: submitData.address,
-          detailAddress: submitData.detailAddress,
-        }),
-      });
-      if (response.ok) {
-        closeModal();
-      }
+      await addUserAddress({ ...submitData, userId: user.user_id });
     } catch (error) {
       console.log(error);
     } finally {
@@ -198,7 +182,11 @@ const AddAddress = ({ user }: { user: User }) => {
           </Modal.Body>
           <Modal.Footer>
             <div className="flex gap-3">
-              <Button variant="outlined" onClick={closeModal}>
+              <Button
+                variant="outlined"
+                disabled={isLoading}
+                onClick={closeModal}
+              >
                 취소
               </Button>
               <Button type="submit" form="address-form" disabled={isLoading}>

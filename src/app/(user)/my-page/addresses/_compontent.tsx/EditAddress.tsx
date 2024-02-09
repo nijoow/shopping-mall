@@ -1,17 +1,17 @@
 'use client';
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { IoTrashOutline, IoCreateOutline } from 'react-icons/io5';
 import { phoneRegex } from '@/lib/utils/regex';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { formatPhoneNumber } from '@/lib/utils/formatPhoneNumber';
-import { User } from 'next-auth';
 import Spinner from '@/components/Spinner';
 import { Address, AddressFormInput } from '@/types/types';
+import { deleteUserAddress, editUserAddress } from '../action';
 
-const EditAddress = ({ user, address }: { user: User; address: Address }) => {
+const EditAddress = ({ address }: { address: Address }) => {
   const open = useDaumPostcodePopup();
 
   const {
@@ -63,24 +63,8 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
   const onSubmit: SubmitHandler<AddressFormInput> = async submitData => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/user/address', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          addressId: address.address_id,
-          userId: user.user_id,
-          name: submitData.name,
-          phoneNumber: submitData.phoneNumber,
-          postCode: submitData.postCode,
-          address: submitData.address,
-          detailAddress: submitData.detailAddress,
-        }),
-      });
-      if (response.ok) {
-        closeModal();
-      }
+      await editUserAddress({ ...submitData, addressId: address.address_id });
+      closeModal();
     } catch (error) {
       console.log(error);
     } finally {
@@ -91,18 +75,8 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
   const handleClickDeleteButton = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/user/address', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          addressId: address.address_id,
-        }),
-      });
-      if (response.ok) {
-        closeModal();
-      }
+      await deleteUserAddress({ addressId: address.address_id });
+      closeModal();
     } catch (error) {
       console.log(error);
     } finally {
@@ -114,11 +88,11 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
     <>
       <div className="gap-2 bg-white flex flex-col col-span-1 rounded-lg p-4 w-full h-52 border border-gray-300">
         <span className="text-1.125 font-medium">{address.name}</span>
+        <span className="text-0.875 text-gray-500">{address.phone_number}</span>
         <span className="text-0.875">
           [{address.post_code}] {address.address}
           {address.detail_address ? `, ${address.detail_address}` : ''}
         </span>
-        <span className="text-0.875">{address.phone_number}</span>
         <div className="flex-auto" />
         <div className="flex gap-6">
           <button
@@ -139,7 +113,6 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
           </button>
         </div>
       </div>
-
       {isModalOpen.edit && (
         <Modal>
           <Modal.Title closeModal={closeModal}>배송지 수정</Modal.Title>
@@ -226,6 +199,7 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
                   className="px-3 py-2.5 rounded-md text-1 border border-gray-300 flex-auto"
                 />
                 <input
+                  key={`${address.address_id}-detail_address-${address.detail_address}`}
                   type="text"
                   placeholder="상세 주소"
                   {...register('detailAddress')}
