@@ -19,6 +19,7 @@ const EditAddress = ({ address }: { address: Address }) => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<AddressFormInput>({
     mode: 'onChange',
@@ -31,10 +32,25 @@ const EditAddress = ({ address }: { address: Address }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const openEditModal = () => setIsModalOpen({ ...isModalOpen, edit: true });
+  useEffect(() => {
+    reset({
+      name: address.name,
+      phoneNumber: address.phone_number,
+      postCode: address.post_code,
+      address: address.address,
+      detailAddress: address.detail_address,
+    });
+  }, [address]);
+
+  const openEditModal = () => {
+    setIsModalOpen({ ...isModalOpen, edit: true });
+  };
   const openDeleteModal = () =>
     setIsModalOpen({ ...isModalOpen, delete: true });
-  const closeModal = () => setIsModalOpen({ edit: false, delete: false });
+  const closeModal = () => {
+    reset();
+    setIsModalOpen({ edit: false, delete: false });
+  };
 
   const onChangePhoneNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 13) return;

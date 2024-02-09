@@ -20,6 +20,7 @@ const AddAddress = ({ user }: { user: User }) => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<AddressFormInput>({
     mode: 'onChange',
@@ -30,7 +31,10 @@ const AddAddress = ({ user }: { user: User }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    reset();
+    setIsModalOpen(false);
+  };
 
   const onChangePhoneNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 13) return;
