@@ -25,11 +25,16 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
     reValidateMode: 'onChange',
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState({
+    edit: false,
+    delete: false,
+  });
   const [isLoading, setIsLoading] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openEditModal = () => setIsModalOpen({ ...isModalOpen, edit: true });
+  const openDeleteModal = () =>
+    setIsModalOpen({ ...isModalOpen, delete: true });
+  const closeModal = () => setIsModalOpen({ edit: false, delete: false });
 
   const onChangePhoneNumber = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value.length > 13) return;
@@ -59,17 +64,40 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/user/address', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          addressId: address.address_id,
           userId: user.user_id,
           name: submitData.name,
           phoneNumber: submitData.phoneNumber,
           postCode: submitData.postCode,
           address: submitData.address,
           detailAddress: submitData.detailAddress,
+        }),
+      });
+      if (response.ok) {
+        closeModal();
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClickDeleteButton = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/user/address', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          addressId: address.address_id,
         }),
       });
       if (response.ok) {
@@ -96,7 +124,7 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
           <button
             type="button"
             className="flex items-center gap-1.5"
-            onClick={openModal}
+            onClick={openEditModal}
           >
             <IoCreateOutline size={20} />
             <span className="text-0.875">수정</span>
@@ -104,7 +132,7 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
           <button
             type="button"
             className="flex items-center gap-1.5"
-            onClick={openModal}
+            onClick={openDeleteModal}
           >
             <IoTrashOutline size={20} />
             <span className="text-0.875">삭제</span>
@@ -112,9 +140,9 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen.edit && (
         <Modal>
-          <Modal.Title closeModal={closeModal}>배송지 추가</Modal.Title>
+          <Modal.Title closeModal={closeModal}>배송지 수정</Modal.Title>
           <Modal.Body>
             <form
               id="address-form"
@@ -219,6 +247,26 @@ const EditAddress = ({ user, address }: { user: User; address: Address }) => {
               </Button>
               <Button type="submit" form="address-form" disabled={isLoading}>
                 {isLoading ? <Spinner fill="white" width={20} /> : '저장'}
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+      )}
+      {isModalOpen.delete && (
+        <Modal>
+          <Modal.Title closeModal={closeModal}>배송지 삭제</Modal.Title>
+          <Modal.Body>배송지 정보를 정말 삭제하시겠습니까? </Modal.Body>
+          <Modal.Footer>
+            <div className="flex gap-3">
+              <Button variant="outlined" onClick={closeModal}>
+                취소
+              </Button>
+              <Button
+                type="button"
+                disabled={isLoading}
+                onClick={handleClickDeleteButton}
+              >
+                {isLoading ? <Spinner fill="white" width={20} /> : '삭제'}
               </Button>
             </div>
           </Modal.Footer>
