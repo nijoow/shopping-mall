@@ -152,7 +152,7 @@ const AddAddress = ({ user }: { user: User }) => {
                     onClick={() =>
                       open({
                         width: 400,
-                        height: 600,
+                        height: 470,
                         onComplete: handleComplete,
                       })
                     }
