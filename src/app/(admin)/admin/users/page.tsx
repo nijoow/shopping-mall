@@ -1,6 +1,6 @@
 import React from 'react';
 import CardContainer from '../../_components/CardContainer';
-import UsersDatagrid from './_compontents/UsersDatagrid';
+import UsersDatagrid from './_components/UsersDatagrid';
 
 const AdminUsersPage = async () => {
   return (

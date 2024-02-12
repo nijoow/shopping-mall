@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import SocialLogin from './_compontents/SocialLogin';
+import SocialLogin from './_components/SocialLogin';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';

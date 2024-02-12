@@ -2,10 +2,10 @@ import { getUserByUserId } from '@/lib/database/user';
 import { auth } from 'auth';
 import { redirect } from 'next/navigation';
 import React from 'react';
-import ProfileName from './_compontents/ProfileName';
-import ProfileEmail from './_compontents/ProfileEmail';
-import ProfileNickname from './_compontents/ProfileNickname';
-import ProfilePhoneNumber from './_compontents/ProfilePhoneNumber';
+import ProfileName from './_components/ProfileName';
+import ProfileEmail from './_components/ProfileEmail';
+import ProfileNickname from './_components/ProfileNickname';
+import ProfilePhoneNumber from './_components/ProfilePhoneNumber';
 
 const Divider = () => <div className="w-full h-0.5 bg-gray-300" />;
 
