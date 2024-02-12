@@ -17,11 +17,12 @@ export default function ShopPage() {
           <span className="text-gray-500 font-light">PRICE</span>
         </div>
       </div>
-      <div className="w-full h-full grid grid-cols-12 bg-gray-50 border-l border-t">
+      <div className="w-full h-fit grid grid-cols-12 bg-gray-50 border-l border-t">
         <ProductCard />
         <ProductCard />
         <ProductCard />
-        <ProductCard /> <ProductCard />
+        <ProductCard />
+        <ProductCard />
         <ProductCard />
       </div>
     </div>

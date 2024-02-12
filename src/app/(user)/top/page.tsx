@@ -17,7 +17,7 @@ export default function TopPage() {
           <span className="text-gray-500 font-light">PRICE</span>
         </div>
       </div>
-      <div className="w-full h-full grid grid-cols-12 bg-gray-50 border-l border-t">
+      <div className="w-full h-fit grid grid-cols-12 bg-gray-50 border-l border-t">
         {[1, 2, 3, 4, 5, 6].map(ranking => (
           <ProductCard key={ranking} ranking={ranking} />
         ))}
