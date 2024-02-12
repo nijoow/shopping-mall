@@ -1,5 +1,6 @@
 # 👟 nijoow-shopping-mall
 - 쇼핑몰 풀스택 개인 프로젝트
+- 🚧 개발 진행 중 🚧
 
 [기술 스택]
 - Next.js, Typescript, Tailwind, postgreSQL
