@@ -4028,6 +4028,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-indiana-drag-scroll@npm:^3.0.3-alpha":
+  version: 3.0.3-alpha
+  resolution: "react-indiana-drag-scroll@npm:3.0.3-alpha"
+  peerDependencies:
+    react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 15dbcfa86df2254d024532c5fb240a31dc7e2a443f597cf0999f0a3816c4d71d2ebc60864705296116a0e6b98c1833d1273b58e4decad5db206acc35d55d101f
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -4358,6 +4368,7 @@ __metadata:
     react-hook-form: "npm:^7.49.0"
     react-i18next: "npm:^13.5.0"
     react-icons: "npm:^4.12.0"
+    react-indiana-drag-scroll: "npm:^3.0.3-alpha"
     tailwind-merge: "npm:^2.0.0"
     tailwindcss: "npm:^3.3.0"
     typescript: "npm:^5"
