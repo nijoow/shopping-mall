@@ -1,32 +1,58 @@
+'use client';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import clsx from 'clsx';
 import { commaToCurrency } from '@/lib/utils/commaToCurrency';
+import { ScrollContainer } from 'react-indiana-drag-scroll';
+import { Product } from '@/types/types';
 
-type Product = {
-  productId: number;
-  productName: string;
-  price: number;
-  productImageUrl: string;
-};
-const HomeCarousel = async () => {
-  const images = await fetch(
-    `https://api.thecatapi.com/v1/images/search?limit=${10}`,
-  );
-  const data = await images.json();
-  const carouselProducts: Product[] = data.map(
-    ({ url }: { url: string }, index: number) => ({
-      productId: index,
-      productName: `상품명${index}`,
-      price: 10900 * index,
-      productImageUrl: url,
-    }),
-  );
+const HomeCarousel = ({
+  carouselProducts,
+}: {
+  carouselProducts: Product[];
+}) => {
+  const targetRef = useRef(null);
+  const [onAnimation, setOnAnimation] = useState(true);
+
+  useEffect(() => {
+    const container = targetRef.current;
+
+    if (!container) return;
+
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          console.log('1');
+          setOnAnimation(false);
+        } else {
+          console.log('2');
+          setOnAnimation(true);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.5,
+    });
+
+    observer.observe(container);
+
+    return () => {
+      observer.unobserve(container);
+    };
+  }, [targetRef]);
 
   return (
-    <div className="w-full overflow-x-auto pb-6 pt-1">
-      <ul className="flex animate-slide gap-4">
+    <ScrollContainer
+      hideScrollbars
+      className="w-full overflow-x-auto pb-6 pt-1 scrollbar-hide"
+    >
+      <ul
+        className={clsx('flex gap-4 flex-auto items-center', {
+          'animate-slide': onAnimation,
+        })}
+      >
         {carouselProducts.map((product, i) => (
           <li
             key={`${product.productId}`}
@@ -43,6 +69,7 @@ const HomeCarousel = async () => {
                   src={product.productImageUrl}
                   alt={product.productName}
                   fill
+                  sizes="30vw"
                   className={clsx('relative h-full w-full object-contain')}
                 />
               </div>
@@ -55,8 +82,9 @@ const HomeCarousel = async () => {
             </Link>
           </li>
         ))}
+        <div ref={targetRef} className="w-1 h-1 flex-none ml-auto" />
       </ul>
-    </div>
+    </ScrollContainer>
   );
 };
 

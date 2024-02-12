@@ -12,3 +12,10 @@ export type User = z.infer<typeof userSchema>;
 export type Address = z.infer<typeof addressSchema>;
 
 export type AddressFormInput = z.infer<typeof addressFormSchema>;
+
+export type Product = {
+  productId: number;
+  productName: string;
+  price: number;
+  productImageUrl: string;
+};
