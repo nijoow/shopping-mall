@@ -10,5 +10,6 @@
 [ERD](https://www.erdcloud.com/p/p8BGu6A2vXGvmrGiH)
 
 [테스트계정]
-ID : test@test.com
-PW : Test12!@
+
+Email : test@test.com <br/>
+Password : Test12!@
