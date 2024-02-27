@@ -1,4 +1,8 @@
-import { addressSchema, userSchema } from '@/lib/database/schema';
+import {
+  addressSchema,
+  productSchema,
+  userSchema,
+} from '@/lib/database/schema';
 import { z } from 'zod';
 import { addressFormSchema } from './schema';
 
@@ -13,9 +17,4 @@ export type Address = z.infer<typeof addressSchema>;
 
 export type AddressFormInput = z.infer<typeof addressFormSchema>;
 
-export type Product = {
-  productId: number;
-  productName: string;
-  price: number;
-  productImageUrl: string;
-};
+export type Product = z.infer<typeof productSchema>;

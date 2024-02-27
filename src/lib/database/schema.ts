@@ -25,3 +25,16 @@ export const addressSchema = z.object({
   name: z.string(),
   phone_number: z.string().regex(phoneRegex),
 });
+
+export const productSchema = z.object({
+  productId: z.number(),
+  productName: z.string(),
+  category: z.string(),
+  thumbnailImageUrl: z.string(),
+  price: z.number(),
+  description: z.string(),
+  stock: z.number(),
+  sell: z.number(),
+  createdDate: z.date(),
+  modifiedDate: z.date(),
+});

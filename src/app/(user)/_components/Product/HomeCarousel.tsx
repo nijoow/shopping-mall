@@ -66,7 +66,7 @@ const HomeCarousel = ({
             >
               <div className="relative aspect-[3/4] w-full">
                 <Image
-                  src={product.productImageUrl}
+                  src={product.thumbnailImageUrl}
                   alt={product.productName}
                   fill
                   sizes="30vw"
