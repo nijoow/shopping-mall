@@ -15,7 +15,7 @@ const Header = async () => {
   const session = await auth();
 
   return (
-    <div className="flex items-center flex-none px-6 h-14 border-b border-b-gray-300">
+    <div className="sticky z-50 top-0 flex items-center flex-none px-6 h-14 border-b border-b-gray-300 bg-white">
       <Link href="/" className="relative w-[96px] h-[54px] mr-4">
         <Image src="/images/logo/nijoow.svg" alt={'nijoow logo'} fill />
       </Link>
