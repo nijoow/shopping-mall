@@ -2,6 +2,7 @@ import { getProductByProductId } from '@/lib/database/product';
 import React from 'react';
 import Image from 'next/image';
 import { commaToCurrency } from '@/lib/utils/commaToCurrency';
+import ProductNavigation from './_components/ProductNavigation';
 
 export default async function ProductPage({
   params: { productId },
@@ -18,9 +19,8 @@ export default async function ProductPage({
     );
 
   return (
-    <div className="w-full h-fit grid grid-cols-12 justify-center gap-10 max-w-7xl mx-auto p-16">
+    <div className="w-full h-fit grid grid-cols-12 justify-center gap-x-10 max-w-7xl mx-auto p-16">
       <div className="col-span-3 flex flex-col">
-        {/* <div className="flex-1" /> */}
         <div className="sticky top-48">
           <span className="text-2.25 font-semibold">{product.productName}</span>
           <p className="text-gray-500">
@@ -32,7 +32,6 @@ export default async function ProductPage({
             상품설명 디테일 상품설명 디테일 상품 설명 디테일
           </p>
         </div>
-        {/* <div className="flex-[2_1_0]" /> */}
       </div>
       <div className="relative aspect-square w-full max-w-lg col-span-6">
         <Image
@@ -44,7 +43,6 @@ export default async function ProductPage({
         />
       </div>
       <div className="w-fit flex flex-col col-span-3">
-        {/* <div className="flex-[2_1_0]" /> */}
         <div className="sticky top-64">
           <span className="text-0.875">Select Color</span>
           <div className="flex gap-2">
@@ -60,9 +58,9 @@ export default async function ProductPage({
           </div>
           <div className="text-1.5">₩{commaToCurrency(product.price)}</div>{' '}
         </div>
-        {/* <div className="flex-[3_1_0]" /> */}
       </div>
-      <div className="col-span-12 w-full h-0.5 bg-black my-6" />
+      <div className="col-span-12 w-full h-1 bg-black mt-14" />
+      <ProductNavigation id="product-info" />
       <div className="relative aspect-square w-full col-span-12">
         <Image
           src={product.thumbnailImageUrl}
@@ -71,7 +69,9 @@ export default async function ProductPage({
           sizes="30vw"
           className="relative h-full w-full object-contain"
         />
-      </div>
+      </div>{' '}
+      <ProductNavigation id="payment-exchange-delivery-info" />
+      <ProductNavigation id="product-inquiry" />
     </div>
   );
 }
