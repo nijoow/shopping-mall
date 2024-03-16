@@ -18,12 +18,16 @@ export default function ShopPage() {
         </div>
       </div>
       <div className="w-full h-fit grid grid-cols-12 bg-gray-50 border-l border-t">
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
+        {[
+          { productId: 1 },
+          { productId: 2 },
+          { productId: 3 },
+          { productId: 4 },
+          { productId: 5 },
+          { productId: 6 },
+        ].map(({ productId }) => (
+          <ProductCard key={productId} productId={productId} />
+        ))}
       </div>
     </div>
   );

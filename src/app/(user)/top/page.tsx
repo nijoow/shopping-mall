@@ -18,8 +18,19 @@ export default function TopPage() {
         </div>
       </div>
       <div className="w-full h-fit grid grid-cols-12 bg-gray-50 border-l border-t">
-        {[1, 2, 3, 4, 5, 6].map(ranking => (
-          <ProductCard key={ranking} ranking={ranking} />
+        {[
+          { productId: 1, ranking: 1 },
+          { productId: 2, ranking: 2 },
+          { productId: 3, ranking: 3 },
+          { productId: 4, ranking: 4 },
+          { productId: 5, ranking: 5 },
+          { productId: 6, ranking: 6 },
+        ].map(({ productId, ranking }) => (
+          <ProductCard
+            key={productId}
+            productId={productId}
+            ranking={ranking}
+          />
         ))}
       </div>
     </div>

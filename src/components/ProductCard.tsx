@@ -4,7 +4,13 @@ import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const ProductCard = ({ ranking }: { ranking?: number }) => {
+const ProductCard = ({
+  productId,
+  ranking,
+}: {
+  productId: number;
+  ranking?: number;
+}) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const handleClickFavoriteButton = () => {
     setIsFavorite(!isFavorite);
