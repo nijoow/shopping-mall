@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Nijoow Shopping Mall',
   description: 'Shopping Mall Toy Project',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
