@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const ProductCard = ({ ranking }: { ranking?: number }) => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -10,7 +11,10 @@ const ProductCard = ({ ranking }: { ranking?: number }) => {
   };
 
   return (
-    <div className="col-span-4 border-r border-b relative flex flex-col">
+    <Link
+      href={`/product/${productId}`}
+      className="col-span-4 border-r border-b relative flex flex-col"
+    >
       {ranking && (
         <div className="z-10 absolute left-0 top-0 w-12 h-12 text-white flex items-center justify-center bg-black">
           <span className="text-1.25 font-medium">{ranking}</span>
@@ -39,7 +43,7 @@ const ProductCard = ({ ranking }: { ranking?: number }) => {
         </div>
         <span>price</span>
       </div>
-    </div>
+    </Link>
   );
 };
 
