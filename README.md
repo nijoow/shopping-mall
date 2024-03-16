@@ -1,4 +1,5 @@
 # 👟 nijoow-shopping-mall
+
 쇼핑몰 풀스택 프로젝트<br/>
 🚧 개발 진행 중 🚧
 <br/>
@@ -17,6 +18,7 @@ Next.js, Typescript, Tailwind CSS, postgreSQL
 <br/>
 
 [개발한 기능]
+
 - 유저
   - 회원가입
   - 로그인
@@ -24,12 +26,12 @@ Next.js, Typescript, Tailwind CSS, postgreSQL
   - 내 정보 수정
   - 배송정보 저장
   - 랜딩페이지, 상품 목록 페이지 임시 UI
-  
 - 관리자
   - 유저 목록
-<br/>
+    <br/>
 
 [추가/개선할 기능]
+
 - 유저
   - 소셜로그인 네이버/카카오 추가
   - 로그인 실패 개선
@@ -38,12 +40,11 @@ Next.js, Typescript, Tailwind CSS, postgreSQL
   - 상품 필터 개발
   - 장바구니/찜한 상품 기능 개발
   - 주문, 배송, 리뷰 등등...
-  
 - 관리자
   - 상품 관리
   - 주문 관리
   - 리뷰 관리
-<br/>
+    <br/>
 
 [테스트계정]
 

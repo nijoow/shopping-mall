@@ -11,7 +11,7 @@ const CardContainer = ({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg p-4 w-full h-fit flex flex-col',
+        'flex h-fit w-full flex-col rounded-lg bg-white p-4',
         className,
       )}
     >

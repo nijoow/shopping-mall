@@ -109,12 +109,12 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex items-center justify-center w-full h-full">
-      <div className="flex flex-col w-full max-w-sm gap-6">
-        <span className="mx-auto font-semibold text-black text-2">
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <span className="mx-auto text-2 font-semibold text-black">
           회원가입
         </span>
-        <div className="w-full h-1 bg-gray-200 ">
+        <div className="h-1 w-full bg-gray-200 ">
           <div
             className={cn('h-1 bg-black transition-all duration-300', {
               'w-1/3': step === 'EMAIL',
@@ -128,13 +128,13 @@ export default function SignUpPage() {
           onSubmit={handleSubmit(onSubmit)}
         >
           <div
-            className={cn('h-full flex w-[300%]', {
+            className={cn('flex h-full w-[300%]', {
               'translate-x-0': step === 'EMAIL',
               '-translate-x-1/3': step === 'PASSWORD',
               '-translate-x-2/3': step === 'NICKNAME',
             })}
           >
-            <div className="flex flex-col w-1/3 gap-4">
+            <div className="flex w-1/3 flex-col gap-4">
               <label className="flex flex-col gap-0.5">
                 <span>이메일</span>
                 <input
@@ -147,7 +147,7 @@ export default function SignUpPage() {
                       message: '올바른 이메일 형식이 아닙니다!',
                     },
                   })}
-                  className="p-3 border border-gray-300"
+                  className="border border-gray-300 p-3"
                 />
                 {errors.email && (
                   <span className="text-0.875 text-red-400">
@@ -156,7 +156,7 @@ export default function SignUpPage() {
                 )}
               </label>
               <button
-                className="p-3 text-white bg-black disabled:bg-black/40"
+                className="bg-black p-3 text-white disabled:bg-black/40"
                 type="button"
                 disabled={disabledNextButton.email}
                 onClick={handleClickNextButtonEmail}
@@ -168,7 +168,7 @@ export default function SignUpPage() {
                 )}
               </button>
             </div>
-            <div className="flex flex-col w-1/3 gap-4">
+            <div className="flex w-1/3 flex-col gap-4">
               <label className="flex flex-col gap-0.5">
                 <span>비밀번호</span>
                 <input
@@ -178,7 +178,7 @@ export default function SignUpPage() {
                     required: true,
                   })}
                   style={{ imeMode: 'disabled' }}
-                  className="p-3 border border-gray-300 "
+                  className="border border-gray-300 p-3 "
                 />
                 <div className="flex w-full gap-3 text-0.875">
                   {[
@@ -190,7 +190,7 @@ export default function SignUpPage() {
                   ].map(({ text, validate }) => (
                     <div
                       key={text}
-                      className={cn('flex gap-1 items-center', {
+                      className={cn('flex items-center gap-1', {
                         'text-red-400': !validate,
                         'text-green-400': validate,
                       })}
@@ -212,7 +212,7 @@ export default function SignUpPage() {
                       value === watch('password') ||
                       '비밀번호가 일치하지 않습니다!',
                   })}
-                  className="p-3 border border-gray-300"
+                  className="border border-gray-300 p-3"
                 />
                 {errors.passwordConfirm && (
                   <span className="text-0.875 text-red-400">
@@ -223,7 +223,7 @@ export default function SignUpPage() {
               <button
                 type="button"
                 disabled={disabledNextButton.password}
-                className="p-3 text-white bg-black disabled:bg-black/40"
+                className="bg-black p-3 text-white disabled:bg-black/40"
                 onClick={() => {
                   if (!(isValidPassword || !errors.passwordConfirm)) return;
                   setStep('NICKNAME');
@@ -233,7 +233,7 @@ export default function SignUpPage() {
               </button>
               <button
                 type="button"
-                className="p-3 text-black border border-black"
+                className="border border-black p-3 text-black"
                 onClick={() => {
                   setStep('EMAIL');
                 }}
@@ -241,14 +241,14 @@ export default function SignUpPage() {
                 뒤로
               </button>
             </div>
-            <div className="flex flex-col w-1/3 gap-4">
+            <div className="flex w-1/3 flex-col gap-4">
               <label className="flex flex-col gap-0.5">
                 <span>닉네임</span>
                 <input
                   type="text"
                   placeholder="닉네임을 입력해주세요"
                   {...register('nickname', { required: true })}
-                  className="p-3 border border-gray-300"
+                  className="border border-gray-300 p-3"
                 />
                 {errors.nickname && (
                   <span className="text-0.875 text-red-400">
@@ -259,7 +259,7 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={disabledNextButton.nickname}
-                className="p-3 text-white bg-black disabled:bg-black/40"
+                className="bg-black p-3 text-white disabled:bg-black/40"
               >
                 {loading ? (
                   <Spinner fill="white" width={20} className="mx-auto" />
@@ -269,7 +269,7 @@ export default function SignUpPage() {
               </button>
               <button
                 type="button"
-                className="p-3 text-black border border-black"
+                className="border border-black p-3 text-black"
                 onClick={() => {
                   setStep('PASSWORD');
                 }}

@@ -14,7 +14,7 @@ const ProductNavigationItem = ({
   <Link
     href={href ?? '#'}
     className={cn(
-      'w-full py-2 md:py-4 px-1 break-keep text-sm md:text-base flex items-center justify-center border-2 text-black border-black',
+      'text-sm md:text-base flex w-full items-center justify-center break-keep border-2 border-black px-1 py-2 text-black md:py-4',
       className,
     )}
     {...rest}

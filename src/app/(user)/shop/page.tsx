@@ -3,21 +3,21 @@ import React from 'react';
 
 export default function ShopPage() {
   return (
-    <div className="p-8 flex h-full w-full">
-      <div className="gap-8 w-64 h-full flex flex-col">
+    <div className="flex h-full w-full p-8">
+      <div className="flex h-full w-64 flex-col gap-8">
         <span className="text-1.5 font-semibold">SHOP</span>
         <div className="flex flex-col gap-2">
-          <span className="text-gray-500 font-light">ALL</span>
-          <span className="text-gray-500 font-light">NEW</span>
-          <span className="text-gray-500 font-light">OUTER</span>
+          <span className="font-light text-gray-500">ALL</span>
+          <span className="font-light text-gray-500">NEW</span>
+          <span className="font-light text-gray-500">OUTER</span>
         </div>
         <div className="flex flex-col gap-2">
           <span className="font-semibold">필터</span>
-          <span className="text-gray-500 font-light">COLOR</span>
-          <span className="text-gray-500 font-light">PRICE</span>
+          <span className="font-light text-gray-500">COLOR</span>
+          <span className="font-light text-gray-500">PRICE</span>
         </div>
       </div>
-      <div className="w-full h-fit grid grid-cols-12 bg-gray-50 border-l border-t">
+      <div className="grid h-fit w-full grid-cols-12 border-l border-t bg-gray-50">
         {[
           { productId: 1 },
           { productId: 2 },

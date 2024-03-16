@@ -29,7 +29,7 @@ const UsersDatagrid = () => {
   }));
 
   return (
-    <div className="min-h-full ag-theme-quartz">
+    <div className="ag-theme-quartz min-h-full">
       <AgGridReact columnDefs={columnDefs} rowData={rowData} />
     </div>
   );

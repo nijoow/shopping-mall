@@ -13,13 +13,13 @@ export default async function ProductPage({
 
   if (!product)
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         상품이 존재하지 않습니다.
       </div>
     );
 
   return (
-    <div className="w-full h-fit grid grid-cols-12 justify-center gap-x-10 max-w-7xl mx-auto p-16">
+    <div className="mx-auto grid h-fit w-full max-w-7xl grid-cols-12 justify-center gap-x-10 p-16">
       <div className="col-span-3 flex flex-col">
         <div className="sticky top-48">
           <span className="text-2.25 font-semibold">{product.productName}</span>
@@ -33,7 +33,7 @@ export default async function ProductPage({
           </p>
         </div>
       </div>
-      <div className="relative aspect-square w-full max-w-lg col-span-6">
+      <div className="relative col-span-6 aspect-square w-full max-w-lg">
         <Image
           src={product.thumbnailImageUrl}
           alt={product.productName}
@@ -42,26 +42,26 @@ export default async function ProductPage({
           className="relative h-full w-full object-contain"
         />
       </div>
-      <div className="w-fit flex flex-col col-span-3">
+      <div className="col-span-3 flex w-fit flex-col">
         <div className="sticky top-64">
           <span className="text-0.875">Select Color</span>
           <div className="flex gap-2">
-            <button className="rounded-md px-4 py-1 bg-black text-white">
+            <button className="rounded-md bg-black px-4 py-1 text-white">
               Black
             </button>
-            <button className="rounded-md px-4 py-1 bg-white text-black border">
+            <button className="rounded-md border bg-white px-4 py-1 text-black">
               White
             </button>
-            <button className="rounded-md px-4 py-1 bg-red-500 text-white">
+            <button className="rounded-md bg-red-500 px-4 py-1 text-white">
               Red
             </button>
           </div>
           <div className="text-1.5">₩{commaToCurrency(product.price)}</div>{' '}
         </div>
       </div>
-      <div className="col-span-12 w-full h-1 bg-black mt-14" />
+      <div className="col-span-12 mt-14 h-1 w-full bg-black" />
       <ProductNavigation id="product-info" />
-      <div className="relative aspect-square w-full col-span-12">
+      <div className="relative col-span-12 aspect-square w-full">
         <Image
           src={product.thumbnailImageUrl}
           alt={product.productName}

@@ -75,7 +75,7 @@ const AddAddress = ({ user }: { user: User }) => {
   return (
     <>
       <div
-        className="cursor-pointer gap-2 bg-white flex flex-col col-span-1 rounded-lg p-4 w-full h-52 border border-gray-300"
+        className="col-span-1 flex h-52 w-full cursor-pointer flex-col gap-2 rounded-lg border border-gray-300 bg-white p-4"
         onClick={openModal}
       >
         <span className="text-1.125 font-semibold">새 배송지</span>
@@ -91,18 +91,18 @@ const AddAddress = ({ user }: { user: User }) => {
           <Modal.Body>
             <form
               id="address-form"
-              className="flex flex-col gap-4 w-full"
+              className="flex w-full flex-col gap-4"
               onSubmit={handleSubmit(onSubmit)}
             >
-              <label className="flex flex-col gap-1 w-full">
-                <div className="w-full flex flex-col gap-0.5">
+              <label className="flex w-full flex-col gap-1">
+                <div className="flex w-full flex-col gap-0.5">
                   <span>이름</span>
                   <input
                     placeholder="이름을 입력해주세요"
                     {...register('name', {
                       required: '이름은 필수입니다!',
                     })}
-                    className="px-3 py-2.5 rounded-md text-1 border border-gray-300 flex-auto"
+                    className="flex-auto rounded-md border border-gray-300 px-3 py-2.5 text-1"
                   />
                   {errors.name && (
                     <span className="text-0.875 text-red-400">
@@ -111,8 +111,8 @@ const AddAddress = ({ user }: { user: User }) => {
                   )}
                 </div>
               </label>
-              <label className="flex flex-col gap-1 w-full">
-                <div className="w-full flex flex-col gap-0.5">
+              <label className="flex w-full flex-col gap-1">
+                <div className="flex w-full flex-col gap-0.5">
                   <span>휴대폰 번호</span>
                   <input
                     placeholder="휴대폰 번호를 입력해주세요"
@@ -125,7 +125,7 @@ const AddAddress = ({ user }: { user: User }) => {
                     })}
                     onChange={onChangePhoneNumber}
                     value={watch('phoneNumber')}
-                    className="px-3 py-2.5 rounded-md text-1 border border-gray-300 flex-auto"
+                    className="flex-auto rounded-md border border-gray-300 px-3 py-2.5 text-1"
                   />
                   {errors.phoneNumber && (
                     <span className="text-0.875 text-red-400">
@@ -134,9 +134,9 @@ const AddAddress = ({ user }: { user: User }) => {
                   )}
                 </div>
               </label>
-              <label className="flex flex-col gap-1 w-full">
+              <label className="flex w-full flex-col gap-1">
                 <span>주소</span>
-                <div className="w-full flex items-center gap-1">
+                <div className="flex w-full items-center gap-1">
                   <input
                     type="text"
                     placeholder="우편번호"
@@ -145,7 +145,7 @@ const AddAddress = ({ user }: { user: User }) => {
                       required: '주소찾기 버튼을 통해 주소를 입력해주세요!',
                     })}
                     value={watch('postCode')}
-                    className="px-3 py-2.5 rounded-md text-1 border border-gray-300 flex-auto"
+                    className="flex-auto rounded-md border border-gray-300 px-3 py-2.5 text-1"
                   />
                   <Button
                     type="button"
@@ -168,14 +168,14 @@ const AddAddress = ({ user }: { user: User }) => {
                     required: '주소찾기 버튼을 통해 주소를 입력해주세요!',
                   })}
                   value={watch('address')}
-                  className="px-3 py-2.5 rounded-md text-1 border border-gray-300 flex-auto"
+                  className="flex-auto rounded-md border border-gray-300 px-3 py-2.5 text-1"
                 />
                 <input
                   type="text"
                   placeholder="상세 주소"
                   {...register('detailAddress')}
                   onChange={e => setValue('detailAddress', e.target.value)}
-                  className="px-3 py-2.5 rounded-md text-1 border border-gray-300 flex-auto"
+                  className="flex-auto rounded-md border border-gray-300 px-3 py-2.5 text-1"
                 />
                 {errors.address && (
                   <span className="text-0.875 text-red-400">

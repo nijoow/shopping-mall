@@ -27,14 +27,14 @@ export default async function MyPage() {
 
   return (
     <>
-      <div className="flex w-full justify-between items-end">
+      <div className="flex w-full items-end justify-between">
         <span className="text-2">{user.name}님</span>
         <span>
           Signed in as : <span className="font-semibold">{user?.email}</span>
         </span>
       </div>
-      <div className="w-full h-0.5 bg-black my-2" />
-      <div className="flex gap-12 my-8">
+      <div className="my-2 h-0.5 w-full bg-black" />
+      <div className="my-8 flex gap-12">
         <div className="flex flex-col gap-4">
           <span className="font-semibold">Profile</span>
           <div className="flex items-end gap-2">

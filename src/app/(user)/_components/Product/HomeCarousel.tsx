@@ -46,22 +46,22 @@ const HomeCarousel = ({
   return (
     <ScrollContainer
       hideScrollbars
-      className="w-full overflow-x-auto pb-6 pt-1 scrollbar-hide"
+      className="scrollbar-hide w-full overflow-x-auto pb-6 pt-1"
     >
       <ul
-        className={clsx('flex gap-4 flex-auto items-center', {
+        className={clsx('flex flex-auto items-center gap-4', {
           'animate-slide': onAnimation,
         })}
       >
         {carouselProducts.map((product, i) => (
           <li
             key={`${product.productId}`}
-            className="aspect-square flex-none w-1/3 max-w-[360px]"
+            className="aspect-square w-1/3 max-w-[360px] flex-none"
           >
             <Link
               href={`/product/${product.productId}`}
               className={clsx(
-                'flex flex-col h-full w-full transition duration-300 ease-in-out hover:scale-105 p-3 shadow-sm hover:shadow-md relative justify-between overflow-hidden rounded-lg border bg-white',
+                'relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border bg-white p-3 shadow-sm transition duration-300 ease-in-out hover:scale-105 hover:shadow-md',
               )}
             >
               <div className="relative aspect-[3/4] w-full">
@@ -73,7 +73,7 @@ const HomeCarousel = ({
                   className={clsx('relative h-full w-full object-contain')}
                 />
               </div>
-              <div className="flex gap-3 py-3 justify-between">
+              <div className="flex justify-between gap-3 py-3">
                 <span className="font-medium">{product.productName}</span>
                 <span className="text-gray-400">
                   ₩{commaToCurrency(product.price)}
@@ -82,7 +82,7 @@ const HomeCarousel = ({
             </Link>
           </li>
         ))}
-        <div ref={targetRef} className="w-1 h-1 flex-none ml-auto" />
+        <div ref={targetRef} className="ml-auto h-1 w-1 flex-none" />
       </ul>
     </ScrollContainer>
   );

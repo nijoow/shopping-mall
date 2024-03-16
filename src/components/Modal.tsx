@@ -3,8 +3,8 @@ import { IoClose } from 'react-icons/io5';
 
 const Modal = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="left-0 top-0 flex items-center justify-center fixed w-screen h-screen bg-black/30">
-      <div className="w-full max-w-md rounded-lg p-4 shadow-md bg-white m-auto flex flex-col gap-4">
+    <div className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center bg-black/30">
+      <div className="m-auto flex w-full max-w-md flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
         {children}
       </div>
     </div>
@@ -32,7 +32,7 @@ const Title = ({
 
 const Description: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="flex text-small-regular text-ui-fg-base items-center justify-center pt-2 pb-4 h-full">
+    <div className="text-small-regular text-ui-fg-base flex h-full items-center justify-center pb-4 pt-2">
       {children}
     </div>
   );

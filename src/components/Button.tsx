@@ -13,10 +13,10 @@ const Button = ({
   return (
     <button
       className={cn(
-        'rounded-md px-8 py-1 border-2 font-medium drop-shadow-sm',
+        'rounded-md border-2 px-8 py-1 font-medium drop-shadow-sm',
         {
           'border-gray-200 text-gray-500': variant === 'outlined',
-          'border-black text-white bg-black': variant === 'contained',
+          'border-black bg-black text-white': variant === 'contained',
         },
         className,
       )}

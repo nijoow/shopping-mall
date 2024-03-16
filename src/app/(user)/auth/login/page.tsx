@@ -27,12 +27,12 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="flex items-center justify-center w-full h-full">
-        <div className="flex flex-col w-full max-w-sm gap-6">
-          <span className="mx-auto font-semibold text-black text-2">
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="flex w-full max-w-sm flex-col gap-6">
+          <span className="mx-auto text-2 font-semibold text-black">
             로그인
           </span>
-          <div className="w-full h-1 bg-black" />
+          <div className="h-1 w-full bg-black" />
           <form
             className="flex flex-col gap-4"
             onSubmit={handleSubmit(onSubmit)}
@@ -43,7 +43,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="이메일을 입력해주세요"
                 {...register('email', { required: true })}
-                className="p-3 border border-gray-300"
+                className="border border-gray-300 p-3"
               />
             </label>
             <label className="flex flex-col gap-0.5">
@@ -52,10 +52,10 @@ export default function LoginPage() {
                 type="password"
                 placeholder="비밀번호를 입력해주세요"
                 {...register('password', { required: true })}
-                className="p-3 border border-gray-300"
+                className="border border-gray-300 p-3"
               />
             </label>
-            <button type="submit" className="p-3 text-white bg-black">
+            <button type="submit" className="bg-black p-3 text-white">
               로그인
             </button>
           </form>
@@ -64,12 +64,12 @@ export default function LoginPage() {
           <div className="w-0.5 h-3.5 bg-gray-300" />
           <Link href={'/auth/login/find/password'}>비밀번호 찾기</Link>
         </div> */}
-          <div className="w-full justify-center flex">
+          <div className="flex w-full justify-center">
             <SocialLogin />
           </div>
           <Link
             href={'/auth/sign-up'}
-            className="p-3 text-center text-black border border-black"
+            className="border border-black p-3 text-center text-black"
           >
             회원가입
           </Link>

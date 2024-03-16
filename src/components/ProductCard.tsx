@@ -19,15 +19,15 @@ const ProductCard = ({
   return (
     <Link
       href={`/product/${productId}`}
-      className="col-span-4 border-r border-b relative flex flex-col"
+      className="relative col-span-4 flex flex-col border-b border-r"
     >
       {ranking && (
-        <div className="z-10 absolute left-0 top-0 w-12 h-12 text-white flex items-center justify-center bg-black">
+        <div className="absolute left-0 top-0 z-10 flex h-12 w-12 items-center justify-center bg-black text-white">
           <span className="text-1.25 font-medium">{ranking}</span>
         </div>
       )}
       <button
-        className="z-10 absolute right-3 top-3 w-6 h-6"
+        className="absolute right-3 top-3 z-10 h-6 w-6"
         onClick={handleClickFavoriteButton}
       >
         {isFavorite && <IoHeartOutline size="auto" />}
@@ -42,7 +42,7 @@ const ProductCard = ({
           className="object-contain"
         />
       </div>
-      <div className="flex justify-between items-end p-2 w-full bottom-0">
+      <div className="bottom-0 flex w-full items-end justify-between p-2">
         <div className="flex flex-col">
           <span>product name</span>
           <div>color1</div>

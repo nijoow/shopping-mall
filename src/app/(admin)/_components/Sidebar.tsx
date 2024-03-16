@@ -3,7 +3,7 @@ import React from 'react';
 
 const Sidebar = () => {
   return (
-    <div className="w-64 h-full bg-black text-white p-4 flex flex-col">
+    <div className="flex h-full w-64 flex-col bg-black p-4 text-white">
       <Link href="/admin/dashboard" className="px-2 py-1.5">
         dashboard
       </Link>

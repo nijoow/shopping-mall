@@ -15,8 +15,8 @@ const Header = async () => {
   const session = await auth();
 
   return (
-    <div className="sticky z-50 top-0 flex items-center flex-none px-6 h-14 border-b border-b-gray-300 bg-white">
-      <Link href="/" className="relative w-[96px] h-[54px] mr-4">
+    <div className="sticky top-0 z-50 flex h-14 flex-none items-center border-b border-b-gray-300 bg-white px-6">
+      <Link href="/" className="relative mr-4 h-[54px] w-[96px]">
         <Image src="/images/logo/nijoow.svg" alt={'nijoow logo'} fill />
       </Link>
       <Link href="/shop" className="px-2">
@@ -40,33 +40,33 @@ const Header = async () => {
         <span className="text-0.75">Language</span>
         <IoChevronForward size={16} />
       </div>
-      <Link href="/like" className="gap-1 flex items-center group px-2">
+      <Link href="/like" className="group flex items-center gap-1 px-2">
         <IoHeartSharp size={20} />
-        <span className="text-0.75 group-hover:w-[48px] overflow-hidden w-0 transition-all">
+        <span className="w-0 overflow-hidden text-0.75 transition-all group-hover:w-[48px]">
           MY&nbsp;LIKE
         </span>
       </Link>
-      <Link href="/shopping-bag" className="gap-1 flex items-center group px-2">
+      <Link href="/shopping-bag" className="group flex items-center gap-1 px-2">
         <IoBag size={20} />
-        <span className="text-0.75 group-hover:w-[90px] overflow-hidden w-0 transition-all">
+        <span className="w-0 overflow-hidden text-0.75 transition-all group-hover:w-[90px]">
           SHOPPING&nbsp;BAG
         </span>
       </Link>
 
       {session ? (
         <>
-          <Link href="/my-page" className="gap-1 flex items-center group px-2">
+          <Link href="/my-page" className="group flex items-center gap-1 px-2">
             <IoPerson size={20} />
-            <span className="text-0.75 group-hover:w-[60px] overflow-hidden w-0 transition-all">
+            <span className="w-0 overflow-hidden text-0.75 transition-all group-hover:w-[60px]">
               MY&nbsp;PAGE
             </span>
           </Link>
           <LogoutButton />
         </>
       ) : (
-        <Link href="/auth/login" className="gap-1 flex items-center group px-2">
+        <Link href="/auth/login" className="group flex items-center gap-1 px-2">
           <IoLogIn size={20} />
-          <span className="text-0.75 group-hover:w-[60px] overflow-hidden w-0 transition-all">
+          <span className="w-0 overflow-hidden text-0.75 transition-all group-hover:w-[60px]">
             LOGIN
           </span>
         </Link>

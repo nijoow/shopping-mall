@@ -5,9 +5,9 @@ import { signIn } from 'next-auth/react';
 
 const SocialLogin = () => {
   return (
-    <div className="flex items-center justify-between w-auto">
+    <div className="flex w-auto items-center justify-between">
       <button
-        className="relative w-12 h-12"
+        className="relative h-12 w-12"
         onClick={() => signIn('google', { callbackUrl: `/` })}
       >
         <Image src={'/images/icons/google.svg'} fill alt={'google'} />

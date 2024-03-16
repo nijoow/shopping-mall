@@ -7,7 +7,7 @@ import ProfileEmail from './_components/ProfileEmail';
 import ProfileNickname from './_components/ProfileNickname';
 import ProfilePhoneNumber from './_components/ProfilePhoneNumber';
 
-const Divider = () => <div className="w-full h-0.5 bg-gray-300" />;
+const Divider = () => <div className="h-0.5 w-full bg-gray-300" />;
 
 export default async function InformationPage() {
   const session = await auth();
@@ -20,8 +20,8 @@ export default async function InformationPage() {
   return (
     <>
       <h2 className="text-1.875">회원정보</h2>
-      <div className="w-full h-0.5 bg-black" />
-      <div className="flex flex-col py-6 gap-6 w-full">
+      <div className="h-0.5 w-full bg-black" />
+      <div className="flex w-full flex-col gap-6 py-6">
         <ProfileEmail user={user} />
         <Divider />
         <ProfileNickname user={user} />

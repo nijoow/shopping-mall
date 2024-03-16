@@ -8,7 +8,7 @@ const AddressList = async ({ user }: { user: User }) => {
   const addresses = await getAddressesByUserId(user.user_id);
 
   return (
-    <div className="grid gap-4 grid-cols-2">
+    <div className="grid grid-cols-2 gap-4">
       <AddAddress user={user} />
       {addresses?.map(address => (
         <EditAddress key={address.address_id} address={address} />

@@ -32,13 +32,13 @@ const ProfileName = ({ user }: { user: User }) => {
 
   return (
     <div className="flex flex-col">
-      <div className="flex w-full justify-between items-center">
+      <div className="flex w-full items-center justify-between">
         <div className="flex flex-col py-2">
           <span>이메일</span>
           <span className="">{user.email}</span>
         </div>
         <button
-          className="rounded-md px-8 py-1 border-2 font-medium border-gray-200 drop-shadow-sm text-gray-500"
+          className="rounded-md border-2 border-gray-200 px-8 py-1 font-medium text-gray-500 drop-shadow-sm"
           onClick={() => setIsEditing(!isEditing)}
         >
           {isEditing ? '취소' : '수정'}
@@ -46,7 +46,7 @@ const ProfileName = ({ user }: { user: User }) => {
       </div>
       <form
         className={cn(
-          'w-full gap-2 overflow-hidden transition-all flex flex-col',
+          'flex w-full flex-col gap-2 overflow-hidden transition-all',
           {
             'h-0 opacity-0': !isEditing,
             'h-[86px] opacity-100': isEditing,
@@ -58,13 +58,13 @@ const ProfileName = ({ user }: { user: User }) => {
           type="text"
           placeholder="이메일을 입력해주세요"
           defaultValue={user.email ?? ''}
-          className="px-3 py-2.5 rounded-md text-1 border border-gray-300 w-full"
+          className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-1"
         />
         <button
           type="button"
           onClick={handleClickSaveButton}
           disabled={isLoading}
-          className="rounded-md px-8 py-1 bg-black text-white self-end"
+          className="self-end rounded-md bg-black px-8 py-1 text-white"
         >
           {isLoading ? <Spinner fill="white" width={20} /> : '저장'}
         </button>
