@@ -32,6 +32,10 @@ Next.js, Typescript, Tailwind CSS, postgreSQL
 
 [추가/개선할 기능]
 
+- 공통
+  - 디자인 개선
+  - 반응형 레이아웃 적용
+  - 이미지 구하기 
 - 유저
   - 소셜로그인 네이버/카카오 추가
   - 로그인 실패 개선
