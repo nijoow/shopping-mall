@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils/cn';
+import { cn } from '@/lib/utils';
 import React, { ButtonHTMLAttributes, HTMLAttributes } from 'react';
 
 const Button = ({

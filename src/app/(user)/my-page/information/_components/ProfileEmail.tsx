@@ -1,7 +1,7 @@
 'use client';
 import { User } from '@/types/types';
 import React, { useRef, useState } from 'react';
-import { cn } from '@/lib/utils/cn';
+import { cn } from '@/lib/utils';
 import Spinner from '@/components/Spinner';
 
 const ProfileName = ({ user }: { user: User }) => {

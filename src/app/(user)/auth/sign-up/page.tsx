@@ -1,6 +1,6 @@
 'use client';
 import Spinner from '@/components/Spinner';
-import { cn } from '@/lib/utils/cn';
+import { cn } from '@/lib/utils';
 import { signIn } from 'next-auth/react';
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
