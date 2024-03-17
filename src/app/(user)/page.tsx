@@ -12,10 +12,10 @@ export default async function HomePage() {
     <div className="flex h-full w-full flex-col gap-10">
       <div className="relative aspect-[16/9] w-full">
         <Image
-          src={'/images/banner/main.jpg'}
+          src={'/images/banner/banner.webp'}
           alt="배너이미지"
           fill
-          className="object-cover object-[0_58%]"
+          className="object-cover"
         />
       </div>
       {carouselProducts && (
