@@ -5,27 +5,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 
 const Search = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setIsSidebarOpen(true)}
+        onClick={() => setSearchModalOpen(true)}
         className="flex items-center gap-1 px-2"
       >
         <IoSearch size={20} />
         <span className="hidden text-0.75 md:block">SEARCH</span>
       </button>
       <AnimatePresence>
-        {isSidebarOpen && (
+        {searchModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ type: 'spring', duration: 0.5 }}
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={() => setSearchModalOpen(false)}
             className="fixed left-0 top-0 h-screen w-screen bg-white/30 backdrop-blur-sm"
           >
             <motion.div
@@ -37,7 +37,7 @@ const Search = () => {
             >
               <button
                 className="self-end"
-                onClick={() => setIsSidebarOpen(false)}
+                onClick={() => setSearchModalOpen(false)}
               >
                 <IoClose size={24} className="fill-white" />
               </button>
