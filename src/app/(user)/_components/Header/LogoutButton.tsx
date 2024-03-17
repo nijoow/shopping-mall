@@ -15,7 +15,7 @@ const LogoutButton = () => {
   return (
     <button
       type="button"
-      className="group flex items-center gap-1 px-2"
+      className="group hidden items-center gap-1 px-2 sm:flex"
       onClick={handleClickLogoutButton}
     >
       <IoLogOut size={20} />

@@ -59,7 +59,7 @@ export default async function ProductPage({
           <div className="text-1.5">₩{commaToCurrency(product.price)}</div>{' '}
         </div>
       </div>
-      <div className="col-span-12 mt-14 h-1 w-full bg-black" />
+      <div className="col-span-12 my-12 mt-14 h-1 w-full bg-black" />
       <ProductNavigation id="product-info" />
       <div className="relative col-span-12 aspect-square w-full">
         <Image

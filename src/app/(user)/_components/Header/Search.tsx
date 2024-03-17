@@ -15,7 +15,8 @@ const Search = () => {
         onClick={() => setIsSidebarOpen(true)}
         className="flex items-center gap-1 px-2"
       >
-        <IoSearch size={20} /> <span className="text-0.75">SEARCH</span>
+        <IoSearch size={20} />
+        <span className="hidden text-0.75 md:block">SEARCH</span>
       </button>
       <AnimatePresence>
         {isSidebarOpen && (
