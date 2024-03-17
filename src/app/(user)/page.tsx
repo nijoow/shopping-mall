@@ -10,7 +10,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex h-full w-full flex-col gap-10">
-      <div className="relative aspect-[16/7] w-full">
+      <div className="relative aspect-[16/9] w-full">
         <Image
           src={'/images/banner/main.jpg'}
           alt="배너이미지"

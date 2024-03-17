@@ -17,7 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className="h-full">
-      <body className={`${inter.className} h-full`}>{children}</body>
+      <body className={`${inter.className} relative flex h-full flex-col`}>
+        {children}
+      </body>
     </html>
   );
 }
