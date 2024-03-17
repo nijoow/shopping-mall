@@ -19,6 +19,7 @@ const getProfileCompletion = (user: User) => {
 
 export default async function MyPage() {
   const session = await auth();
+
   if (!session?.user.user_id) redirect('/auth/login');
 
   const user = await getUserByUserId(session?.user.user_id);
