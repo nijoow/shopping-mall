@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const fontSizeArray: number[] = [];
-for (let i = 0.75; i <= 5.5; i = i + 0.125) {
+for (let i = 0.5; i <= 5.5; i = i + 0.125) {
   fontSizeArray.push(i);
 }
 const fontSize: Record<number, string> = {};
