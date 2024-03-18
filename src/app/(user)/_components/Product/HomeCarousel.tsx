@@ -56,7 +56,7 @@ const HomeCarousel = ({
         {carouselProducts.map((product, i) => (
           <li
             key={`${product.productId}`}
-            className="aspect-square w-1/3 max-w-[360px] flex-none"
+            className="aspect-square w-2/3 max-w-[360px] flex-none sm:w-1/3"
           >
             <Link
               href={`/product/${product.productId}`}
@@ -73,7 +73,7 @@ const HomeCarousel = ({
                   className={clsx('relative h-full w-full object-contain')}
                 />
               </div>
-              <div className="flex justify-between gap-3 py-3">
+              <div className="flex flex-col justify-between gap-0.5 sm:flex-row sm:gap-3 sm:py-3">
                 <span className="font-medium">{product.productName}</span>
                 <span className="text-gray-400">
                   ₩{commaToCurrency(product.price)}

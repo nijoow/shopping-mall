@@ -11,7 +11,7 @@ const Header = async () => {
 
   return (
     <header className="sticky top-0 z-50 h-14 border-b border-b-gray-300 bg-white">
-      <div className="mx-auto flex w-full max-w-7xl items-center px-4">
+      <div className="mx-auto flex w-full items-center px-4">
         <Link href="/" className="relative mr-4 h-[54px] w-[96px]">
           <Image src="/images/logo/nijoow.svg" alt={'nijoow logo'} fill />
         </Link>

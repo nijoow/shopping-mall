@@ -19,9 +19,7 @@ const LogoutButton = () => {
       onClick={handleClickLogoutButton}
     >
       <IoLogOut size={20} />
-      <span className="w-0 overflow-hidden text-0.75 transition-all group-hover:w-[50px]">
-        LOGOUT
-      </span>
+      <span className="hidden text-0.75 md:block">LOGOUT</span>
     </button>
   );
 };
