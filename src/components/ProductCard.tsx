@@ -19,7 +19,7 @@ const ProductCard = ({
   return (
     <Link
       href={`/product/${productId}`}
-      className="relative col-span-4 flex flex-col border-b border-r"
+      className="relative col-span-6 flex flex-col border-b border-r sm:col-span-4 xl:col-span-3"
     >
       {ranking && (
         <div className="absolute left-0 top-0 z-10 flex h-12 w-12 items-center justify-center bg-black text-white">
