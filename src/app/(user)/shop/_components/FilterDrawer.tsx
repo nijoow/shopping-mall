@@ -24,7 +24,7 @@ const FilterDrawer = () => {
           <DrawerHeader>
             <DrawerTitle>필터</DrawerTitle>
           </DrawerHeader>
-          <div className="flex min-h-80 flex-col gap-2.5 px-4">
+          <div className="flex min-h-80 flex-col gap-2.5 px-4 py-4">
             <Filter />
           </div>
           <DrawerFooter>
