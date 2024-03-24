@@ -15,15 +15,15 @@ const Header = async () => {
         <Link href="/" className="relative mr-4 h-[54px] w-[96px]">
           <Image src="/images/logo/nijoow.svg" alt={'nijoow logo'} fill />
         </Link>
-        <Link href="/shop" className="hidden px-2 sm:block">
+        <Link href="/shop/all" className="hidden px-2 sm:block">
           SHOP
         </Link>
-        <Link href="/top" className="hidden px-2 sm:block">
+        {/* <Link href="/top" className="hidden px-2 sm:block">
           TOP
         </Link>
         <Link href="/features" className="hidden px-2 sm:block">
           FEATURES
-        </Link>
+        </Link> */}
         <div className="flex-auto" />
         {/* <div className="flex items-center">
           <span className="text-0.75">Language</span>
