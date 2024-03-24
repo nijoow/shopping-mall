@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Product } from '@/types/types';
 
 const ProductCard = ({
-  productId,
+  product,
   ranking,
 }: {
-  productId: number;
+  product: Product;
   ranking?: number;
 }) => {
+  const { productId, productName, price, colors } = product;
+
   const [isFavorite, setIsFavorite] = useState(false);
   const handleClickFavoriteButton = () => {
     setIsFavorite(!isFavorite);
@@ -19,7 +22,7 @@ const ProductCard = ({
   return (
     <Link
       href={`/product/${productId}`}
-      className="relative col-span-6 flex flex-col border-b border-r sm:col-span-4 xl:col-span-3"
+      className="relative col-span-6 flex flex-col border-b border-r bg-gray-50 sm:col-span-4 xl:col-span-3"
     >
       {ranking && (
         <div className="absolute left-0 top-0 z-10 flex h-12 w-12 items-center justify-center bg-black text-white">
@@ -44,10 +47,10 @@ const ProductCard = ({
       </div>
       <div className="bottom-0 flex w-full items-end justify-between p-2">
         <div className="flex flex-col">
-          <span>product name</span>
+          <span>{productName}</span>
           <div>color1</div>
         </div>
-        <span>price</span>
+        <span>{price}</span>
       </div>
     </Link>
   );
