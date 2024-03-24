@@ -35,6 +35,7 @@ export const productSchema = z.object({
   description: z.string(),
   stock: z.number(),
   sell: z.number(),
+  colors: z.array(z.string()),
   createdDate: z.date(),
   modifiedDate: z.date(),
 });

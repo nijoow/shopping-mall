@@ -18,3 +18,7 @@ export type Address = z.infer<typeof addressSchema>;
 export type AddressFormInput = z.infer<typeof addressFormSchema>;
 
 export type Product = z.infer<typeof productSchema>;
+
+export type Categories = 'OUTER' | 'TOP' | 'BOTTOM' | 'SHOES' | 'ACC';
+
+export type Gender = 'MALE' | 'FEMALE';
