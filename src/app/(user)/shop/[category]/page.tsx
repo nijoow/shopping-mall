@@ -31,7 +31,7 @@ export default async function ShopPage({
     maxPrice: maxPrice,
     colors,
   });
-  console.log(category, gender, minPrice, maxPrice, colors);
+
   if (!products) throw new Error('Failed to fetch products');
 
   return (
