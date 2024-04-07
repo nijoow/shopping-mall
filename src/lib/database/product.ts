@@ -11,7 +11,7 @@ export const getProductByProductId = async (
         FROM 
             products 
         WHERE 
-            "productId" = ${productId}
+            "productId" = (${productId})
     `;
     return user.rows[0];
   } catch (error) {
