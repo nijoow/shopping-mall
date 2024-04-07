@@ -1,9 +1,10 @@
 'use client';
-import React, { useState } from 'react';
+import React from 'react';
 import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/types/types';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const ProductCard = ({
   product,
@@ -14,13 +15,18 @@ const ProductCard = ({
 }) => {
   const { productId, productName, price, colors } = product;
 
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [favorite, setFavorite] =
+    useLocalStorage<Record<number, boolean>>('favorite');
+
   const handleClickFavoriteButton = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     e.preventDefault();
-    setIsFavorite(!isFavorite);
+
+    setFavorite({ ...favorite, [productId]: !favorite?.[productId] });
   };
+
+  const isFavorite = favorite?.[productId];
 
   return (
     <Link
@@ -36,8 +42,8 @@ const ProductCard = ({
         className="absolute right-0 top-0 z-10 h-9 w-9 p-1.5"
         onClick={handleClickFavoriteButton}
       >
-        {isFavorite && <IoHeartOutline size="auto" />}
-        {!isFavorite && <IoHeartSharp size="auto" />}
+        {!isFavorite && <IoHeartOutline size="auto" />}
+        {isFavorite && <IoHeartSharp size="auto" />}
       </button>
       <div className="relative aspect-square w-full">
         <Image
