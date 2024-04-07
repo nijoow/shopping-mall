@@ -3,8 +3,8 @@ import { User } from '@/types/types';
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import Spinner from '@/components/Spinner';
-import { phoneRegex } from '@/lib/utils/regex';
-import { formatPhoneNumber } from '@/lib/utils/formatPhoneNumber';
+import { phoneRegex } from '@/utils/regex';
+import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 
 const ProfilePhoneNumber = ({ user }: { user: User }) => {
   const [isEditing, setIsEditing] = useState(false);

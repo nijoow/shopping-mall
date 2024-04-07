@@ -3,7 +3,7 @@ import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import clsx from 'clsx';
-import { commaToCurrency } from '@/lib/utils/commaToCurrency';
+import { commaToCurrency } from '@/utils/commaToCurrency';
 import { ScrollContainer } from 'react-indiana-drag-scroll';
 import { Product } from '@/types/types';
 

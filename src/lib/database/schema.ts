@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { phoneRegex } from '../utils/regex';
+import { phoneRegex } from '../../utils/regex';
 
 export const userSchema = z.object({
   user_id: z.number(),

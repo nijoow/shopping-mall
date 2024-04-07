@@ -1,4 +1,4 @@
-import { phoneRegex } from '@/lib/utils/regex';
+import { phoneRegex } from '@/utils/regex';
 import { z } from 'zod';
 
 export const addressFormSchema = z.object({

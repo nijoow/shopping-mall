@@ -1,7 +1,7 @@
 import { getProductByProductId } from '@/lib/database/product';
 import React from 'react';
 import Image from 'next/image';
-import { commaToCurrency } from '@/lib/utils/commaToCurrency';
+import { commaToCurrency } from '@/utils/commaToCurrency';
 import ProductNavigation from './_components/ProductNavigation';
 
 export default async function ProductPage({
