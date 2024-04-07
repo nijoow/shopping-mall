@@ -30,7 +30,7 @@ const ProductCard = ({
         </div>
       )}
       <button
-        className="absolute right-3 top-3 z-10 h-6 w-6"
+        className="absolute right-0 top-0 z-10 h-9 w-9 p-1.5"
         onClick={handleClickFavoriteButton}
       >
         {isFavorite && <IoHeartOutline size="auto" />}

@@ -97,7 +97,7 @@ const Filter = () => {
             key={value}
             type="button"
             className={cn(
-              `col-span-1 grid h-7 w-7 rounded-sm`,
+              `col-span-1 grid h-7 w-7 rounded-sm border border-gray-200`,
               {
                 'border-2': value === 'white',
               },
