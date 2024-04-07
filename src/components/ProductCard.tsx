@@ -15,7 +15,10 @@ const ProductCard = ({
   const { productId, productName, price, colors } = product;
 
   const [isFavorite, setIsFavorite] = useState(false);
-  const handleClickFavoriteButton = () => {
+  const handleClickFavoriteButton = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    e.preventDefault();
     setIsFavorite(!isFavorite);
   };
 
