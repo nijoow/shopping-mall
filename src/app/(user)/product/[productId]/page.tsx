@@ -9,7 +9,7 @@ export default async function ProductPage({
 }: {
   params: { productId: string };
 }) {
-  const product = await getProductByProductId(Number(productId));
+  const product = (await getProductByProductId([Number(productId)]))?.[0];
 
   if (!product)
     return (

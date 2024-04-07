@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { phoneRegex } from '../../utils/regex';
+import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 export const userSchema = z.object({
   user_id: z.number(),
@@ -26,16 +28,31 @@ export const addressSchema = z.object({
   phone_number: z.string().regex(phoneRegex),
 });
 
-export const productSchema = z.object({
-  productId: z.number(),
-  productName: z.string(),
-  category: z.string(),
-  thumbnailImageUrl: z.string(),
-  price: z.number(),
-  description: z.string(),
-  stock: z.number(),
-  sell: z.number(),
-  colors: z.array(z.string()),
-  createdDate: z.date(),
-  modifiedDate: z.date(),
+export const products = pgTable('products', {
+  productId: serial('productId').primaryKey(),
+  productName: text('productName').notNull(),
+  category: text('category').notNull(),
+  thumbnailImageUrl: text('thumbnailImageUrl').notNull(),
+  price: integer('price').notNull(),
+  description: text('description'),
+  stock: integer('stock').notNull(),
+  sell: integer('stock'),
+  colors: text('colors'),
+  createdDate: timestamp('createdDate'),
+  modifiedDate: timestamp('modifiedDate'),
 });
+
+export const productSchema = createSelectSchema(products);
+// export const productSchema = z.object({
+//   productId: z.number(),
+//   productName: z.string(),
+//   category: z.string(),
+//   thumbnailImageUrl: z.string(),
+//   price: z.number(),
+//   description: z.string(),
+//   stock: z.number(),
+//   sell: z.number(),
+//   colors: z.array(z.string()),
+//   createdDate: z.date(),
+//   modifiedDate: z.date(),
+// });

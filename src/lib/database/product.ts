@@ -1,19 +1,21 @@
 import { Categories, Gender, Product } from '@/types/types';
 import { sql } from '@vercel/postgres';
+import { drizzle } from 'drizzle-orm/vercel-postgres';
+import { products } from './schema';
+import { arrayContained, arrayContains, inArray } from 'drizzle-orm';
+
+const db = drizzle(sql);
 
 export const getProductByProductId = async (
-  productId: number,
-): Promise<Product | undefined> => {
+  productIds: number[],
+): Promise<Product[] | undefined> => {
   try {
-    const user = await sql<Product>`
-        SELECT 
-            * 
-        FROM 
-            products 
-        WHERE 
-            "productId" = (${productId})
-    `;
-    return user.rows[0];
+    const users = await db
+      .select()
+      .from(products)
+      .where(inArray(products.productId, productIds));
+
+    return users;
   } catch (error) {
     console.error('Failed to fetch product:', error);
     throw new Error('Failed to fetch product.');
