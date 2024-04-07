@@ -1,5 +1,10 @@
 import React from 'react';
+import FavoriteProducts from './FavoriteProducts';
 
 export default function LikePage() {
-  return <div>LikePage</div>;
+  return (
+    <div className="grid h-fit w-full grid-cols-12 border-l border-t ">
+      <FavoriteProducts />
+    </div>
+  );
 }

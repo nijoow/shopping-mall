@@ -9,7 +9,7 @@ export default async function HomePage() {
   const carouselProducts = await getRecentProducts();
 
   return (
-    <div className="flex h-full w-full flex-col gap-10">
+    <div className="flex w-full flex-auto flex-col gap-10">
       <div className="relative aspect-[16/9] w-full">
         <Image
           src={'/images/banner/banner.webp'}

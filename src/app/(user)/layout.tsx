@@ -6,8 +6,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <main className="relative flex w-full flex-auto flex-col">
-        <div className="flex-auto overflow-auto">{children} </div>
+      <main className="relative flex w-full flex-auto flex-col overflow-auto">
+        <div className="flex-auto"> {children}</div>
         <Footer />
       </main>
       <MobileNavigationBar />
