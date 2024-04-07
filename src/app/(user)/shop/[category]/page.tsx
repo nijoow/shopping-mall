@@ -20,7 +20,7 @@ export default async function ShopPage({
     typeof searchParams.colors === 'string'
       ? [searchParams.colors]
       : searchParams.colors;
-  setTimeout(() => {}, 1000);
+
   const products = await getProducts({
     category: category.toLocaleUpperCase() as Categories,
     gender,
