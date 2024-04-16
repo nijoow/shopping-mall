@@ -1,4 +1,3 @@
-import React from 'react';
 import FavoriteProducts from './FavoriteProducts';
 
 export default function LikePage() {

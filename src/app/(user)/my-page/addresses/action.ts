@@ -17,7 +17,6 @@ export const getAddressesByUserId = async (
     `;
     return addresses.rows;
   } catch (error) {
-    console.error('Failed to fetch address:', error);
     throw new Error('Failed to fetch address.');
   }
 };
@@ -38,7 +37,6 @@ export const addUserAddress = async ({
             ('${userId}', '${name}', '${phoneNumber}', '${postCode}', '${address}', '${detailAddress}')
         `);
   } catch (error) {
-    console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
   } finally {
     revalidatePath('/my-page/addresses');
@@ -67,7 +65,6 @@ export const editUserAddress = async ({
             address_id = '${addressId}'
     `);
   } catch (error) {
-    console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
   } finally {
     revalidatePath('/my-page/addresses');
@@ -87,7 +84,6 @@ export const deleteUserAddress = async ({
             address_id = '${addressId}'
     `);
   } catch (error) {
-    console.error('Failed to Add Address:', error);
     throw new Error('Failed to Add Address.');
   } finally {
     revalidatePath('/my-page/addresses');

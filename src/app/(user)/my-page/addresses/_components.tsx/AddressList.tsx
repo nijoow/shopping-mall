@@ -1,8 +1,7 @@
-import React from 'react';
-import AddAddress from './AddAddress';
 import { User } from 'next-auth';
-import EditAddress from './EditAddress';
 import { getAddressesByUserId } from '../action';
+import AddAddress from './AddAddress';
+import EditAddress from './EditAddress';
 
 const AddressList = async ({ user }: { user: User }) => {
   const addresses = await getAddressesByUserId(user.user_id);

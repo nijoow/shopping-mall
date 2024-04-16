@@ -1,8 +1,8 @@
 import { Categories, Gender, Product } from '@/types/types';
 import { sql } from '@vercel/postgres';
+import { inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 import { products } from './schema';
-import { arrayContained, arrayContains, inArray } from 'drizzle-orm';
 
 const db = drizzle(sql);
 
@@ -17,7 +17,6 @@ export const getProductByProductId = async (
 
     return users;
   } catch (error) {
-    console.error('Failed to fetch product:', error);
     throw new Error('Failed to fetch product.');
   }
 };
@@ -35,7 +34,6 @@ export const getRecentProducts = async (): Promise<Product[] | undefined> => {
     `;
     return user.rows;
   } catch (error) {
-    console.error('Failed to fetch product:', error);
     throw new Error('Failed to fetch product.');
   }
 };
@@ -54,7 +52,7 @@ export const getProducts = async ({
   colors?: string[];
 }): Promise<Product[] | undefined> => {
   try {
-    const colorsValue = colors?.join(',');
+    // const colorsValue = colors?.join(',');
 
     const user = await sql<Product>`
       SELECT

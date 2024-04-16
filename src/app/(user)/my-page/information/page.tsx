@@ -1,9 +1,8 @@
 import { getUserByUserId } from '@/lib/database/user';
 import { auth } from 'auth';
 import { redirect } from 'next/navigation';
-import React from 'react';
-import ProfileName from './_components/ProfileName';
 import ProfileEmail from './_components/ProfileEmail';
+import ProfileName from './_components/ProfileName';
 import ProfileNickname from './_components/ProfileNickname';
 import ProfilePhoneNumber from './_components/ProfilePhoneNumber';
 

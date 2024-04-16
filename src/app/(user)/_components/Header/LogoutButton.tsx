@@ -1,9 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React from 'react';
-import { logout } from '../../_lib/actions';
 import { IoLogOut } from 'react-icons/io5';
+import { logout } from '../../_lib/actions';
 
 const LogoutButton = () => {
   const router = useRouter();

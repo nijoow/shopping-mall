@@ -1,7 +1,8 @@
+import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { ReactNode } from 'react';
 import './globals.css';
-import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -11,11 +12,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <ReactQueryProvider>
       <html lang="ko" className="h-full">

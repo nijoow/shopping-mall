@@ -1,18 +1,19 @@
 'use client';
+
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
-import React, { useState } from 'react';
-import { IoAdd } from 'react-icons/io5';
-import { phoneRegex } from '@/utils/regex';
-import { useDaumPostcodePopup } from 'react-daum-postcode';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
-import { User } from 'next-auth';
 import Spinner from '@/components/Spinner';
 import { AddressFormInput } from '@/types/types';
+import { formatPhoneNumber } from '@/utils';
+import { phoneRegex } from '@/utils/regex';
+import { User } from 'next-auth';
+import React, { useState } from 'react';
+import { useDaumPostcodePopup } from 'react-daum-postcode';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { IoAdd } from 'react-icons/io5';
 import { addUserAddress } from '../action';
 
-const AddAddress = ({ user }: { user: User }) => {
+function AddAddress({ user }: { user: User }) {
   const open = useDaumPostcodePopup();
 
   const {
@@ -74,7 +75,8 @@ const AddAddress = ({ user }: { user: User }) => {
 
   return (
     <>
-      <div
+      <button
+        type="button"
         className="col-span-1 flex h-52 w-full cursor-pointer flex-col gap-2 rounded-lg border border-gray-300 bg-white p-4"
         onClick={openModal}
       >
@@ -83,7 +85,7 @@ const AddAddress = ({ user }: { user: User }) => {
         <div className="flex items-center gap-1.5">
           <IoAdd size={20} /> <span className="text-0.875">추가</span>
         </div>
-      </div>
+      </button>
 
       {isModalOpen && (
         <Modal>
@@ -203,6 +205,6 @@ const AddAddress = ({ user }: { user: User }) => {
       )}
     </>
   );
-};
+}
 
 export default AddAddress;

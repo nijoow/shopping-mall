@@ -1,11 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import SocialLogin from './_components/SocialLogin';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { signIn } from 'next-auth/react';
-import { useState } from 'react';
 import FullpageSpinner from '@/components/FullpageSpinner';
+import { signIn } from 'next-auth/react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import SocialLogin from './_components/SocialLogin';
 
 type LoginInput = {
   email: string;
@@ -68,7 +68,7 @@ export default function LoginPage() {
             <SocialLogin />
           </div>
           <Link
-            href={'/auth/sign-up'}
+            href="/auth/sign-up"
             className="border border-black p-3 text-center text-black"
           >
             회원가입

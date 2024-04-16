@@ -1,9 +1,8 @@
 import { auth } from 'auth';
-import Link from 'next/link';
-import React from 'react';
-import LogoutButton from './LogoutButton';
 import Image from 'next/image';
-import { IoHeartSharp, IoPerson, IoBag, IoLogIn } from 'react-icons/io5';
+import Link from 'next/link';
+import { IoBag, IoHeartSharp, IoLogIn, IoPerson } from 'react-icons/io5';
+import LogoutButton from './LogoutButton';
 import Search from './Search';
 
 const Header = async () => {
@@ -13,7 +12,7 @@ const Header = async () => {
     <header className="sticky top-0 z-50 h-14 border-b border-b-gray-300 bg-white">
       <div className="mx-auto flex w-full items-center px-4">
         <Link href="/" className="relative mr-4 h-[54px] w-[96px]">
-          <Image src="/images/logo/nijoow.svg" alt={'nijoow logo'} fill />
+          <Image src="/images/logo/nijoow.svg" alt="nijoow logo" fill />
         </Link>
         <Link href="/shop/all" className="hidden px-2 sm:block">
           SHOP

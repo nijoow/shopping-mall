@@ -1,17 +1,18 @@
 'use client';
+
 import Button from '@/components/Button';
 import Modal from '@/components/Modal';
-import React, { useEffect, useMemo, useState } from 'react';
-import { IoTrashOutline, IoCreateOutline } from 'react-icons/io5';
-import { phoneRegex } from '@/utils/regex';
-import { useDaumPostcodePopup } from 'react-daum-postcode';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 import Spinner from '@/components/Spinner';
 import { Address, AddressFormInput } from '@/types/types';
+import { formatPhoneNumber } from '@/utils';
+import { phoneRegex } from '@/utils/regex';
+import React, { useEffect, useState } from 'react';
+import { useDaumPostcodePopup } from 'react-daum-postcode';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { IoCreateOutline, IoTrashOutline } from 'react-icons/io5';
 import { deleteUserAddress, editUserAddress } from '../action';
 
-const EditAddress = ({ address }: { address: Address }) => {
+function EditAddress({ address }: { address: Address }) {
   const open = useDaumPostcodePopup();
 
   const {
@@ -264,6 +265,6 @@ const EditAddress = ({ address }: { address: Address }) => {
       )}
     </>
   );
-};
+}
 
 export default EditAddress;

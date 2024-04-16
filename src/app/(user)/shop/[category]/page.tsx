@@ -1,5 +1,4 @@
 import ProductCard from '@/components/ProductCard';
-import React from 'react';
 import { getProducts } from '@/lib/database/product';
 import { Categories, Gender } from '@/types/types';
 
@@ -24,8 +23,8 @@ export default async function ShopPage({
   const products = await getProducts({
     category: category.toLocaleUpperCase() as Categories,
     gender,
-    minPrice: minPrice,
-    maxPrice: maxPrice,
+    minPrice,
+    maxPrice,
     colors,
   });
 

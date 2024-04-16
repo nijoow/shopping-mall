@@ -1,7 +1,6 @@
 import { getUserByUserId } from '@/lib/database/user';
 import { auth } from 'auth';
 import { redirect } from 'next/navigation';
-import React from 'react';
 import AddressList from './_components.tsx/AddressList';
 
 export default async function AddressesPage() {

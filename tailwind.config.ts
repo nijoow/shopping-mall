@@ -1,11 +1,13 @@
 import type { Config } from 'tailwindcss';
 
 const fontSizeArray: number[] = [];
-for (let i = 0.5; i <= 5.5; i = i + 0.125) {
+for (let i = 0.5; i <= 5.5; i += 0.125) {
   fontSizeArray.push(i);
 }
 const fontSize: Record<number, string> = {};
-fontSizeArray.forEach(value => (fontSize[value] = `${value}rem`));
+fontSizeArray.forEach(value => {
+  fontSize[value] = `${value}rem`;
+});
 
 const config = {
   darkMode: ['class'],
@@ -89,9 +91,10 @@ const config = {
         'accordion-up': 'accordion-up 0.2s ease-out',
         slide: 'slide 60s linear infinite',
       },
-      fontSize: fontSize,
+      fontSize,
     },
   },
+  // eslint-disable-next-line global-require
   plugins: [require('tailwindcss-animate')],
 } satisfies Config;
 

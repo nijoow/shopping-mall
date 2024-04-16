@@ -1,17 +1,17 @@
-import NextAuth, { NextAuthConfig } from 'next-auth';
-import { authConfig } from './auth.config';
-import Credentials from 'next-auth/providers/credentials';
-import Kakao from 'next-auth/providers/kakao';
-import Naver from 'next-auth/providers/naver';
-import Google from 'next-auth/providers/google';
-import { z } from 'zod';
-import * as bcrypt from 'bcrypt';
 import {
   getUserByEmail,
   getUserByEmailAndProvider,
   getUserPassword,
   registerUserBySocialLogin,
 } from '@/lib/database/user';
+import * as bcrypt from 'bcrypt';
+import NextAuth, { NextAuthConfig } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
+import Kakao from 'next-auth/providers/kakao';
+import Naver from 'next-auth/providers/naver';
+import { z } from 'zod';
+import authConfig from './auth.config';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -46,7 +46,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           }
           return null;
         } catch (error) {
-          console.log(error);
+          return null;
         }
       },
     }),
@@ -78,7 +78,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, account }) {
+    async jwt({ token }) {
       const user = await getUserByEmail(token.email as string);
       token.nickname = user?.nickname;
       token.name = user?.name;

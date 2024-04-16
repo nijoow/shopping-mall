@@ -8,9 +8,7 @@ export const fintUserByEmail = async (email: string) => {
   return user.rows[0];
 };
 
-export const getUsers = async () => {
-  return await sql<User>`SELECT * FROM users`;
-};
+export const getUsers = async () => sql<User>`SELECT * FROM users`;
 
 export const getUserByEmail = async (
   email: string,

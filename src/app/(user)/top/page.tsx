@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function TopPage() {
   return (
     <div className="flex h-full w-full p-8">
@@ -16,7 +14,7 @@ export default function TopPage() {
           <span className="font-light text-gray-500">PRICE</span>
         </div>
       </div>
-      <div className="grid h-fit w-full grid-cols-12 border-l border-t bg-gray-50"></div>
+      <div className="grid h-fit w-full grid-cols-12 border-l border-t bg-gray-50" />
     </div>
   );
 }

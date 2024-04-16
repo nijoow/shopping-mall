@@ -1,24 +1,21 @@
 'use client';
-import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import clsx from 'clsx';
-import { commaToCurrency } from '@/utils/commaToCurrency';
-import { ScrollContainer } from 'react-indiana-drag-scroll';
-import { Product } from '@/types/types';
 
-const HomeCarousel = ({
-  carouselProducts,
-}: {
-  carouselProducts: Product[];
-}) => {
+import { Product } from '@/types/types';
+import { commaToCurrency } from '@/utils';
+import clsx from 'clsx';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { ScrollContainer } from 'react-indiana-drag-scroll';
+
+function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
   const targetRef = useRef(null);
   const [onAnimation, setOnAnimation] = useState(true);
 
   useEffect(() => {
     const container = targetRef.current;
 
-    if (!container) return;
+    if (!container) return undefined;
 
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
       entries.forEach(entry => {
@@ -86,6 +83,6 @@ const HomeCarousel = ({
       </ul>
     </ScrollContainer>
   );
-};
+}
 
 export default HomeCarousel;

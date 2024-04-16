@@ -1,7 +1,7 @@
-import { z } from 'zod';
-import { phoneRegex } from '../../utils/regex';
 import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
+import { phoneRegex } from '../../utils';
 
 export const userSchema = z.object({
   user_id: z.number(),

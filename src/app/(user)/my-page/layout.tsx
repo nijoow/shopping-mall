@@ -21,15 +21,12 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-col gap-4">
           <span className="text-1.25 font-semibold">계정 설정</span>
           <Link
-            href={'/my-page/information'}
+            href="/my-page/information"
             className="font-light text-gray-500"
           >
             회원정보
           </Link>
-          <Link
-            href={'/my-page/addresses'}
-            className="font-light text-gray-500"
-          >
+          <Link href="/my-page/addresses" className="font-light text-gray-500">
             배송지 목록
           </Link>
           <span className="font-light text-gray-500">포인트</span>

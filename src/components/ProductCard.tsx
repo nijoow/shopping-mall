@@ -1,10 +1,11 @@
 'use client';
-import React from 'react';
-import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
+
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { Product } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '@/types/types';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import React from 'react';
+import { IoHeartOutline, IoHeartSharp } from 'react-icons/io5';
 
 const ProductCard = ({
   product,
@@ -39,6 +40,7 @@ const ProductCard = ({
         </div>
       )}
       <button
+        type="button"
         className="absolute right-0 top-0 z-10 h-9 w-9 p-1.5"
         onClick={handleClickFavoriteButton}
       >
@@ -47,7 +49,7 @@ const ProductCard = ({
       </button>
       <div className="relative aspect-square w-full">
         <Image
-          src={'/images/product/example.png'}
+          src="/images/product/example.png"
           alt="예시 이미지"
           fill
           sizes="30vw"

@@ -1,11 +1,11 @@
 'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
 
 const priceList = [
   { id: 'total', value: '-', label: '전체 가격' },
@@ -109,6 +109,7 @@ const Filter = () => {
                 { scroll: false },
               )
             }
+            aria-label={`${value}-button`}
           />
         ))}
       </div>

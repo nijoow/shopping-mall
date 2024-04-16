@@ -1,8 +1,9 @@
 'use client';
+
+import { Input } from '@/components/ui/input';
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { useRef, useState } from 'react';
 import { IoClose, IoSearch } from 'react-icons/io5';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Input } from '@/components/ui/input';
 
 const Search = () => {
   const outsideDivRef = useRef<HTMLDivElement>(null);
@@ -53,11 +54,16 @@ const Search = () => {
               transition={{ type: 'spring', duration: 0.5 }}
               className="fixed left-1/2 top-[1%] z-50 flex h-[98%] w-[98%] max-w-5xl flex-col rounded-md bg-black/60 p-4 shadow-lg backdrop-blur-lg"
             >
-              <button className="self-end" onClick={closeModal}>
+              <button
+                type="button"
+                className="self-end"
+                onClick={closeModal}
+                aria-label="close search modal"
+              >
                 <IoClose size={24} className="fill-white" />
               </button>
               <div className="relative mt-8 w-full">
-                <IoSearch className="text-muted-foreground pointer-events-none absolute left-0 top-0 m-3 h-4 w-4" />
+                <IoSearch className="pointer-events-none absolute left-0 top-0 m-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   ref={inputRef}
                   className="px-9"
@@ -65,8 +71,9 @@ const Search = () => {
                 />
                 <button
                   type="button"
-                  className="text-muted-foreground absolute right-0 top-0 m-3 h-4 w-4 cursor-pointer"
+                  className="absolute right-0 top-0 m-3 h-4 w-4 cursor-pointer text-muted-foreground"
                   onClick={clearInputValue}
+                  aria-label="clear input"
                 >
                   <IoClose />
                 </button>

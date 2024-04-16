@@ -2,7 +2,6 @@ import { getUserByUserId } from '@/lib/database/user';
 import { User } from '@/types/types';
 import { auth } from 'auth';
 import { redirect } from 'next/navigation';
-import React from 'react';
 
 const getProfileCompletion = (user: User) => {
   const count = [
@@ -12,7 +11,7 @@ const getProfileCompletion = (user: User) => {
     user.phone_number,
     user.birth,
     user.gender,
-  ].reduce((count, value) => (!!value ? count + 1 : count), 0);
+  ].reduce((sum, value) => (value ? sum + 1 : sum), 0);
 
   return ((count / 6) * 100).toFixed(1);
 };

@@ -1,8 +1,9 @@
 'use client';
-import { User } from '@/types/types';
-import React, { useRef, useState } from 'react';
-import { cn } from '@/lib/utils';
+
 import Spinner from '@/components/Spinner';
+import { cn } from '@/lib/utils';
+import { User } from '@/types/types';
+import { useRef, useState } from 'react';
 
 const ProfileName = ({ user }: { user: User }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +22,7 @@ const ProfileName = ({ user }: { user: User }) => {
         }),
       });
       if (response.ok) {
+        //
       }
     } catch (error) {
       console.log(error);
@@ -38,6 +40,7 @@ const ProfileName = ({ user }: { user: User }) => {
           <span className="">{user.email}</span>
         </div>
         <button
+          type="button"
           className="rounded-md border-2 border-gray-200 px-8 py-1 font-medium text-gray-500 drop-shadow-sm"
           onClick={() => setIsEditing(!isEditing)}
         >

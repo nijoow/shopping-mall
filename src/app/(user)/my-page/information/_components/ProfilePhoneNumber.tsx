@@ -1,12 +1,13 @@
 'use client';
-import { User } from '@/types/types';
-import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
-import Spinner from '@/components/Spinner';
-import { phoneRegex } from '@/utils/regex';
-import { formatPhoneNumber } from '@/utils/formatPhoneNumber';
 
-const ProfilePhoneNumber = ({ user }: { user: User }) => {
+import Spinner from '@/components/Spinner';
+import { cn } from '@/lib/utils';
+import { User } from '@/types/types';
+import { formatPhoneNumber } from '@/utils';
+import { phoneRegex } from '@/utils/regex';
+import React, { useState } from 'react';
+
+function ProfilePhoneNumber({ user }: { user: User }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState(user.phone_number ?? '');
@@ -33,6 +34,7 @@ const ProfilePhoneNumber = ({ user }: { user: User }) => {
         }),
       });
       if (response.ok) {
+        //
       }
     } catch (error) {
       console.log(error);
@@ -50,6 +52,7 @@ const ProfilePhoneNumber = ({ user }: { user: User }) => {
           <span className="">{user.phone_number}</span>
         </div>
         <button
+          type="button"
           className="rounded-md border-2 border-gray-200 px-8 py-1 font-medium text-gray-500 drop-shadow-sm"
           onClick={() => setIsEditing(!isEditing)}
         >
@@ -83,6 +86,6 @@ const ProfilePhoneNumber = ({ user }: { user: User }) => {
       </form>
     </div>
   );
-};
+}
 
 export default ProfilePhoneNumber;

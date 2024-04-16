@@ -1,8 +1,7 @@
-import Image from 'next/image';
-import React from 'react';
-import HomeCarousel from './_components/Product/HomeCarousel';
 import { getRecentProducts } from '@/lib/database/product';
 import { unstable_noStore } from 'next/cache';
+import Image from 'next/image';
+import HomeCarousel from './_components/Product/HomeCarousel';
 
 export default async function HomePage() {
   unstable_noStore();
@@ -12,7 +11,7 @@ export default async function HomePage() {
     <div className="flex w-full flex-auto flex-col gap-10">
       <div className="relative aspect-[16/9] w-full">
         <Image
-          src={'/images/banner/banner.webp'}
+          src="/images/banner/banner.webp"
           alt="배너이미지"
           fill
           className="object-cover"

@@ -6,7 +6,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { email: string } },
 ) {
-  const email = params.email;
+  const { email } = params;
   const existEmail = await fintUserByEmail(email);
 
   const data = { isDuplicated: !!existEmail };

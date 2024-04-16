@@ -1,7 +1,6 @@
 import { getProductByProductId } from '@/lib/database/product';
-import React from 'react';
+import { commaToCurrency } from '@/utils';
 import Image from 'next/image';
-import { commaToCurrency } from '@/utils/commaToCurrency';
 import ProductNavigation from './_components/ProductNavigation';
 
 export default async function ProductPage({
@@ -46,13 +45,22 @@ export default async function ProductPage({
         <div className="sticky top-64">
           <span className="text-0.875">Select Color</span>
           <div className="flex gap-2">
-            <button className="rounded-md bg-black px-4 py-1 text-white">
+            <button
+              type="button"
+              className="rounded-md bg-black px-4 py-1 text-white"
+            >
               Black
             </button>
-            <button className="rounded-md border bg-white px-4 py-1 text-black">
+            <button
+              type="button"
+              className="rounded-md border bg-white px-4 py-1 text-black"
+            >
               White
             </button>
-            <button className="rounded-md bg-red-500 px-4 py-1 text-white">
+            <button
+              type="button"
+              className="rounded-md bg-red-500 px-4 py-1 text-white"
+            >
               Red
             </button>
           </div>
