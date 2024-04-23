@@ -36,12 +36,9 @@ const Header = async () => {
           <IoHeartSharp size={20} />
           <span className="hidden text-0.75 md:block">MY&nbsp;LIKE</span>
         </Link>
-        <Link
-          href="/shopping-bag"
-          className="group flex items-center gap-1 px-2"
-        >
+        <Link href="/cart" className="group flex items-center gap-1 px-2">
           <IoBag size={20} />
-          <span className="hidden text-0.75 md:block">SHOPPING&nbsp;BAG</span>
+          <span className="hidden text-0.75 md:block">CART</span>
         </Link>
 
         {session ? (
