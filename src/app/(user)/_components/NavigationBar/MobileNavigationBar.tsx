@@ -1,17 +1,17 @@
 import {
   IoAlbums,
+  IoBag,
   IoGridSharp,
-  IoHeartSharp,
   IoHome,
   IoPerson,
 } from 'react-icons/io5';
 import MobileNavigationLink from './MobileNavigationLink';
 
 const mobileNavigationList = [
-  { href: '/', icon: <IoGridSharp size={20} />, text: 'CATEGORY' },
-  { href: '/shop', icon: <IoAlbums size={20} />, text: 'SHOP' },
+  { href: '/category', icon: <IoGridSharp size={20} />, text: 'CATEGORY' },
+  { href: '/shop/all', icon: <IoAlbums size={20} />, text: 'SHOP' },
   { href: '/', icon: <IoHome size={20} />, text: 'HOME' },
-  { href: '/like', icon: <IoHeartSharp size={20} />, text: 'MY LIKE' },
+  { href: '/cart', icon: <IoBag size={20} />, text: 'CART' },
   { href: '/my-page', icon: <IoPerson size={20} />, text: 'MY PAGE' },
 ];
 

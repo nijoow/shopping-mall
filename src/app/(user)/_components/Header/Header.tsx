@@ -29,14 +29,14 @@ const Header = async () => {
           <IoChevronForward size={16} />
         </div> */}
         <Search />
-        <Link
-          href="/like"
-          className="group hidden items-center gap-1 px-2 sm:flex"
-        >
+        <Link href="/like" className="group items-center gap-1 px-2 sm:flex">
           <IoHeartSharp size={20} />
           <span className="hidden text-0.75 md:block">MY&nbsp;LIKE</span>
         </Link>
-        <Link href="/cart" className="group flex items-center gap-1 px-2">
+        <Link
+          href="/cart"
+          className="group hidden items-center gap-1 px-2 sm:flex"
+        >
           <IoBag size={20} />
           <span className="hidden text-0.75 md:block">CART</span>
         </Link>
