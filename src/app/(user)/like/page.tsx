@@ -1,4 +1,4 @@
-import FavoriteProducts from './FavoriteProducts';
+import FavoriteProducts from './_components/FavoriteProducts';
 
 export default function LikePage() {
   return (
