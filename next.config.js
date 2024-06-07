@@ -10,10 +10,10 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'cdn2.thecatapi.com',
+        protocol: 'http',
+        hostname: 'bbbtan.cafe24.com',
         port: '',
-        pathname: '/images/**',
+        pathname: '/**',
       },
     ],
   },
