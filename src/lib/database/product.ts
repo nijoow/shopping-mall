@@ -34,6 +34,7 @@ export const getRecentProducts = async (): Promise<Product[] | undefined> => {
     `;
     return user.rows;
   } catch (error) {
+    console.log(error);
     throw new Error('Failed to fetch product.');
   }
 };
