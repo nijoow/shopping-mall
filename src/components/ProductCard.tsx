@@ -14,7 +14,7 @@ const ProductCard = ({
   product: Product;
   ranking?: number;
 }) => {
-  const { productId, productName, price, colors } = product;
+  const { productId, productName, price, colors, imageUrl } = product;
 
   const [favorite, setFavorite] =
     useLocalStorage<Record<number, boolean>>('favorite');
@@ -49,7 +49,7 @@ const ProductCard = ({
       </button>
       <div className="relative aspect-square w-full">
         <Image
-          src="/images/product/example.png"
+          src={imageUrl}
           alt="예시 이미지"
           fill
           sizes="30vw"
