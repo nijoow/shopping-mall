@@ -2,6 +2,7 @@ import ProductCard from '@/components/ProductCard';
 import { getProducts } from '@/lib/database/product';
 import { Categories, Gender } from '@/types/types';
 
+export const revalidate = 0;
 export default async function ShopPage({
   params: { category },
   searchParams,

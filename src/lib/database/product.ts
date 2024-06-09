@@ -55,7 +55,7 @@ export const getProducts = async ({
   try {
     // const colorsValue = colors?.join(',');
 
-    const user = await sql<Product>`
+    const product = await sql<Product>`
       SELECT
           * 
       FROM 
@@ -67,7 +67,7 @@ export const getProducts = async ({
         AND (${maxPrice}::numeric IS NULL OR price <= ${maxPrice})
     `;
 
-    return user.rows;
+    return product.rows;
   } catch (error) {
     throw new Error('Failed to fetch product.');
   }

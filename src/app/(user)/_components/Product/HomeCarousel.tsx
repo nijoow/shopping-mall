@@ -20,10 +20,8 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          console.log('1');
           setOnAnimation(false);
         } else {
-          console.log('2');
           setOnAnimation(true);
         }
       });
