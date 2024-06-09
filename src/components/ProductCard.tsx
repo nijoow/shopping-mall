@@ -2,6 +2,7 @@
 
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Product } from '@/types/types';
+import { commaToCurrency } from '@/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
@@ -32,7 +33,7 @@ const ProductCard = ({
   return (
     <Link
       href={`/product/${productId}`}
-      className="relative col-span-6 flex flex-col border-b border-r bg-gray-50 sm:col-span-4 xl:col-span-3"
+      className="relative col-span-6 flex flex-col border-b border-r bg-white sm:col-span-4 xl:col-span-3"
     >
       {ranking && (
         <div className="absolute left-0 top-0 z-10 flex h-12 w-12 items-center justify-center bg-black text-white">
@@ -61,7 +62,7 @@ const ProductCard = ({
           <span>{productName}</span>
           <div>color1</div>
         </div>
-        <span>{price}</span>
+        <span>₩{commaToCurrency(price)}</span>
       </div>
     </Link>
   );
