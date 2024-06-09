@@ -5,7 +5,7 @@ import FilterDrawer from './_components/FilterDrawer';
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-full w-full flex-col py-4 sm:flex-row sm:p-8">
-      <div className="flex h-full w-full flex-col gap-2 sm:w-64 sm:gap-8 sm:pr-4">
+      <div className="flex w-full flex-col gap-2 pb-2 sm:h-full sm:w-64 sm:gap-8 sm:pr-4">
         <span className="pl-4 text-1.5 font-semibold sm:pl-0">SHOP</span>
         <div className="flex w-full flex-row gap-2 overflow-x-auto sm:flex-col sm:gap-0">
           {['ALL', 'OUTER', 'TOP', 'BOTTOM', 'SHOES', 'ACC'].map(category => (

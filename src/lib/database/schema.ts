@@ -43,16 +43,3 @@ export const products = pgTable('products', {
 });
 
 export const productSchema = createSelectSchema(products);
-// export const productSchema = z.object({
-//   productId: z.number(),
-//   productName: z.string(),
-//   category: z.string(),
-//   thumbnailImageUrl: z.string(),
-//   price: z.number(),
-//   description: z.string(),
-//   stock: z.number(),
-//   sell: z.number(),
-//   colors: z.array(z.string()),
-//   createdDate: z.date(),
-//   modifiedDate: z.date(),
-// });
