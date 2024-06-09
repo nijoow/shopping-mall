@@ -34,7 +34,7 @@ export default async function ProductPage({
       </div>
       <div className="relative col-span-6 aspect-square w-full max-w-lg">
         <Image
-          src={product.thumbnailImageUrl}
+          src={product.imageUrl}
           alt={product.productName}
           fill
           sizes="30vw"
@@ -71,7 +71,7 @@ export default async function ProductPage({
       <ProductNavigation id="product-info" />
       <div className="relative col-span-12 aspect-square w-full">
         <Image
-          src={product.thumbnailImageUrl}
+          src={product.imageUrl}
           alt={product.productName}
           fill
           sizes="30vw"

@@ -63,7 +63,7 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
             >
               <div className="relative aspect-[3/4] w-full">
                 <Image
-                  src={product.thumbnailImageUrl}
+                  src={product.imageUrl}
                   alt={product.productName}
                   fill
                   sizes="30vw"

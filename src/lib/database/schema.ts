@@ -32,7 +32,7 @@ export const products = pgTable('products', {
   productId: serial('productId').primaryKey(),
   productName: text('productName').notNull(),
   category: text('category').notNull(),
-  thumbnailImageUrl: text('thumbnailImageUrl').notNull(),
+  imageUrl: text('imageUrl').notNull(),
   price: integer('price').notNull(),
   description: text('description'),
   stock: integer('stock').notNull(),
