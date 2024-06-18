@@ -10,12 +10,12 @@ export const getProductByProductId = async (
   productIds: number[],
 ): Promise<Product[] | undefined> => {
   try {
-    const users = await db
+    const product = await db
       .select()
       .from(products)
       .where(inArray(products.productId, productIds));
 
-    return users;
+    return product;
   } catch (error) {
     throw new Error('Failed to fetch product.');
   }

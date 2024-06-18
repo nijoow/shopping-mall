@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { integer, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 import { createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -37,9 +38,15 @@ export const products = pgTable('products', {
   description: text('description'),
   stock: integer('stock').notNull(),
   sell: integer('stock'),
-  colors: text('colors'),
+  colors: text('colors')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  color: text('color').notNull(),
   createdDate: timestamp('createdDate'),
   modifiedDate: timestamp('modifiedDate'),
 });
 
-export const productSchema = createSelectSchema(products);
+export const productSchema = createSelectSchema(products, {
+  colors: z.string().array(),
+});

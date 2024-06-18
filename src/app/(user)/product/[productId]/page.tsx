@@ -45,24 +45,16 @@ export default async function ProductPage({
         <div className="sticky top-64">
           <span className="text-0.875">Select Color</span>
           <div className="flex gap-2">
-            <button
-              type="button"
-              className="rounded-md bg-black px-4 py-1 text-white"
-            >
-              Black
-            </button>
-            <button
-              type="button"
-              className="rounded-md border bg-white px-4 py-1 text-black"
-            >
-              White
-            </button>
-            <button
-              type="button"
-              className="rounded-md bg-red-500 px-4 py-1 text-white"
-            >
-              Red
-            </button>
+            {product.colors.map(color => (
+              <button
+                key={color}
+                type="button"
+                className="h-8 w-8 rounded-md text-white"
+                style={{ backgroundColor: color }}
+              >
+                {' '}
+              </button>
+            ))}
           </div>
           <div className="text-1.5">₩{commaToCurrency(product.price)}</div>{' '}
         </div>
