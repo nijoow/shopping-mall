@@ -9,13 +9,6 @@ export default async function HomePage() {
   return (
     <div className="flex w-full flex-auto flex-col gap-10">
       <div className="relative aspect-[16/9] w-full">
-        {/* <Image
-          src="/images/banner/banner.webp"
-          alt="배너이미지"
-          fill
-          className="object-cover"
-        /> */}
-
         <video className="w-full" autoPlay loop muted>
           <source
             src="https://d340a4zb19l6y1.cloudfront.net/24ss/editorial/bang-olufsen/editorial_01.mp4"
@@ -30,16 +23,7 @@ export default async function HomePage() {
         </video>
       </div>
       {carouselProducts && (
-        <HomeCarousel
-          carouselProducts={[
-            ...carouselProducts,
-            ...carouselProducts,
-            ...carouselProducts,
-            ...carouselProducts,
-            ...carouselProducts,
-            ...carouselProducts,
-          ]}
-        />
+        <HomeCarousel carouselProducts={[...carouselProducts]} />
       )}
     </div>
   );

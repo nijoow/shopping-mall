@@ -3,6 +3,7 @@
 import { Product } from '@/types/types';
 import { commaToCurrency } from '@/utils';
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -41,22 +42,26 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
   return (
     <ScrollContainer
       hideScrollbars
-      className="scrollbar-hide w-full overflow-x-auto pb-6 pt-1"
+      className="scrollbar-hide w-full overflow-x-auto sm:py-6"
     >
       <ul
-        className={clsx('flex flex-auto items-center gap-4', {
-          'animate-slide': onAnimation,
-        })}
+        className={clsx(
+          'direct grid flex-auto grid-cols-2 items-center gap-2 px-2 sm:flex sm:gap-4',
+          {
+            'sm:animate-slide': onAnimation,
+          },
+        )}
       >
         {carouselProducts.map((product, i) => (
-          <li
+          <motion.li
             key={`${product.productId}`}
-            className="aspect-square w-2/3 max-w-[360px] flex-none sm:w-1/3"
+            className="col-span-1 aspect-square w-full max-w-[360px] flex-none sm:col-span-1 sm:w-1/3"
+            whileHover={{ scale: 1.05 }}
           >
             <Link
               href={`/product/${product.productId}`}
               className={clsx(
-                'relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border bg-white p-3 shadow-sm transition duration-300 ease-in-out hover:scale-105 hover:shadow-md',
+                'relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border bg-white p-3 shadow-sm',
               )}
             >
               <div className="relative aspect-[3/4] w-full">
@@ -75,7 +80,7 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
                 </span>
               </div>
             </Link>
-          </li>
+          </motion.li>
         ))}
         <div ref={targetRef} className="ml-auto h-1 w-1 flex-none" />
       </ul>

@@ -30,7 +30,7 @@ export const getRecentProducts = async (): Promise<Product[] | undefined> => {
             products 
         ORDER BY 
             "createdDate" DESC
-        LIMIT 10   
+        LIMIT 20   
     `;
     return user.rows;
   } catch (error) {
