@@ -24,7 +24,7 @@ const ProductNavigationItem = ({
 );
 
 const ProductNavigation = ({ id }: { id: string }) => (
-  <div id={id} className="col-span-12 flex w-full scroll-m-24">
+  <div id={id} className="order-3 col-span-12 flex w-full scroll-m-24">
     <ProductNavigationItem text="상품정보" href="#product-info" />
     <ProductNavigationItem
       text="결제/교환/배송정보"

@@ -57,20 +57,19 @@ const ProductCard = ({
           className="object-contain"
         />
       </div>
-      <div className="bottom-0 flex w-full items-end justify-between p-2">
-        <div className="flex flex-col">
-          <span>{productName}</span>
-          <div className="flex gap-1">
-            {colors.map(color => (
-              <div
-                key={`${productId}${color}`}
-                style={{ backgroundColor: color }}
-                className="h-3 w-3 rounded-sm "
-              />
-            ))}
-          </div>
+      <div className="bottom-0 flex w-full flex-col items-start justify-between p-2">
+        <span>{productName}</span>
+
+        <div className="flex w-full items-center gap-1">
+          {colors.map(color => (
+            <div
+              key={`${productId}${color}`}
+              style={{ backgroundColor: color }}
+              className="h-3 w-3 rounded-sm border-[0.5px]"
+            />
+          ))}
+          <span className="ml-auto">₩{commaToCurrency(price)}</span>
         </div>
-        <span>₩{commaToCurrency(price)}</span>
       </div>
     </Link>
   );
