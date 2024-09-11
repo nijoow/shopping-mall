@@ -56,32 +56,28 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         return user as User;
       },
     }),
-    Kakao({
-      clientId: process.env.KAKAO_CLIENT_ID!,
-      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
-    }),
-    Naver({
-      clientId: process.env.NAVER_CLIENT_ID!,
-      clientSecret: process.env.NAVER_CLIENT_SECRET!,
-    }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
+    Kakao,
+    Naver,
+    Google,
   ],
   callbacks: {
-    async signIn({ account, profile }) {
+    async signIn({ user, account }) {
       try {
         if (account?.provider === 'credentials') return true;
 
-        if (account && profile) {
+        if (account && user) {
           const existUser = await getUserByEmailAndProvider(
-            profile.email as string,
+            user.email as string,
             account.provider,
           );
           if (existUser) return true;
 
-          await registerUserBySocialLogin({ account, profile });
+          await registerUserBySocialLogin({
+            email: user.email!,
+            name: user.name,
+            accountId: account.providerAccountId,
+            provider: account.provider,
+          });
         }
         return true;
       } catch (error) {
@@ -109,3 +105,5 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     },
   },
 } satisfies NextAuthConfig);
+
+export const { GET, POST } = handlers;
