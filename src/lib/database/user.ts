@@ -1,6 +1,5 @@
 import { AuthPassword, User } from '@/types/types';
 import { sql } from '@vercel/postgres';
-import { Account, Profile } from 'next-auth';
 
 export const fintUserByEmail = async (email: string) => {
   const user = await sql`SELECT * FROM users WHERE email = ${email}`;
@@ -51,19 +50,23 @@ export const getUserPassword = async (userId: number): Promise<string> => {
 };
 
 export const registerUserBySocialLogin = async ({
-  account,
-  profile,
+  email,
+  name,
+  accountId,
+  provider,
 }: {
-  account: Account;
-  profile: Profile;
+  email?: string | null;
+  name?: string | null;
+  accountId?: string | null;
+  provider?: string | null;
 }) => {
   const result =
     await sql`INSERT INTO users (email, login_provider, name, nickname)
-      VALUES (${profile.email}, 'SOCIAL_LOGIN', ${profile.name}, ${profile.name}) 
+      VALUES (${email}, 'SOCIAL_LOGIN', ${name}, ${name}) 
       RETURNING user_id;`;
   const userId = result.rows[0].user_id;
   await sql`INSERT INTO social_logins (user_id, account_id, type) 
-    VALUES (${userId}, ${account.providerAccountId}, ${account.provider});`;
+    VALUES (${userId}, ${accountId}, ${provider});`;
 };
 
 export const registerUserByCredentials = async ({
