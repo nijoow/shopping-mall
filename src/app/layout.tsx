@@ -1,12 +1,13 @@
 import { nanumSquareRound } from '@/fonts/font';
 import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
 import type { Metadata } from 'next';
+import { ThemeProvider } from 'next-themes';
 import { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Nijoow Shopping Mall',
-  description: 'Shopping Mall Toy Project',
+  description: 'Shopping Mall',
   manifest: '/manifest.json',
 };
 
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <body
           className={`${nanumSquareRound.className}  relative flex h-full flex-col`}
         >
-          {children}
+          <ThemeProvider attribute="class" enableSystem>
+            {children}
+          </ThemeProvider>
         </body>
       </html>
     </ReactQueryProvider>

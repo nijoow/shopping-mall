@@ -2,6 +2,7 @@ import { auth } from 'auth';
 import Image from 'next/image';
 import Link from 'next/link';
 import { IoBag, IoHeartSharp, IoLogIn, IoPerson } from 'react-icons/io5';
+import DarkModeToggle from './DarkModeToggle';
 import LogoutButton from './LogoutButton';
 import Search from './Search';
 
@@ -61,6 +62,7 @@ const Header = async () => {
             <span className="hidden text-0.75 md:block">LOGIN</span>
           </Link>
         )}
+        <DarkModeToggle />
       </div>
     </header>
   );
