@@ -82,12 +82,12 @@
 }
 
 ::-webkit-scrollbar {
-  width: 2px;
+  width: 4px;
   height: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #777;
+  background-color: #222;
   border-radius: 10px;
 }
 
