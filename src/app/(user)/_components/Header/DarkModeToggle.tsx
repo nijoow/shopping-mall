@@ -7,13 +7,13 @@ const themeIcon = {
   dark: (
     <MdWbSunny
       size={20}
-      className="fill-white transition-all duration-300 group-hover:rotate-[30deg] group-hover:scale-110 dark:fill-black"
+      className="fill-white transition-all group-hover:rotate-[30deg] group-hover:scale-110 dark:fill-black"
     />
   ),
   light: (
     <MdDarkMode
       size={20}
-      className="fill-white transition-all duration-300 group-hover:rotate-[30deg] group-hover:scale-110 dark:fill-black"
+      className="fill-white transition-all group-hover:rotate-[30deg] group-hover:scale-110 dark:fill-black"
     />
   ),
 };
