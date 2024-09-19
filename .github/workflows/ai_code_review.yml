@@ -1,5 +1,4 @@
 name: AI Code Reviewer
-
 on:
   pull_request:
     types:
@@ -12,11 +11,10 @@ jobs:
     steps:
       - name: Checkout 레포지토리
         uses: actions/checkout@v3
-
       - name: AI 코드 리뷰
         uses: nijoow/ai-code-reviewer@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_MODEL: 'gpt-4o-mini'
-          exclude: '**/*.json, **/*.md'
+          exclude: '**/*.json, **/*.md, yarn.lock, .yarn/**'
