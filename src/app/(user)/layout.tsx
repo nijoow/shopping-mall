@@ -6,7 +6,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <main className="relative flex w-full flex-auto flex-col overflow-auto">
+      <main className="color-transition relative flex w-full flex-auto flex-col overflow-auto">
         <div className="flex-auto"> {children}</div>
         <Footer />
       </main>
