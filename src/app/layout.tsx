@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <ReactQueryProvider>
       <html lang="ko" className="h-full !scroll-smooth">
         <body
-          className={`${nanumSquareRound.className} color-transition relative flex h-full flex-col`}
+          className={`${nanumSquareRound.className} relative flex h-full flex-col`}
         >
           <ThemeProvider attribute="class" enableSystem>
             {children}

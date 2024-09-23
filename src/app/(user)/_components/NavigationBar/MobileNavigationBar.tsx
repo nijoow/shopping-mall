@@ -61,7 +61,7 @@ const mobileNavigationList = [
 ];
 
 const MobileNavigationBar = () => (
-  <nav className="color-transition fixed bottom-0 z-40 grid h-16 w-full grid-cols-5 border-t border-gray-300 bg-white px-2 dark:border-gray-700 dark:bg-gray-950 sm:hidden">
+  <nav className="color-transition fixed bottom-0 z-40 grid h-16 w-full grid-cols-5 border-t border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-950 sm:hidden">
     {mobileNavigationList.map(({ href, icon, text }) => (
       <MobileNavigationLink key={text} href={href} icon={icon} text={text} />
     ))}
