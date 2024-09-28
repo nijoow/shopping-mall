@@ -42,15 +42,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@auth/core@npm:0.28.0":
-  version: 0.28.0
-  resolution: "@auth/core@npm:0.28.0"
+"@auth/core@npm:0.34.2":
+  version: 0.34.2
+  resolution: "@auth/core@npm:0.34.2"
   dependencies:
     "@panva/hkdf": "npm:^1.1.1"
     "@types/cookie": "npm:0.6.0"
     cookie: "npm:0.6.0"
     jose: "npm:^5.1.3"
-    oauth4webapi: "npm:^2.4.0"
+    oauth4webapi: "npm:^2.10.4"
     preact: "npm:10.11.3"
     preact-render-to-string: "npm:5.2.3"
   peerDependencies:
@@ -64,7 +64,7 @@ __metadata:
       optional: true
     nodemailer:
       optional: true
-  checksum: 098431a4b7eda2cf7d1159de930f9e2185978476b28d43172fcd5607109f33d85474d87c3e8b7a88c6536f38d95949d52e6666ebba8fdefcfae59c849481f7aa
+  checksum: c4f0899f652200fd8516fc9c715dbc0c704fd7b8f99a4470fe398052c385284896cbc18e52028a8688e4d274a4972cff8acc50b28965268904679bef8ff15707
   languageName: node
   linkType: hard
 
@@ -6782,17 +6782,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-auth@npm:^5.0.0-beta.4":
-  version: 5.0.0-beta.15
-  resolution: "next-auth@npm:5.0.0-beta.15"
+"next-auth@npm:^5.0.0-beta.20":
+  version: 5.0.0-beta.20
+  resolution: "next-auth@npm:5.0.0-beta.20"
   dependencies:
-    "@auth/core": "npm:0.28.0"
+    "@auth/core": "npm:0.34.2"
   peerDependencies:
     "@simplewebauthn/browser": ^9.0.1
     "@simplewebauthn/server": ^9.0.2
-    next: ^14
+    next: ^14.0.0-0 || ^15.0.0-0
     nodemailer: ^6.6.5
-    react: ^18.2.0
+    react: ^18.2.0 || ^19.0.0-0
   peerDependenciesMeta:
     "@simplewebauthn/browser":
       optional: true
@@ -6800,7 +6800,7 @@ __metadata:
       optional: true
     nodemailer:
       optional: true
-  checksum: 518e88bfd8fd74040e3fe15268c7e33f8ad11c421b659a452787c178aad60a4caa555ff35e65504f58e3088704698834bb5a257e952cf35cfef7e3beb7dd2f71
+  checksum: c10430f905822d7b9f8a4d96000f7760d8842a41aeaad9318e72038a6b6556a292772d39e906ea0a26aed988ec97a014cc3c0c04035211f474c7603fe0078979
   languageName: node
   linkType: hard
 
@@ -7074,10 +7074,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth4webapi@npm:^2.4.0":
-  version: 2.10.3
-  resolution: "oauth4webapi@npm:2.10.3"
-  checksum: a0b3bf177c2a1d98d1907cd6f5804be827e433dfff9951f1e2f3dabbcc178975ca2e55f6a0e0dc0b4b8fd2a881b1dd4d0aa86646f11db0e00f7c85af0c288c02
+"oauth4webapi@npm:^2.10.4":
+  version: 2.12.0
+  resolution: "oauth4webapi@npm:2.12.0"
+  checksum: 21903b050f928368000705c7dd49ec10c924961ee09acabbcf621d939051acc0856d407533f8122e0c27325951b81bbba95a91c45a35e50224dfec1fc5360d9e
   languageName: node
   linkType: hard
 
@@ -8296,7 +8296,7 @@ __metadata:
     i18next: "npm:^23.7.7"
     lucide-react: "npm:^0.358.0"
     next: "npm:14.0.3"
-    next-auth: "npm:^5.0.0-beta.4"
+    next-auth: "npm:^5.0.0-beta.20"
     next-i18next: "npm:^15.0.0"
     next-pwa: "npm:^5.6.0"
     next-themes: "npm:^0.3.0"

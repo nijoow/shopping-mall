@@ -1,6 +1,5 @@
 import { AuthPassword, User } from '@/types/types';
 import { sql } from '@vercel/postgres';
-import { Account, Profile } from 'next-auth';
 
 export const fintUserByEmail = async (email: string) => {
   const user = await sql`SELECT * FROM users WHERE email = ${email}`;
@@ -17,8 +16,8 @@ export const getUserByEmail = async (
     const user = await sql<User>`SELECT * FROM users WHERE email = ${email}`;
     return user.rows[0];
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    console.error(error);
+    throw new Error();
   }
 };
 
@@ -33,8 +32,8 @@ export const getUserByEmailAndProvider = async (
         WHERE users.email = ${email} AND social_logins.type = ${provider}`;
     return user.rows[0];
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    console.error(error);
+    throw new Error();
   }
 };
 
@@ -42,27 +41,32 @@ export const getUserPassword = async (userId: number): Promise<string> => {
   try {
     const password =
       await sql<AuthPassword>`SELECT password FROM credentials WHERE user_id = ${userId}`;
-    return password.rows[0].password;
+
+    return password.rows[0]?.password;
   } catch (error) {
-    console.error('Failed to fetch password:', error);
-    throw new Error('Failed to fetch password.');
+    console.error(error);
+    throw new Error();
   }
 };
 
 export const registerUserBySocialLogin = async ({
-  account,
-  profile,
+  email,
+  name,
+  accountId,
+  provider,
 }: {
-  account: Account;
-  profile: Profile;
+  email?: string | null;
+  name?: string | null;
+  accountId?: string | null;
+  provider?: string | null;
 }) => {
   const result =
     await sql`INSERT INTO users (email, login_provider, name, nickname)
-      VALUES (${profile.email}, 'SOCIAL_LOGIN', ${profile.name}, ${profile.name}) 
+      VALUES (${email}, 'SOCIAL_LOGIN', ${name}, ${name}) 
       RETURNING user_id;`;
   const userId = result.rows[0].user_id;
   await sql`INSERT INTO social_logins (user_id, account_id, type) 
-    VALUES (${userId}, ${account.providerAccountId}, ${account.provider});`;
+    VALUES (${userId}, ${accountId}, ${provider});`;
 };
 
 export const registerUserByCredentials = async ({
@@ -90,8 +94,8 @@ export const getUserByUserId = async (
       await sql<User>`SELECT * FROM users WHERE user_id = ${user_id}`;
     return user.rows[0];
   } catch (error) {
-    console.error('Failed to fetch user:', error);
-    throw new Error('Failed to fetch user.');
+    console.error(error);
+    throw new Error();
   }
 };
 
@@ -104,7 +108,7 @@ export const updateUserInformation = async (
       `UPDATE users SET ${targetsQuery} WHERE user_id = ${user_id}`,
     );
   } catch (error) {
-    console.error('Failed to Update Information:', error);
-    throw new Error('Failed to Update Information.');
+    console.error(error);
+    throw new Error();
   }
 };
