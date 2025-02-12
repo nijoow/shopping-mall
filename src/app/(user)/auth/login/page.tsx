@@ -1,6 +1,7 @@
 'use client';
 
 import FullpageSpinner from '@/components/FullpageSpinner';
+import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -76,22 +77,20 @@ export default function LoginPage() {
           <div className="h-1 w-full bg-black" />
           <form className="flex flex-col " onSubmit={handleSubmit(onSubmit)}>
             <label className="flex flex-col gap-0.5">
-              <span>이메일</span>
               <input
                 type="email"
-                placeholder="이메일을 입력해주세요"
+                placeholder="이메일"
                 {...register('email', { required: true })}
-                className="border border-gray-300 p-3"
+                className="input-field"
               />
             </label>
 
             <label className="mt-2 flex flex-col gap-0.5">
-              <span>비밀번호</span>
               <input
                 type="password"
-                placeholder="비밀번호를 입력해주세요"
+                placeholder="비밀번호"
                 {...register('password', { required: true })}
-                className="border border-gray-300 p-3"
+                className="input-field"
               />
             </label>
 
@@ -99,9 +98,7 @@ export default function LoginPage() {
               {errors.root?.message}
             </span>
 
-            <button type="submit" className="mt-4 bg-black p-3 text-white">
-              로그인
-            </button>
+            <Button type="submit">로그인</Button>
           </form>
           {/* <div className="flex items-center justify-center w-full gap-4 text-gray-400">
           <Link href={'/auth/login/find/id'}>아이디 찾기</Link>
@@ -111,12 +108,14 @@ export default function LoginPage() {
           <div className="flex w-full justify-center">
             <SocialLogin />
           </div>
-          <Link
-            href="/auth/sign-up"
-            className="border border-black p-3 text-center text-black"
-          >
-            회원가입
-          </Link>
+          <Button asChild variant="outline">
+            <Link
+              href="/auth/sign-up"
+              className="border border-black p-3 text-center text-black"
+            >
+              회원가입
+            </Link>
+          </Button>
         </div>
       </div>
       {loading && <FullpageSpinner />}

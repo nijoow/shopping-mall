@@ -79,6 +79,10 @@
   .color-transition {
     @apply transition-colors duration-300 ease-in-out;
   }
+
+  .input-field {
+    @apply rounded-lg border border-gray-300 p-3;
+  }
 }
 
 ::-webkit-scrollbar {

@@ -28,7 +28,7 @@ const DarkModeToggle = () => {
   return (
     <button
       type="button"
-      className="group rounded-sm bg-black p-1 dark:bg-white"
+      className="group mx-1 rounded-sm bg-black p-1 dark:bg-white"
       onClick={toggleTheme}
     >
       {themeIcon[theme as 'dark' | 'light']}
