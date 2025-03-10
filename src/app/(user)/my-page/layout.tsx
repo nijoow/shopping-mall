@@ -7,11 +7,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="mx-auto flex h-full w-full max-w-5xl px-8 py-24">
-      <div className="flex h-full w-64 flex-col gap-8">
-        <span className="text-2.25 font-semibold">
-          {session?.user.nickname}
-        </span>
-        <span>좋아요 0</span>
+      <div className="hidden h-full w-64 flex-col gap-8 sm:flex">
         <div className="flex flex-col gap-4">
           <span className="text-1.25 font-semibold">쇼핑 정보</span>
           <span className="font-light text-gray-500">주문배송조회</span>

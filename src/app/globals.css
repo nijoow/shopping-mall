@@ -75,13 +75,23 @@
   }
 }
 
+@layer components {
+  .color-transition {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+
+  .input-field {
+    @apply rounded-lg border border-gray-300 p-3;
+  }
+}
+
 ::-webkit-scrollbar {
-  width: 2px;
+  width: 4px;
   height: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #777;
+  background-color: #222;
   border-radius: 10px;
 }
 

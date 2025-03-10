@@ -1,8 +1,8 @@
 'use client';
 
-import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import Spinner from '@/components/Spinner';
+import { Button } from '@/components/ui/button';
 import { AddressFormInput } from '@/types/types';
 import { formatPhoneNumber } from '@/utils';
 import { phoneRegex } from '@/utils/regex';
@@ -190,7 +190,7 @@ function AddAddress({ user }: { user: User }) {
           <Modal.Footer>
             <div className="flex gap-3">
               <Button
-                variant="outlined"
+                variant="outline"
                 disabled={isLoading}
                 onClick={closeModal}
               >
