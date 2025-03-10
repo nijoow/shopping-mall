@@ -1,4 +1,4 @@
-import Button from '@/components/Button';
+import { Button } from '@/components/ui/button';
 import { SAMPLE_TEXT } from '@/constant/sampleText';
 import { getProductByProductId } from '@/lib/database/product';
 import { commaToCurrency } from '@/utils';

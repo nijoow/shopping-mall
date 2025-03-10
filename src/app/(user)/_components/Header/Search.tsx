@@ -33,7 +33,10 @@ const Search = () => {
         onClick={openModal}
         className="flex items-center gap-1 px-2"
       >
-        <IoSearch size={20} />
+        <IoSearch
+          size={20}
+          className="color-transition fill-gray-950 dark:fill-white"
+        />
         <span className="hidden text-0.75 md:block">SEARCH</span>
       </button>
       <AnimatePresence>

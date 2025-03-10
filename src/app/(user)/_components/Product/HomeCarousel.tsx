@@ -42,11 +42,11 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
   return (
     <ScrollContainer
       hideScrollbars
-      className="scrollbar-hide w-full overflow-x-auto sm:py-6"
+      className="scrollbar-hide h-fit w-full overflow-x-auto"
     >
       <ul
         className={clsx(
-          'direct grid flex-auto grid-cols-2 items-center gap-2 px-2 sm:flex sm:gap-4',
+          'direct grid flex-auto grid-cols-2 items-center gap-2 p-3 sm:flex sm:gap-4',
           {
             'sm:animate-slide': onAnimation,
           },
@@ -55,8 +55,8 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
         {carouselProducts.map((product, i) => (
           <motion.li
             key={`${product.productId}`}
-            className="col-span-1 aspect-square w-full max-w-[360px] flex-none sm:col-span-1 sm:w-1/3"
-            whileHover={{ scale: 1.05 }}
+            className="col-span-1 h-full w-full max-w-[360px] flex-none sm:col-span-1 sm:w-1/3"
+            whileHover={{ scale: 1.03 }}
           >
             <Link
               href={`/product/${product.productId}`}
@@ -64,7 +64,7 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
                 'relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border bg-white p-3 shadow-sm',
               )}
             >
-              <div className="relative aspect-[3/4] w-full">
+              <div className="relative aspect-square w-full">
                 <Image
                   src={product.imageUrl}
                   alt={product.productName}
@@ -74,7 +74,9 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
                 />
               </div>
               <div className="flex flex-col justify-between gap-0.5 sm:flex-row sm:gap-3 sm:py-3">
-                <span className="font-medium">{product.productName}</span>
+                <span className="font-medium text-gray-950">
+                  {product.productName}
+                </span>
                 <span className="text-gray-400">
                   ₩{commaToCurrency(product.price)}
                 </span>

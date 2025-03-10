@@ -1,8 +1,8 @@
 'use client';
 
-import Button from '@/components/Button';
 import Modal from '@/components/Modal';
 import Spinner from '@/components/Spinner';
+import { Button } from '@/components/ui/button';
 import { Address, AddressFormInput } from '@/types/types';
 import { formatPhoneNumber } from '@/utils';
 import { phoneRegex } from '@/utils/regex';
@@ -233,7 +233,7 @@ function EditAddress({ address }: { address: Address }) {
           </Modal.Body>
           <Modal.Footer>
             <div className="flex gap-3">
-              <Button variant="outlined" onClick={closeModal}>
+              <Button variant="outline" onClick={closeModal}>
                 취소
               </Button>
               <Button type="submit" form="address-form" disabled={isLoading}>
@@ -249,7 +249,7 @@ function EditAddress({ address }: { address: Address }) {
           <Modal.Body>배송지 정보를 정말 삭제하시겠습니까? </Modal.Body>
           <Modal.Footer>
             <div className="flex gap-3">
-              <Button variant="outlined" onClick={closeModal}>
+              <Button variant="outline" onClick={closeModal}>
                 취소
               </Button>
               <Button
