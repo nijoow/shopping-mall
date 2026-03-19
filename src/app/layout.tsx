@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <ReactQueryProvider>
-      <html lang="ko" className="h-full !scroll-smooth">
+      <html lang="ko" className="h-full !scroll-smooth" suppressHydrationWarning>
         <body
           className={`${nanumSquareRound.className} relative flex h-full flex-col`}
         >

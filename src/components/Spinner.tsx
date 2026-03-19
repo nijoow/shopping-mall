@@ -7,8 +7,8 @@ const Spinner = (props: SVGAttributes<SVGSVGElement>) => (
     xmlnsXlink="http://www.w3.org/1999/xlink"
     x="0px"
     y="0px"
-    width="current"
-    height="current"
+    width="24"
+    height="30"
     viewBox="0 0 24 30"
     xmlSpace="preserve"
     {...props}
