@@ -23,7 +23,7 @@ export const getProductByProductId = async (
 
 export const getRecentProducts = async (): Promise<Product[] | undefined> => {
   try {
-    const user = await sql<Product>`
+    const product = await sql<Product>`
         SELECT
               * 
         FROM 
@@ -32,9 +32,8 @@ export const getRecentProducts = async (): Promise<Product[] | undefined> => {
             "createdDate" DESC
         LIMIT 20   
     `;
-    return user.rows;
+    return product.rows;
   } catch (error) {
-    console.log(error);
     throw new Error('Failed to fetch product.');
   }
 };

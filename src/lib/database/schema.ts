@@ -37,16 +37,18 @@ export const products = pgTable('products', {
   price: integer('price').notNull(),
   description: text('description'),
   stock: integer('stock').notNull(),
-  sell: integer('stock'),
+  sell: integer('sell').notNull(),
+  gender: text('gender').$type<'MALE' | 'FEMALE'>(),
   colors: text('colors')
     .array()
     .notNull()
     .default(sql`'{}'::text[]`),
   color: text('color').notNull(),
-  createdDate: timestamp('createdDate'),
-  modifiedDate: timestamp('modifiedDate'),
+  createdDate: timestamp('createdDate').notNull(),
+  modifiedDate: timestamp('modifiedDate').notNull(),
 });
 
 export const productSchema = createSelectSchema(products, {
   colors: z.string().array(),
+  gender: z.enum(['MALE', 'FEMALE']).nullable(),
 });

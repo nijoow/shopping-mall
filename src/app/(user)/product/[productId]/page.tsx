@@ -25,19 +25,11 @@ export default async function ProductPage({
       </div>
     );
 
-  // Mock images for demonstration if productId is 60 or 61 (example real IDs)
-  let displayImage = product.imageUrl;
-  if (Number(productId) === 60) {
-    displayImage = '/images/sneaker.png';
-  } else if (Number(productId) === 61) {
-    displayImage = '/images/hoodie.png';
-  }
-
   return (
     <div className="mx-auto grid h-fit w-full max-w-7xl grid-cols-10 justify-center p-2 sm:p-16">
       <section className="relative col-span-10 mx-auto aspect-square w-full max-w-lg lg:order-2 lg:col-span-4">
         <Image
-          src={displayImage}
+          src={product.imageUrl}
           alt={product.productName}
           fill
           sizes="30vw"
@@ -84,7 +76,7 @@ export default async function ProductPage({
       <ProductNavigation id="product-info" />
       <section className="relative order-3 col-span-10 aspect-square w-full">
         <Image
-          src={displayImage}
+          src={product.imageUrl}
           alt={product.productName}
           fill
           sizes="30vw"
