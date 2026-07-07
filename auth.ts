@@ -84,11 +84,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         return `/auth/login?error=${encodeURIComponent((error as Error).message)}`;
       }
     },
-    async jwt({ token }) {
-      const user = await getUserByEmail(token.email as string);
-      token.nickname = user?.nickname;
-      token.name = user?.name;
-      token.user_id = user?.user_id;
+    async jwt({ token, user, trigger }) {
+      // user_id 는 불변이고, 프로필 표시는 각 페이지가 getUserByUserId 로
+      // 직접 조회하므로 매 요청마다 DB를 조회할 필요가 없다.
+      // 로그인(user)·명시적 세션 갱신(update)·값이 비어있는 토큰일 때만 조회한다.
+      if (user || trigger === 'update' || token.user_id === undefined) {
+        const dbUser = await getUserByEmail((user?.email ?? token.email) as string);
+        token.nickname = dbUser?.nickname;
+        token.name = dbUser?.name;
+        token.user_id = dbUser?.user_id;
+      }
       return token;
     },
     async session({ session, token }) {
