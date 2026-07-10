@@ -17,7 +17,7 @@ export const getUserByEmail = async (
     return user.rows[0];
   } catch (error) {
     console.error(error);
-    throw new Error();
+    throw new Error('Failed to fetch user by email.');
   }
 };
 
@@ -100,7 +100,7 @@ export const getUserByUserId = async (
     return user.rows[0];
   } catch (error) {
     console.error(error);
-    throw new Error();
+    throw new Error('Failed to fetch user by id.');
   }
 };
 
@@ -136,6 +136,6 @@ export const updateUserInformation = async (
     ]);
   } catch (error) {
     console.error(error);
-    throw new Error();
+    throw new Error('Failed to update user information.');
   }
 };
