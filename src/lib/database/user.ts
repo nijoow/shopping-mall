@@ -99,14 +99,36 @@ export const getUserByUserId = async (
   }
 };
 
+/** 사용자가 직접 수정할 수 있는 컬럼 화이트리스트 */
+export const UPDATABLE_USER_COLUMNS = [
+  'name',
+  'nickname',
+  'phone_number',
+] as const;
+
+export type UpdatableUserColumn = (typeof UPDATABLE_USER_COLUMNS)[number];
+
 export const updateUserInformation = async (
-  user_id: number,
-  targetsQuery: string,
+  userId: number,
+  targets: Partial<Record<UpdatableUserColumn, string>>,
 ) => {
+  const entries = UPDATABLE_USER_COLUMNS.flatMap(column =>
+    targets[column] !== undefined
+      ? [[column, targets[column]] as const]
+      : [],
+  );
+
+  if (entries.length === 0) return;
+
+  const setClause = entries
+    .map(([column], index) => `${column} = $${index + 2}`)
+    .join(', ');
+
   try {
-    await sql.query(
-      `UPDATE users SET ${targetsQuery} WHERE user_id = ${user_id}`,
-    );
+    await sql.query(`UPDATE users SET ${setClause} WHERE user_id = $1`, [
+      userId,
+      ...entries.map(([, value]) => value),
+    ]);
   } catch (error) {
     console.error(error);
     throw new Error();
