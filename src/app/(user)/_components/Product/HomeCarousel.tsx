@@ -61,23 +61,21 @@ function HomeCarousel({ carouselProducts }: { carouselProducts: Product[] }) {
             <Link
               href={`/product/${product.productId}`}
               className={clsx(
-                'relative flex h-full w-full flex-col justify-between overflow-hidden rounded-lg border bg-white p-3 shadow-sm',
+                'street-card street-card-hover relative flex h-full w-full flex-col justify-between gap-2 overflow-hidden p-3',
               )}
             >
-              <div className="relative aspect-square w-full">
+              <div className="relative aspect-square w-full overflow-hidden bg-[#f4f2ec]">
                 <Image
                   src={product.imageUrl}
                   alt={product.productName}
                   fill
                   sizes="30vw"
-                  className={clsx('relative h-full w-full object-contain')}
+                  className="object-contain"
                 />
               </div>
               <div className="flex flex-col justify-between gap-0.5 sm:flex-row sm:gap-3 sm:py-3">
-                <span className="font-medium text-gray-950">
-                  {product.productName}
-                </span>
-                <span className="text-gray-400">
+                <span className="font-medium">{product.productName}</span>
+                <span className="display text-muted-foreground">
                   ₩{commaToCurrency(product.price)}
                 </span>
               </div>
