@@ -14,6 +14,13 @@ type LoginInput = {
   password: string;
 };
 
+const LOGIN_ERROR_MESSAGES: Record<string, string> = {
+  UserNotFoundError: '존재하지 않는 이메일입니다.',
+  PasswordNotMatchedError: '비밀번호가 일치하지 않습니다.',
+  CredentialsValidationError: '입력 형식이 올바르지 않습니다.',
+  NotCredentialsUserError: '해당 계정은 소셜로그인으로 로그인 할 수 있습니다.',
+};
+
 export default function LoginPage() {
   const router = useRouter();
   const {
@@ -36,32 +43,20 @@ export default function LoginPage() {
       });
 
       if (response?.error) {
-        switch (response.code) {
-          case 'UserNotFoundError':
-            setError('root', { message: '존재하지 않는 이메일입니다.' });
-            break;
-          case 'PasswordNotMatchedError':
-            setError('root', { message: '비밀번호가 일치하지 않습니다.' });
-            break;
-          case 'CredentialsValidationError':
-            setError('root', { message: '입력 형식이 올바르지 않습니다.' });
-            break;
-          case 'NotCredentialsUserError':
-            setError('root', {
-              message: '해당 계정은 소셜로그인으로 로그인 할 수 있습니다.',
-            });
-            break;
-          default:
-            setError('root', {
-              message: '로그인을 실패하였습니다.',
-            });
-        }
+        setError('root', {
+          message:
+            LOGIN_ERROR_MESSAGES[response.code ?? ''] ??
+            '로그인을 실패하였습니다.',
+        });
+        return;
       }
+
       if (response?.url) {
         router.push(response.url);
+        router.refresh();
       }
     } catch (error) {
-      console.log(error);
+      setError('root', { message: '로그인을 실패하였습니다.' });
     } finally {
       setLoading(false);
     }
@@ -69,53 +64,76 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="flex h-full w-full items-center justify-center">
-        <div className="flex w-full max-w-sm flex-col gap-6">
-          <span className="mx-auto text-2 font-semibold text-black">
-            로그인
-          </span>
-          <div className="h-1 w-full bg-black" />
-          <form className="flex flex-col " onSubmit={handleSubmit(onSubmit)}>
-            <label className="flex flex-col gap-0.5">
+      <div className="flex min-h-[70dvh] w-full items-center justify-center px-4 py-16">
+        <div className="flex w-full max-w-sm animate-fade-up flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="display text-2 leading-none">
+              SIGN <span className="text-outline">IN</span>
+              <span className="text-volt">.</span>
+            </h1>
+            <p className="text-0.875 text-muted-foreground">
+              NIJOOW 계정으로 로그인하고 나만의 스트릿을 완성하세요.
+            </p>
+          </div>
+
+          <form
+            className="street-card flex flex-col gap-4 p-6 shadow-street sm:p-8"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <label className="flex flex-col gap-1.5">
+              <span className="display text-0.75 tracking-widest text-muted-foreground">
+                EMAIL
+              </span>
               <input
                 type="email"
                 placeholder="이메일"
+                autoComplete="email"
                 {...register('email', { required: true })}
                 className="input-field"
               />
             </label>
 
-            <label className="mt-2 flex flex-col gap-0.5">
+            <label className="flex flex-col gap-1.5">
+              <span className="display text-0.75 tracking-widest text-muted-foreground">
+                PASSWORD
+              </span>
               <input
                 type="password"
                 placeholder="비밀번호"
+                autoComplete="current-password"
                 {...register('password', { required: true })}
                 className="input-field"
               />
             </label>
 
-            <span className="mt-1 h-3 text-sm text-red-500">
+            <span role="alert" className="h-4 text-0.875 text-destructive">
               {errors.root?.message}
             </span>
 
-            <Button type="submit">로그인</Button>
+            <Button type="submit" variant="volt" size="lg" disabled={loading}>
+              SIGN IN
+            </Button>
           </form>
-          {/* <div className="flex items-center justify-center w-full gap-4 text-gray-400">
-          <Link href={'/auth/login/find/id'}>아이디 찾기</Link>
-          <div className="w-0.5 h-3.5 bg-gray-300" />
-          <Link href={'/auth/login/find/password'}>비밀번호 찾기</Link>
-        </div> */}
-          <div className="flex w-full justify-center">
-            <SocialLogin />
+
+          <div className="flex items-center gap-3">
+            <span className="h-0.5 flex-auto bg-border" />
+            <span className="display text-0.625 tracking-widest text-muted-foreground">
+              OR CONTINUE WITH
+            </span>
+            <span className="h-0.5 flex-auto bg-border" />
           </div>
-          <Button asChild variant="outline">
+
+          <SocialLogin />
+
+          <p className="text-center text-0.875 text-muted-foreground">
+            아직 계정이 없나요?{' '}
             <Link
               href="/auth/sign-up"
-              className="border border-black p-3 text-center text-black"
+              className="display text-0.875 tracking-widest text-foreground underline decoration-volt decoration-2 underline-offset-4 transition-colors hover:text-muted-foreground"
             >
-              회원가입
+              SIGN UP
             </Link>
-          </Button>
+          </p>
         </div>
       </div>
       {loading && <FullpageSpinner />}

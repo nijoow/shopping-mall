@@ -20,16 +20,18 @@ const socialLoginList = [
     alt: '구글 로그인',
   },
 ];
+
 const SocialLogin = () => (
-  <div className="flex w-auto items-center justify-between gap-8">
+  <div className="flex w-full items-center justify-center gap-4">
     {socialLoginList.map(({ provider, src, alt }) => (
       <button
         key={provider}
         type="button"
-        className="relative h-12 w-12"
+        aria-label={alt}
+        className="street-card street-card-hover flex h-14 w-14 items-center justify-center"
         onClick={() => signIn(provider, { callbackUrl: `/` })}
       >
-        <Image src={src} fill alt={alt} />
+        <Image src={src} width={32} height={32} alt="" />
       </button>
     ))}
   </div>
