@@ -43,6 +43,10 @@ export const products = pgTable('products', {
     .array()
     .notNull()
     .default(sql`'{}'::text[]`),
+  sizes: text('sizes')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
   color: text('color').notNull(),
   createdDate: timestamp('createdDate').notNull(),
   modifiedDate: timestamp('modifiedDate').notNull(),
@@ -50,5 +54,30 @@ export const products = pgTable('products', {
 
 export const productSchema = createSelectSchema(products, {
   colors: z.string().array(),
+  sizes: z.string().array(),
   gender: z.enum(['MALE', 'FEMALE']).nullable(),
+});
+
+export const orderSchema = z.object({
+  order_id: z.number(),
+  user_id: z.number(),
+  status: z.enum(['PAID', 'SHIPPING', 'DELIVERED', 'CANCELLED']),
+  total_amount: z.number(),
+  recipient_name: z.string(),
+  phone_number: z.string(),
+  post_code: z.string(),
+  address: z.string(),
+  detail_address: z.string().nullable(),
+  created_date: z.date(),
+});
+
+export const orderItemSchema = z.object({
+  order_item_id: z.number(),
+  order_id: z.number(),
+  product_id: z.number(),
+  product_name: z.string(),
+  price: z.number(),
+  quantity: z.number(),
+  size: z.string().nullable(),
+  color: z.string().nullable(),
 });
