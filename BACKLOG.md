@@ -23,18 +23,24 @@
 
 ## P2 — 인프라·품질
 
-- [ ] **상품 이미지 자체 호스팅** — 현재 타사 쇼핑몰 핫링크(`http://bbbtan.cafe24.com` 등, http라 mixed content). Vercel Blob 등으로 이전
-- [ ] **DB 스키마 관리 일원화** — drizzle 스키마가 products만 커버. users/address/credentials/social_logins도 스키마 + 마이그레이션으로 (drizzle-kit 활용)
-- [ ] **dev DB 분리** — 현재 로컬 개발이 프로덕션 Vercel Postgres에 직접 연결됨
-- [ ] **소셜 로그인 계정 연결** — 같은 이메일로 provider별 users 행이 중복 생성됨 (`registerUserBySocialLogin`)
-- [ ] 테스트/CI — e2e 스모크(가입→장바구니→마이페이지) + PR에서 tsc/lint/build
-- [ ] route별 `error.tsx` + DB 헬퍼 에러 메시지 정리 (현재 `throw new Error()` 빈 메시지)
-- [ ] next-pwa 재검토 — app router와 궁합이 나쁘고 배포 후 stale 캐시 위험. 제거 또는 최신 대안으로 교체
-- [ ] 미사용 의존성 제거: i18next / next-i18next / react-i18next
+완료 (2026-07-11):
+- [x] **소셜 로그인 계정 연결** — 이메일 기준으로 기존 계정에 연결(멀티 프로바이더), social_logins PK를 (user_id, type) 복합키로. `auth.ts`, `src/lib/database/user.ts`
+- [x] 테스트/CI — PR에서 tsc/lint/build 게이트. `.github/workflows/ci.yml` (e2e 스모크는 아래 잔여)
+- [x] route별 `error.tsx`(user/admin) + `global-error.tsx` + DB 헬퍼 에러 메시지
+- [x] next-pwa 서비스워커 제거, manifest 유지(테마 브랜드화)
+- [x] 미사용 의존성 제거: i18next 3종, uuid
+- [x] **DB 스키마 일원화 착수** — drizzle.config + orders/order_items/social_logins/credentials pgTable 정의
+
+잔여:
+- [ ] **dev DB 분리** — 로컬 개발이 프로덕션 Vercel Postgres에 직접 연결됨. *Vercel 계정 필요.* 실행: Vercel 대시보드 → Storage에서 별도 Postgres(또는 브랜치 DB) 생성 → `.env.development.local`에 그 연결 문자열 → `next dev`가 dev DB를 쓰도록. 시드 스크립트를 dev DB에 재실행.
+- [ ] **상품 이미지 자체 호스팅** — 현재 타사 핫링크(`http://bbbtan.cafe24.com`, http라 https 배포 시 mixed content). *Vercel Blob 토큰 필요.* 실행: `@vercel/blob` 설치 → 이미지 다운로드 후 `put()`으로 업로드 → products.imageUrl을 Blob URL로 UPDATE → next.config remotePatterns 정리. (진행 중: `public/images/products/*.png` 자체 에셋이 이미 추가되어 있음)
+- [ ] **DB 스키마 일원화 마무리** — users/address도 drizzle pgTable로 이관 + 발견된 드리프트 수정: 실 DB엔 `birth`가 없고 `age`(int)가 있음 → `userSchema`/마이페이지 `PROFILE_FIELDS`가 존재하지 않는 `user.birth` 참조(항상 미입력 처리). gender는 char. drizzle-kit generate는 tsconfig target(es5) × drizzle-kit 0.20.x esbuild 충돌로 **drizzle-kit 버전 업** 후 가능.
+- [ ] e2e 스모크 테스트 자동화 (현재는 수동 검증 스크립트: `scripts/verify-*.ts`)
 - [ ] Modal 포커스 트랩 + Escape 닫기 (Search 모달은 됨)
-- [ ] **3D 랩 스냅샷 버튼이 빈 이미지를 저장** — `preserveDrawingBuffer` 설정에도 캔버스 readback이 전부 투명으로 나옴. R3F 렌더 루프 안에서 `gl.render()` 직후 `toDataURL`을 호출하도록 수정 필요. `src/app/(user)/3d-shop/_components/ControlPanel.tsx:58`
+- [ ] **3D 랩 스냅샷 버튼이 빈 이미지를 저장** — `preserveDrawingBuffer` 설정에도 캔버스 readback이 전부 투명. R3F 렌더 루프 안에서 `gl.render()` 직후 `toDataURL` 호출로 수정 필요. `src/app/(user)/3d-shop/_components/ControlPanel.tsx:58`
 
 ## 참고
 
 - OAuth 소셜 로그인은 터널/프리뷰 URL에서 callback 불일치로 동작하지 않음 — 원격 데모는 credentials 로그인으로
 - 3D 모델은 `shoe.glb` 하나뿐이라 상품 상세 3D 뷰어는 SHOES 카테고리에만 노출 (상품 colors를 파트에 근사 매핑)
+- 검증 스크립트(`scripts/verify-order-flow.ts`, `verify-social-linking.ts`)는 프로덕션 DB에서 자기정리(self-cleaning)로 동작 — dev DB 분리 후엔 dev DB 대상으로 돌릴 것
