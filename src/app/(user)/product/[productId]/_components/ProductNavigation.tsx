@@ -14,7 +14,7 @@ const ProductNavigationItem = ({
   <Link
     href={href ?? '#'}
     className={cn(
-      'flex w-full items-center justify-center break-keep border-2 border-black px-1 py-2 text-sm text-black md:py-4 md:text-base',
+      'flex w-full items-center justify-center break-keep border border-border px-1 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:py-3.5',
       className,
     )}
     {...rest}
@@ -24,7 +24,7 @@ const ProductNavigationItem = ({
 );
 
 const ProductNavigation = ({ id }: { id: string }) => (
-  <div id={id} className="order-3 col-span-12 flex w-full scroll-m-24">
+  <div id={id} className="flex w-full scroll-m-20">
     <ProductNavigationItem text="상품정보" href="#product-info" />
     <ProductNavigationItem
       text="결제/교환/배송정보"
