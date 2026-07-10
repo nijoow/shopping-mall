@@ -1,24 +1,25 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { IoLogOut } from 'react-icons/io5';
+import { IoLogOutOutline } from 'react-icons/io5';
 import { logout } from '../../_lib/actions';
 
 const LogoutButton = () => {
   const router = useRouter();
+
   const handleClickLogoutButton = async () => {
-    logout();
+    await logout();
     router.refresh();
   };
 
   return (
     <button
       type="button"
-      className="group hidden items-center gap-1 px-2 sm:flex"
+      aria-label="로그아웃"
+      className="flex h-10 w-10 items-center justify-center transition-colors hover:text-volt"
       onClick={handleClickLogoutButton}
     >
-      <IoLogOut size={20} />
-      <span className="hidden text-0.75 md:block">LOGOUT</span>
+      <IoLogOutOutline size={20} />
     </button>
   );
 };

@@ -1,67 +1,42 @@
 import {
-  IoAlbums,
-  IoBag,
-  IoGridSharp,
-  IoHome,
-  IoPerson,
+  IoAlbumsOutline,
+  IoBagOutline,
+  IoCubeOutline,
+  IoHomeOutline,
+  IoPersonOutline,
 } from 'react-icons/io5';
 import MobileNavigationLink from './MobileNavigationLink';
 
 const mobileNavigationList = [
   {
-    href: '/category',
-    icon: (
-      <IoGridSharp
-        size={20}
-        className="color-transition fill-gray-950 dark:fill-white"
-      />
-    ),
-    text: 'CATEGORY',
+    href: '/3d-shop',
+    icon: <IoCubeOutline size={20} />,
+    text: '3D LAB',
   },
   {
     href: '/shop/all',
-    icon: (
-      <IoAlbums
-        size={20}
-        className="color-transition fill-gray-950 dark:fill-white"
-      />
-    ),
+    icon: <IoAlbumsOutline size={20} />,
     text: 'SHOP',
   },
   {
     href: '/',
-    icon: (
-      <IoHome
-        size={20}
-        className="color-transition fill-gray-950 dark:fill-white"
-      />
-    ),
+    icon: <IoHomeOutline size={20} />,
     text: 'HOME',
   },
   {
     href: '/cart',
-    icon: (
-      <IoBag
-        size={20}
-        className="color-transition fill-gray-950 dark:fill-white"
-      />
-    ),
+    icon: <IoBagOutline size={20} />,
     text: 'CART',
   },
   {
     href: '/my-page',
-    icon: (
-      <IoPerson
-        size={20}
-        className="color-transition fill-gray-950 dark:fill-white"
-      />
-    ),
+    icon: <IoPersonOutline size={20} />,
     text: 'MY PAGE',
   },
 ];
 
 const MobileNavigationBar = () => (
-  <nav className="color-transition fixed bottom-0 z-40 grid h-16 w-full grid-cols-5 border-t border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-950 sm:hidden">
+  <nav className="fixed bottom-0 z-40 grid h-16 w-full grid-cols-5 border-t border-border bg-background/95 backdrop-blur-md sm:hidden">
     {mobileNavigationList.map(({ href, icon, text }) => (
       <MobileNavigationLink key={text} href={href} icon={icon} text={text} />
     ))}
