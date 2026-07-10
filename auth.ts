@@ -7,9 +7,8 @@ import {
 } from '@/lib/auth/error';
 import {
   getUserByEmail,
-  getUserByEmailAndProvider,
   getUserPassword,
-  registerUserBySocialLogin,
+  linkOrCreateSocialUser,
 } from '@/lib/database/user';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import { User } from '@/types/types';
@@ -72,15 +71,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       try {
         if (account?.provider === 'credentials') return true;
 
-        if (account && user) {
-          const existUser = await getUserByEmailAndProvider(
-            user.email as string,
-            account.provider,
-          );
-          if (existUser) return true;
-
-          await registerUserBySocialLogin({
-            email: user.email!,
+        // 소셜 로그인은 이메일 기준으로 기존 계정에 연결(없으면 생성)
+        if (account && user?.email) {
+          await linkOrCreateSocialUser({
+            email: user.email,
             name: user.name,
             accountId: account.providerAccountId,
             provider: account.provider,

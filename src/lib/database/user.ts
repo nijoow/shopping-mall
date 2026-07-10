@@ -21,22 +21,6 @@ export const getUserByEmail = async (
   }
 };
 
-export const getUserByEmailAndProvider = async (
-  email: string,
-  provider: string,
-): Promise<User | undefined> => {
-  try {
-    const user =
-      await sql<User>`SELECT users.user_id, users.email, social_logins.type FROM users
-        INNER JOIN social_logins ON users.user_id=social_logins.user_id
-        WHERE users.email = ${email} AND social_logins.type = ${provider}`;
-    return user.rows[0];
-  } catch (error) {
-    console.error(error);
-    throw new Error();
-  }
-};
-
 export const getUserPassword = async (userId: number): Promise<string> => {
   try {
     const password =
@@ -45,28 +29,49 @@ export const getUserPassword = async (userId: number): Promise<string> => {
     return password.rows[0]?.password;
   } catch (error) {
     console.error(error);
-    throw new Error();
+    throw new Error('Failed to fetch user password.');
   }
 };
 
-export const registerUserBySocialLogin = async ({
+/**
+ * 소셜 로그인 처리 — 이메일 기준으로 기존 계정에 연결한다.
+ * 같은 이메일 계정이 이미 있으면(다른 provider나 credentials 포함) users 행을
+ * 새로 만들지 않고 social_logins 만 붙인다. 없을 때만 새 계정을 생성한다.
+ * (OAuth 제공자가 이메일을 검증했다는 전제 — Google/Naver/Kakao 모두 해당)
+ */
+export const linkOrCreateSocialUser = async ({
   email,
   name,
   accountId,
   provider,
 }: {
-  email?: string | null;
+  email: string;
   name?: string | null;
   accountId?: string | null;
-  provider?: string | null;
-}) => {
-  const result =
-    await sql`INSERT INTO users (email, login_provider, name, nickname)
-      VALUES (${email}, 'SOCIAL_LOGIN', ${name}, ${name}) 
-      RETURNING user_id;`;
+  provider: string;
+}): Promise<void> => {
+  const existing = await getUserByEmail(email);
+
+  if (existing) {
+    // 이미 있는 계정에 이 provider 소셜 로그인을 연결(중복 방지)
+    await sql`
+      INSERT INTO social_logins (user_id, account_id, type)
+      SELECT ${existing.user_id}, ${accountId}, ${provider}
+      WHERE NOT EXISTS (
+        SELECT 1 FROM social_logins
+        WHERE user_id = ${existing.user_id} AND type = ${provider}
+      )`;
+    return;
+  }
+
+  const result = await sql`
+    INSERT INTO users (email, login_provider, name, nickname)
+    VALUES (${email}, 'SOCIAL_LOGIN', ${name}, ${name})
+    RETURNING user_id`;
   const userId = result.rows[0].user_id;
-  await sql`INSERT INTO social_logins (user_id, account_id, type) 
-    VALUES (${userId}, ${accountId}, ${provider});`;
+  await sql`
+    INSERT INTO social_logins (user_id, account_id, type)
+    VALUES (${userId}, ${accountId}, ${provider})`;
 };
 
 export const registerUserByCredentials = async ({
