@@ -1,26 +1,31 @@
-import { nanumSquareRound } from '@/fonts/font';
+import { nanumSquareRound, outfit } from '@/fonts/font';
 import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
-import type { Metadata } from 'next';
-import { ThemeProvider } from 'next-themes';
+import type { Metadata, Viewport } from 'next';
 import { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Nijoow Shopping Mall',
-  description: 'Shopping Mall',
+  title: {
+    default: 'NIJOOW — Street Casual Shop',
+    template: '%s | NIJOOW',
+  },
+  description:
+    '스트릿캐쥬얼 셀렉트샵 NIJOOW. 3D 커스터마이저로 나만의 스니커즈를 만들어 보세요.',
   manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0a0a0c',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <ReactQueryProvider>
-      <html lang="ko" className="h-full !scroll-smooth" suppressHydrationWarning>
+      <html lang="ko" className="h-full !scroll-smooth">
         <body
-          className={`${nanumSquareRound.className} relative flex h-full flex-col`}
+          className={`${nanumSquareRound.className} ${outfit.variable} relative flex h-full flex-col`}
         >
-          <ThemeProvider attribute="class" enableSystem>
-            {children}
-          </ThemeProvider>
+          {children}
         </body>
       </html>
     </ReactQueryProvider>

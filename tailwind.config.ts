@@ -66,6 +66,21 @@ const config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        /* street accents */
+        volt: 'hsl(var(--volt))',
+        'neon-pink': 'hsl(var(--neon-pink))',
+        'neon-cyan': 'hsl(var(--neon-cyan))',
+        ink: 'hsl(var(--ink))',
+      },
+      fontFamily: {
+        display: ['var(--font-display)', 'sans-serif'],
+      },
+      boxShadow: {
+        street: '5px 5px 0 0 hsl(var(--volt))',
+        'street-sm': '3px 3px 0 0 hsl(var(--volt))',
+        'street-fg': '4px 4px 0 0 hsl(var(--foreground))',
+        'street-volt': '5px 5px 0 0 hsl(var(--volt))',
+        'street-pink': '5px 5px 0 0 hsl(var(--neon-pink))',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -85,11 +100,21 @@ const config = {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-100%)' },
         },
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         slide: 'slide 60s linear infinite',
+        marquee: 'marquee 24s linear infinite',
+        'fade-up': 'fade-up 0.6s ease-out both',
       },
       fontSize,
     },

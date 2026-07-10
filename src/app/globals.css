@@ -2,67 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * NIJOOW midnight-street design tokens — 다크 전용
+ * 서브틀한 보더 + volt 오프셋 섀도 + display 타이포가 축
+ * ------------------------------------------------------------------------- */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 240 7% 4%; /* midnight */
+    --foreground: 40 20% 96%; /* paper */
 
-    --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card: 240 6% 7%;
+    --card-foreground: 40 20% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover: 240 6% 7%;
+    --popover-foreground: 40 20% 96%;
 
-    --primary: 220.9 39.3% 11%;
-    --primary-foreground: 210 20% 98%;
+    --primary: 40 20% 96%;
+    --primary-foreground: 240 7% 5%;
 
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    --secondary: 240 5% 11%;
+    --secondary-foreground: 40 20% 96%;
 
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 240 5% 11%;
+    --muted-foreground: 240 5% 60%;
 
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
+    --accent: 68 100% 50%; /* volt */
+    --accent-foreground: 240 6% 7%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 224 71.4% 4.1%;
+    --border: 240 5% 15%;
+    --input: 240 5% 19%;
+    --ring: 68 100% 50%;
 
-    --radius: 0.5rem;
-  }
+    --radius: 0.25rem;
 
-  .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
-
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-
-    --primary: 210 20% 98%;
-    --primary-foreground: 220.9 39.3% 11%;
-
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
-
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 20% 98%;
-
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
+    /* street accents */
+    --volt: 68 100% 50%; /* #d7ff00 */
+    --neon-pink: 335 100% 59%; /* #ff2e88 */
+    --neon-cyan: 187 86% 53%; /* #22d3ee */
+    --ink: 240 6% 7%;
   }
 }
 
@@ -73,6 +53,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  ::selection {
+    background-color: hsl(var(--volt));
+    color: hsl(var(--ink));
+  }
 }
 
 @layer components {
@@ -81,7 +65,25 @@
   }
 
   .input-field {
-    @apply rounded-lg border border-gray-300 p-3;
+    @apply rounded-none border border-input bg-background/60 p-3 outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-volt;
+  }
+
+  /* 카드 — 서브틀 보더, 호버 시 volt 보더 + 오프셋 섀도 */
+  .street-card {
+    @apply border border-border bg-card transition-all duration-200;
+  }
+  .street-card-hover {
+    @apply hover:-translate-y-1 hover:border-volt/60 hover:shadow-street;
+  }
+
+  .display {
+    font-family: var(--font-display), sans-serif;
+    @apply font-bold uppercase tracking-tight;
+  }
+
+  /* 섹션 헤더 라벨 — 작은 트래킹 넓은 디스플레이 텍스트 */
+  .eyebrow {
+    @apply display text-0.75 tracking-[0.2em] text-muted-foreground;
   }
 }
 
@@ -91,16 +93,21 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #222;
+  background-color: hsl(var(--volt));
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #eee;
-  border-radius: 10px;
+  background-color: transparent;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   width: 0px;
   height: 0px;
+}
+
+/* 아웃라인(중공) 타이포 — 히어로 헤드라인용 */
+.text-outline {
+  -webkit-text-stroke: 1.5px currentColor;
+  -webkit-text-fill-color: transparent;
 }
