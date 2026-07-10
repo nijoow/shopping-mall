@@ -3,23 +3,53 @@
 import Spinner from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { useProductsByIds } from '@/hooks/useProductsByIds';
-import { toggleSavedProduct, useSavedProducts } from '@/lib/savedProducts';
+import {
+  CartItem,
+  removeFromCart,
+  updateCartQuantity,
+  useCart,
+} from '@/lib/savedProducts';
 import { Product } from '@/types/types';
 import { commaToCurrency } from '@/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { IoClose } from 'react-icons/io5';
+import { IoAdd, IoClose, IoRemove } from 'react-icons/io5';
 
 const FREE_SHIPPING_THRESHOLD = 50000;
 const SHIPPING_FEE = 3000;
 
-const CartItem = ({
-  product,
-  onRemove,
+const QuantityStepper = ({
+  item,
 }: {
-  product: Product;
-  onRemove: () => void;
+  item: CartItem;
 }) => (
+  <div className="flex items-center border border-border">
+    <button
+      type="button"
+      aria-label="수량 감소"
+      disabled={item.quantity <= 1}
+      className="flex h-8 w-8 items-center justify-center transition-colors hover:text-volt disabled:opacity-30"
+      onClick={() =>
+        updateCartQuantity(item.productId, item.size, item.quantity - 1)
+      }
+    >
+      <IoRemove size={14} />
+    </button>
+    <span className="display w-8 text-center text-0.875">{item.quantity}</span>
+    <button
+      type="button"
+      aria-label="수량 증가"
+      className="flex h-8 w-8 items-center justify-center transition-colors hover:text-volt"
+      onClick={() =>
+        updateCartQuantity(item.productId, item.size, item.quantity + 1)
+      }
+    >
+      <IoAdd size={14} />
+    </button>
+  </div>
+);
+
+const CartRow = ({ item, product }: { item: CartItem; product: Product }) => (
   <li className="flex items-center gap-4 py-4">
     <Link
       href={`/product/${product.productId}`}
@@ -33,23 +63,31 @@ const CartItem = ({
         className="object-contain"
       />
     </Link>
-    <div className="flex min-w-0 flex-auto flex-col gap-0.5">
-      <span className="display text-0.625 tracking-widest text-muted-foreground">
-        {product.category}
-      </span>
+    <div className="flex min-w-0 flex-auto flex-col gap-1">
+      <span className="eyebrow text-0.625">{product.category}</span>
       <Link
         href={`/product/${product.productId}`}
-        className="truncate font-medium transition-colors hover:text-muted-foreground"
+        className="truncate font-medium transition-colors hover:text-volt"
       >
         {product.productName}
       </Link>
-      <span className="display text-1">₩{commaToCurrency(product.price)}</span>
+      {item.size && (
+        <span className="text-0.75 text-muted-foreground">
+          SIZE · {item.size}
+        </span>
+      )}
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <QuantityStepper item={item} />
+        <span className="display text-1">
+          ₩{commaToCurrency(product.price * item.quantity)}
+        </span>
+      </div>
     </div>
     <button
       type="button"
       aria-label={`${product.productName} 장바구니에서 제거`}
-      className="shrink-0 p-2 text-muted-foreground transition-colors hover:text-foreground"
-      onClick={onRemove}
+      className="shrink-0 self-start p-1 text-muted-foreground transition-colors hover:text-foreground"
+      onClick={() => removeFromCart(item.productId, item.size)}
     >
       <IoClose size={20} />
     </button>
@@ -78,13 +116,13 @@ const SummaryRow = ({ label, value }: { label: string; value: string }) => (
 );
 
 const CartProducts = () => {
-  const { saved: cart, savedIds, isHydrated } = useSavedProducts('cart');
+  const { cart, productIds, isHydrated } = useCart();
   const { data: products, isLoading } = useProductsByIds(
     'cartProducts',
-    savedIds,
+    productIds,
   );
 
-  if (!isHydrated || (isLoading && savedIds.length > 0)) {
+  if (!isHydrated || (isLoading && productIds.length > 0)) {
     return (
       <div className="flex w-full justify-center py-24">
         <Spinner width={32} />
@@ -92,23 +130,31 @@ const CartProducts = () => {
     );
   }
 
-  const cartProducts = (products ?? []).filter(
-    ({ productId }) => cart[productId],
+  const productMap = new Map((products ?? []).map(p => [p.productId, p]));
+
+  // 상품이 삭제된 라인은 제외
+  const rows = cart
+    .map(item => ({ item, product: productMap.get(item.productId) }))
+    .filter((row): row is { item: CartItem; product: Product } =>
+      Boolean(row.product),
+    );
+
+  if (rows.length === 0) return <EmptyCart />;
+
+  const subtotal = rows.reduce(
+    (sum, { item, product }) => sum + product.price * item.quantity,
+    0,
   );
-
-  if (cartProducts.length === 0) return <EmptyCart />;
-
-  const subtotal = cartProducts.reduce((sum, { price }) => sum + price, 0);
   const shippingFee = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
       <ul className="street-card flex w-full flex-col divide-y divide-border px-4">
-        {cartProducts.map(product => (
-          <CartItem
-            key={product.productId}
+        {rows.map(({ item, product }) => (
+          <CartRow
+            key={`${item.productId}-${item.size ?? 'na'}`}
+            item={item}
             product={product}
-            onRemove={() => toggleSavedProduct('cart', product.productId)}
           />
         ))}
       </ul>
@@ -133,12 +179,9 @@ const CartProducts = () => {
             ₩{commaToCurrency(subtotal + shippingFee)}
           </span>
         </div>
-        <Button variant="volt" size="lg" className="mt-1" disabled>
-          CHECKOUT
+        <Button asChild variant="volt" size="lg" className="mt-1">
+          <Link href="/checkout">CHECKOUT</Link>
         </Button>
-        <p className="text-center text-0.75 text-muted-foreground">
-          결제 기능은 준비 중이에요.
-        </p>
       </aside>
     </div>
   );

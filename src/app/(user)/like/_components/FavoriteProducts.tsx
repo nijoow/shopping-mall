@@ -4,7 +4,7 @@ import ProductCard from '@/components/ProductCard';
 import Spinner from '@/components/Spinner';
 import { Button } from '@/components/ui/button';
 import { useProductsByIds } from '@/hooks/useProductsByIds';
-import { useSavedProducts } from '@/lib/savedProducts';
+import { useFavorites } from '@/lib/savedProducts';
 import Link from 'next/link';
 
 const EmptyFavorites = () => (
@@ -22,13 +22,13 @@ const EmptyFavorites = () => (
 );
 
 const FavoriteProducts = () => {
-  const { saved: favorite, savedIds, isHydrated } = useSavedProducts('favorite');
+  const { favorite, favoriteIds, isHydrated } = useFavorites();
   const { data: products, isLoading } = useProductsByIds(
     'favoriteProducts',
-    savedIds,
+    favoriteIds,
   );
 
-  if (!isHydrated || (isLoading && savedIds.length > 0)) {
+  if (!isHydrated || (isLoading && favoriteIds.length > 0)) {
     return (
       <div className="flex w-full justify-center py-24">
         <Spinner width={32} />

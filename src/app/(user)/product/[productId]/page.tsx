@@ -73,9 +73,10 @@ export default async function ProductPage({
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <ProductActions productId={product.productId} />
-            </div>
+            <ProductActions
+              productId={product.productId}
+              sizes={product.sizes}
+            />
 
             {has3DPreview && (
               <Link

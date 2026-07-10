@@ -1,6 +1,6 @@
 'use client';
 
-import { toggleSavedProduct, useSavedProducts } from '@/lib/savedProducts';
+import { toggleFavorite, useFavorites } from '@/lib/savedProducts';
 import { Product } from '@/types/types';
 import { commaToCurrency } from '@/utils';
 import Image from 'next/image';
@@ -17,14 +17,14 @@ const ProductCard = ({
 }) => {
   const { productId, productName, price, colors, imageUrl, category } = product;
 
-  const { saved: favorite } = useSavedProducts('favorite');
+  const { favorite } = useFavorites();
   const isFavorite = favorite[productId];
 
   const handleClickFavoriteButton = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     e.preventDefault();
-    toggleSavedProduct('favorite', productId);
+    toggleFavorite(productId);
   };
 
   return (

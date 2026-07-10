@@ -1,39 +1,95 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { toggleSavedProduct, useSavedProducts } from '@/lib/savedProducts';
+import { cn } from '@/lib/utils';
+import { addToCart, useCart } from '@/lib/savedProducts';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-const ProductActions = ({ productId }: { productId: number }) => {
+const ProductActions = ({
+  productId,
+  sizes,
+}: {
+  productId: number;
+  sizes: string[];
+}) => {
   const router = useRouter();
-  const { saved: cart } = useSavedProducts('cart');
+  const { cart } = useCart();
 
-  const isInCart = cart[productId];
+  const hasSizes = sizes.length > 0;
+  const [selectedSize, setSelectedSize] = useState<string | null>(
+    hasSizes ? null : null,
+  );
+  const [error, setError] = useState(false);
 
-  const handleClickBuyNow = () => {
-    if (!isInCart) toggleSavedProduct('cart', productId);
-    router.push('/cart');
+  const inCartCount = cart
+    .filter(line => line.productId === productId)
+    .reduce((sum, line) => sum + line.quantity, 0);
+
+  const handleAddToCart = (thenGoToCart: boolean) => {
+    if (hasSizes && !selectedSize) {
+      setError(true);
+      return;
+    }
+    addToCart({ productId, quantity: 1, size: selectedSize });
+    if (thenGoToCart) router.push('/cart');
   };
 
   return (
-    <>
-      <Button
-        variant="volt"
-        size="lg"
-        className="w-full"
-        onClick={() => toggleSavedProduct('cart', productId)}
-      >
-        {isInCart ? 'REMOVE FROM CART' : 'ADD TO CART'}
-      </Button>
-      <Button
-        variant="street-outline"
-        size="lg"
-        className="w-full"
-        onClick={handleClickBuyNow}
-      >
-        BUY NOW
-      </Button>
-    </>
+    <div className="flex flex-col gap-4">
+      {hasSizes && (
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <span className="eyebrow">SIZE</span>
+            {error && (
+              <span className="text-0.75 text-destructive">
+                사이즈를 선택해주세요
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {sizes.map(size => (
+              <button
+                key={size}
+                type="button"
+                aria-pressed={selectedSize === size}
+                className={cn(
+                  'min-w-11 border px-3 py-2 text-0.875 transition-colors',
+                  selectedSize === size
+                    ? 'border-volt bg-volt font-bold text-ink'
+                    : 'border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground',
+                )}
+                onClick={() => {
+                  setSelectedSize(size);
+                  setError(false);
+                }}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <Button
+          variant="volt"
+          size="lg"
+          className="w-full"
+          onClick={() => handleAddToCart(false)}
+        >
+          ADD TO CART{inCartCount > 0 ? ` (${inCartCount})` : ''}
+        </Button>
+        <Button
+          variant="street-outline"
+          size="lg"
+          className="w-full"
+          onClick={() => handleAddToCart(true)}
+        >
+          BUY NOW
+        </Button>
+      </div>
+    </div>
   );
 };
 
