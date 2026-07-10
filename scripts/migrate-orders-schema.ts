@@ -4,6 +4,10 @@
  *   - orders / order_items 신규 테이블
  *   - 기존 상품에 카테고리별 샘플 사이즈 시드
  *
+ * 주의: 구버전의 방치된 orders 테이블(product_id/total_price 구조, 0행)이
+ * 존재했어 CREATE IF NOT EXISTS 가 무효였다. 두 테이블 모두 비어 있어
+ * DROP 후 올바른 스키마로 재생성한다(데이터 손실 없음).
+ *
  *   yarn dlx tsx scripts/migrate-orders-schema.ts
  */
 import { sql } from '@vercel/postgres';
@@ -29,16 +33,37 @@ if (fs.existsSync(envPath)) {
 }
 
 async function main() {
-  // 1) products.sizes — 멱등 (IF NOT EXISTS)
+  // 안전 가드 — 재생성 대상 테이블에 데이터가 있으면 중단
+  const guard = await sql`
+    SELECT
+      (SELECT COUNT(*) FROM orders)::int AS orders,
+      (SELECT COUNT(*) FROM order_items)::int AS items
+  `.catch(() => ({ rows: [{ orders: 0, items: 0 }] }));
+  const { orders: orderCount, items: itemCount } = guard.rows[0] as {
+    orders: number;
+    items: number;
+  };
+  if (orderCount > 0 || itemCount > 0) {
+    throw new Error(
+      `DATA PRESENT (orders=${orderCount}, items=${itemCount}) — aborting destructive migration`,
+    );
+  }
+
+  // 1) products.sizes — 멱등
   await sql`
     ALTER TABLE products
     ADD COLUMN IF NOT EXISTS sizes text[] NOT NULL DEFAULT '{}'::text[]
   `;
   console.log('products.sizes added');
 
-  // 2) orders
+  // 2) 구버전 테이블 제거 (order_items → orders 순서, FK 때문)
+  await sql`DROP TABLE IF EXISTS order_items`;
+  await sql`DROP TABLE IF EXISTS orders`;
+  console.log('legacy orders/order_items dropped');
+
+  // 3) orders
   await sql`
-    CREATE TABLE IF NOT EXISTS orders (
+    CREATE TABLE orders (
       order_id       serial PRIMARY KEY,
       user_id        integer NOT NULL REFERENCES users(user_id),
       status         varchar NOT NULL DEFAULT 'PAID',
@@ -51,11 +76,11 @@ async function main() {
       created_date   timestamp NOT NULL DEFAULT NOW()
     )
   `;
-  console.log('orders table ready');
+  console.log('orders table created');
 
-  // 3) order_items
+  // 4) order_items
   await sql`
-    CREATE TABLE IF NOT EXISTS order_items (
+    CREATE TABLE order_items (
       order_item_id serial PRIMARY KEY,
       order_id      integer NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
       product_id    integer NOT NULL REFERENCES products("productId"),
@@ -66,9 +91,9 @@ async function main() {
       color         varchar
     )
   `;
-  console.log('order_items table ready');
+  console.log('order_items table created');
 
-  // 4) 카테고리별 샘플 사이즈 시드 (아직 비어있는 상품만)
+  // 5) 카테고리별 샘플 사이즈 시드 (아직 비어있는 상품만)
   const apparel = await sql`
     UPDATE products SET sizes = ARRAY['S','M','L','XL']
     WHERE category IN ('OUTER','TOP','BOTTOM') AND cardinality(sizes) = 0

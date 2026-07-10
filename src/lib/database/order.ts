@@ -1,5 +1,10 @@
-import { Order, OrderItem, OrderWithItems, Product } from '@/types/types';
-import { Address } from '@/types/types';
+import {
+  Address,
+  Order,
+  OrderItem,
+  OrderWithItems,
+  Product,
+} from '@/types/types';
 import { createClient, sql } from '@vercel/postgres';
 
 const FREE_SHIPPING_THRESHOLD = 50000;
@@ -83,8 +88,9 @@ export const createOrder = async ({
     `;
     const orderId = orderResult.rows[0].order_id;
 
-    // 주문 항목 + 재고 차감
-    for (const { line, productName, price } of snapshots) {
+    // 주문 항목 + 재고 차감 (같은 트랜잭션·같은 커넥션이라 순차 실행)
+    for (let i = 0; i < snapshots.length; i += 1) {
+      const { line, productName, price } = snapshots[i];
       // eslint-disable-next-line no-await-in-loop
       await client.sql`
         INSERT INTO order_items
