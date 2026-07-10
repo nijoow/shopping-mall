@@ -1,36 +1,16 @@
-import { auth } from 'auth';
-import Link from 'next/link';
 import React from 'react';
+import MyPageNav from './_components/MyPageNav';
 
-const Layout = async ({ children }: { children: React.ReactNode }) => {
-  const session = await auth();
-
-  return (
-    <div className="mx-auto flex h-full w-full max-w-5xl px-8 py-24">
-      <div className="hidden h-full w-64 flex-col gap-8 sm:flex">
-        <div className="flex flex-col gap-4">
-          <span className="text-1.25 font-semibold">쇼핑 정보</span>
-          <span className="font-light text-gray-500">주문배송조회</span>
-          <span className="font-light text-gray-500">취소/교환/반품 내역</span>
-          <span className="font-light text-gray-500">상품 리뷰</span>
-        </div>
-        <div className="flex flex-col gap-4">
-          <span className="text-1.25 font-semibold">계정 설정</span>
-          <Link
-            href="/my-page/information"
-            className="font-light text-gray-500"
-          >
-            회원정보
-          </Link>
-          <Link href="/my-page/addresses" className="font-light text-gray-500">
-            배송지 목록
-          </Link>
-          <span className="font-light text-gray-500">포인트</span>
-        </div>
-      </div>
-      <div className="flex h-full w-full flex-col">{children}</div>
-    </div>
-  );
-};
+const Layout = ({ children }: { children: React.ReactNode }) => (
+  <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10 sm:flex-row sm:gap-0 sm:px-8 sm:py-16">
+    <aside className="flex w-full flex-col gap-6 sm:w-64 sm:shrink-0 sm:pr-10">
+      <h1 className="display text-1.75 leading-none">
+        MY PAGE<span className="text-volt">.</span>
+      </h1>
+      <MyPageNav />
+    </aside>
+    <div className="flex w-full min-w-0 flex-col">{children}</div>
+  </div>
+);
 
 export default Layout;
