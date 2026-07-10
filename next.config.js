@@ -8,6 +8,9 @@ const withPWA = require('next-pwa')({
 
 const nextConfig = {
   images: {
+    // 자체 제작 제품 아트(SVG) 서빙용 — 스크립트 실행이 차단된 샌드박스로 제한
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'http',

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900">
+  <rect width="900" height="900" fill="#0d0b14"/>
+
+  <!-- 배경 그리드 -->
+  <g stroke="rgba(244,242,236,0.10)" stroke-width="2">
+    <line x1="0" y1="700" x2="900" y2="640"/>
+    <line x1="0" y1="820" x2="900" y2="700"/>
+    <line x1="620" y1="900" x2="900" y2="530"/>
+  </g>
+
+  <!-- 태그 넘버 (아웃라인 타이포) -->
+  <text x="860" y="250" text-anchor="end" font-family="Arial Black, Arial, sans-serif"
+    font-size="230" font-weight="900" fill="none" stroke="#ff2e88"
+    stroke-width="4" opacity="0.9" letter-spacing="6">02</text>
+
+  <!-- 스니커즈 (측면 실루엣, 토 방향 →) -->
+  <g transform="translate(20,60) rotate(-2 450 420)">
+    <!-- 아웃솔 -->
+    <path d="M130 612 L700 612 Q770 610 776 566 Q778 546 748 542 L150 556 Q126 558 126 586 Q126 606 130 612 Z"
+      fill="#101018"/>
+    <!-- 미드솔 -->
+    <path d="M150 556 L748 542 Q772 538 766 514 Q760 494 730 492 L170 508 Q144 510 142 534 Q141 552 150 556 Z"
+      fill="#22d3ee"/>
+    <!-- 어퍼 바디 -->
+    <path d="M170 508 C160 464 162 424 178 392 L216 346 Q252 352 274 330 L298 296 Q318 268 352 274 L372 298 L560 428 Q642 466 700 480 Q726 486 730 492 L170 508 Z"
+      fill="#1b1b26"/>
+    <!-- 힐 쿼터 패널 -->
+    <path d="M170 508 C160 464 162 424 178 392 L216 346 L302 358 L292 502 Z"
+      fill="#ff2e88" opacity="0.9"/>
+    <!-- 사이드 스트라이프 -->
+    <path d="M310 466 L560 486 L534 444 L328 426 Z" fill="#ff2e88"/>
+    <!-- 레이스 -->
+    <g stroke="#f4f2ec" stroke-width="14" stroke-linecap="round">
+      <line x1="367" y1="379" x2="395" y2="326"/>
+      <line x1="425" y1="409" x2="452" y2="356"/>
+      <line x1="482" y1="439" x2="510" y2="386"/>
+    </g>
+    <!-- 토 캡 -->
+    <path d="M730 492 Q726 486 700 480 Q660 470 626 462 L616 506 Z"
+      fill="#f4f2ec" opacity="0.14"/>
+  </g>
+
+  <!-- 라벨 -->
+  <text x="64" y="756" font-family="Arial Black, Arial, sans-serif" font-size="26"
+    font-weight="900" letter-spacing="10" fill="rgba(244,242,236,0.55)">NIJOOW ORIGINALS</text>
+  <text x="60" y="828" font-family="Arial Black, Arial, sans-serif" font-size="62"
+    font-weight="900" letter-spacing="2" fill="#f4f2ec">SEOUL NIGHT</text>
+
+  <!-- 컬러 스와치 -->
+  <g transform="translate(64,852)">
+    <rect x="0" y="0" width="24" height="24" fill="#1b1b26" stroke="rgba(244,242,236,0.10)" stroke-width="2"/>
+    <rect x="34" y="0" width="24" height="24" fill="#ff2e88" stroke="rgba(244,242,236,0.10)" stroke-width="2"/>
+    <rect x="68" y="0" width="24" height="24" fill="#101018" stroke="rgba(244,242,236,0.10)" stroke-width="2"/>
+  </g>
+</svg>
