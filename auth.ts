@@ -94,8 +94,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     async jwt({ token, user, trigger }) {
       // user_id 는 불변이고, 프로필 표시는 각 페이지가 getUserByUserId 로
       // 직접 조회하므로 매 요청마다 DB를 조회할 필요가 없다.
-      // 로그인(user)·명시적 세션 갱신(update)·값이 비어있는 토큰일 때만 조회한다.
-      if (user || trigger === 'update' || token.user_id === undefined) {
+      // 로그인(user)·명시적 세션 갱신(update)·필수 클레임이 비어있는 토큰일
+      // 때만 조회한다. role 이 없는 (role 도입 이전 발급된) 토큰도 self-heal.
+      if (
+        user ||
+        trigger === 'update' ||
+        token.user_id === undefined ||
+        token.role === undefined
+      ) {
         const dbUser = await getUserByEmail((user?.email ?? token.email) as string);
         token.nickname = dbUser?.nickname;
         token.name = dbUser?.name;
@@ -105,7 +111,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token.nickname && session.user) {
+      // identity 는 user_id 로 판정한다 (nickname 은 소셜 계정에서 null 일 수 있음)
+      if (token.user_id && session.user) {
         session.user.name = token.name as string;
         session.user.nickname = token.nickname as string;
         session.user.user_id = token.user_id as number;
