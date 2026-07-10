@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+
+# 같은 브랜치의 이전 실행은 취소해 러너를 아낀다
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: type-check · lint · build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Type check
+        run: yarn tsc --noEmit
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Build
+        run: yarn build
+        env:
+          # 빌드는 동적 라우트를 실행하지 않아 실제 시크릿이 필요 없지만,
+          # NextAuth 초기화가 요구할 수 있어 더미 값을 넣는다.
+          AUTH_SECRET: ci-dummy-secret-not-used-at-runtime
