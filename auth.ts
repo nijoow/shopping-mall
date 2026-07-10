@@ -2,6 +2,7 @@ import {
   CredentialsValidationError,
   NotCredentialsUserError,
   PasswordNotMatchedError,
+  RateLimitedError,
   UserNotFoundError,
 } from '@/lib/auth/error';
 import {
@@ -10,6 +11,7 @@ import {
   getUserPassword,
   registerUserBySocialLogin,
 } from '@/lib/database/user';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 import { User } from '@/types/types';
 import * as bcrypt from 'bcrypt';
 import NextAuth, { NextAuthConfig } from 'next-auth';
@@ -29,7 +31,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         email: { type: 'text' },
         password: { type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        const ip = getClientIp(request);
+        if (!checkRateLimit(`login:${ip}`, { limit: 10, windowMs: 60_000 })) {
+          throw new RateLimitedError() as Error;
+        }
+
         const parsedCredentials = z
           .object({ email: z.string().email(), password: z.string() })
           .safeParse(credentials);
@@ -93,6 +100,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         token.nickname = dbUser?.nickname;
         token.name = dbUser?.name;
         token.user_id = dbUser?.user_id;
+        token.role = dbUser?.role;
       }
       return token;
     },
@@ -101,6 +109,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         session.user.name = token.name as string;
         session.user.nickname = token.nickname as string;
         session.user.user_id = token.user_id as number;
+        session.user.role = token.role as 'ADMIN' | 'USER';
       }
       return session;
     },

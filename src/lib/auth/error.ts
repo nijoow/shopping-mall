@@ -16,3 +16,7 @@ export class PasswordNotMatchedError extends CredentialsSignin {
 export class NotCredentialsUserError extends CredentialsSignin {
   code = 'NotCredentialsUserError';
 }
+
+export class RateLimitedError extends CredentialsSignin {
+  code = 'RateLimitedError';
+}

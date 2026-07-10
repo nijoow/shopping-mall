@@ -19,6 +19,7 @@ const LOGIN_ERROR_MESSAGES: Record<string, string> = {
   PasswordNotMatchedError: '비밀번호가 일치하지 않습니다.',
   CredentialsValidationError: '입력 형식이 올바르지 않습니다.',
   NotCredentialsUserError: '해당 계정은 소셜로그인으로 로그인 할 수 있습니다.',
+  RateLimitedError: '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.',
 };
 
 export default function LoginPage() {
