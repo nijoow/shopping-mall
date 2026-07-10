@@ -2,8 +2,12 @@ import React from 'react';
 import { IoClose } from 'react-icons/io5';
 
 const Modal = ({ children }: { children: React.ReactNode }) => (
-  <div className="fixed left-0 top-0 flex h-screen w-screen items-center justify-center bg-black/30">
-    <div className="m-auto flex w-full max-w-md flex-col gap-4 rounded-lg bg-white p-4 shadow-md">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm">
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="m-auto flex max-h-[90dvh] w-full max-w-md flex-col gap-4 overflow-y-auto border border-border bg-card p-5 text-card-foreground shadow-street"
+    >
       {children}
     </div>
   </div>
@@ -17,17 +21,23 @@ const Title = ({
   closeModal: () => void;
 }) => (
   <div className="flex items-center justify-between">
-    <div className="text-1.375 font-semibold">{children}</div>
-    <div>
-      <button type="button" onClick={closeModal} aria-label="close">
-        <IoClose size={24} />
-      </button>
+    <div className="flex items-center gap-2 text-1.25 font-bold">
+      <span aria-hidden className="inline-block h-2.5 w-2.5 bg-volt" />
+      {children}
     </div>
+    <button
+      type="button"
+      onClick={closeModal}
+      aria-label="close"
+      className="transition-transform hover:rotate-90"
+    >
+      <IoClose size={24} />
+    </button>
   </div>
 );
 
 const Description: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="text-small-regular text-ui-fg-base flex h-full items-center justify-center pb-4 pt-2">
+  <div className="flex h-full items-center justify-center pb-4 pt-2 text-0.875 text-muted-foreground">
     {children}
   </div>
 );

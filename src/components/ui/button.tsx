@@ -18,6 +18,12 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        /* street 변형 — 오프셋 그림자, 홈 CTA와 동일한 언어 */
+        street:
+          'display rounded-none border border-primary bg-primary tracking-widest text-primary-foreground transition-all hover:-translate-y-0.5 hover:shadow-street-sm',
+        volt: 'display rounded-none border border-volt bg-volt tracking-widest text-ink transition-all hover:-translate-y-0.5 hover:shadow-street-fg',
+        'street-outline':
+          'display rounded-none border border-input bg-transparent tracking-widest text-foreground transition-all hover:-translate-y-0.5 hover:border-foreground/50 hover:shadow-street-sm',
       },
       size: {
         default: 'h-10 px-4 py-2',
