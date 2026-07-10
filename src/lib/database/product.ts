@@ -1,4 +1,5 @@
 import { Categories, Gender, Product } from '@/types/types';
+import { ColorFamily, getColorFamily } from '@/utils/colorFamily';
 import { sql } from '@vercel/postgres';
 import { inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
@@ -43,30 +44,38 @@ export const getProducts = async ({
   gender,
   minPrice,
   maxPrice,
-  colors,
+  keyword,
+  colorFamily,
 }: {
   category: Categories;
   gender?: Gender;
   minPrice?: number;
   maxPrice?: number;
-  colors?: string[];
+  keyword?: string;
+  colorFamily?: ColorFamily;
 }): Promise<Product[] | undefined> => {
   try {
-    // const colorsValue = colors?.join(',');
-
     const product = await sql<Product>`
       SELECT
-          * 
-      FROM 
-          products 
-      WHERE 
+          *
+      FROM
+          products
+      WHERE
         (${category} = 'ALL' OR category = ${category})
-        AND (${gender}::text IS NULL OR gender = ${gender})
-        AND (${minPrice}::numeric IS NULL OR price >= ${minPrice})
-        AND (${maxPrice}::numeric IS NULL OR price <= ${maxPrice})
+        AND (${gender ?? null}::text IS NULL OR gender = ${gender ?? null})
+        AND (${minPrice ?? null}::numeric IS NULL OR price >= ${minPrice ?? null})
+        AND (${maxPrice ?? null}::numeric IS NULL OR price <= ${maxPrice ?? null})
+        AND (${keyword ?? null}::text IS NULL OR "productName" ILIKE '%' || ${keyword ?? null} || '%')
+      ORDER BY
+        "createdDate" DESC
     `;
 
-    return product.rows;
+    // 상품 색상이 자유로운 hex 값이라 색상 계열 필터는 조회 후 분류로 처리한다
+    if (!colorFamily) return product.rows;
+
+    return product.rows.filter(({ colors }) =>
+      colors.some(hex => getColorFamily(hex) === colorFamily),
+    );
   } catch (error) {
     throw new Error('Failed to fetch product.');
   }

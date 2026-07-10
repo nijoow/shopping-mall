@@ -1,11 +1,16 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { IoClose } from 'react-icons/io5';
+
+const genderList = [
+  { value: null, label: '전체' },
+  { value: 'MALE', label: '남성' },
+  { value: 'FEMALE', label: '여성' },
+];
 
 const priceList = [
   { id: 'total', value: '-', label: '전체 가격' },
@@ -23,96 +28,130 @@ const colorList = [
   { value: 'GREEN', className: 'bg-green-700' },
 ];
 
+const FilterSection = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div className="flex flex-col gap-2.5 border-b border-border pb-5">
+    <span className="eyebrow">{label}</span>
+    {children}
+  </div>
+);
+
 const Filter = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+
   const selectedGender = searchParams.get('gender');
-  const selectedPrice = searchParams.get('price');
+  const selectedPrice = searchParams.get('price') ?? '-';
   const selectedColor = searchParams.get('color');
+
+  const hasActiveFilter = Boolean(
+    selectedGender || selectedPrice !== '-' || selectedColor,
+  );
+
+  /** 값이 없으면 파라미터를 제거해 URL을 깨끗하게 유지한다 */
+  const updateParam = (key: string, value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value) params.set(key, value);
+    else params.delete(key);
+
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  const resetFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    ['gender', 'price', 'color'].forEach(key => params.delete(key));
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <>
-      <span className="font-semibold">성별</span>
-      <div className="flex gap-2">
-        <Badge
-          variant={!selectedGender ? 'default' : 'outline'}
-          className="cursor-pointer"
-          onClick={() =>
-            router.replace(
-              `?gender=&price=${selectedPrice}&color=${selectedColor}`,
-              { scroll: false },
-            )
+      <FilterSection label="GENDER">
+        <div className="flex flex-wrap gap-1.5">
+          {genderList.map(({ value, label }) => (
+            <button
+              key={label}
+              type="button"
+              className={cn(
+                'border px-3 py-1 text-0.75 transition-colors',
+                selectedGender === value
+                  ? 'border-volt bg-volt font-bold text-ink'
+                  : 'border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground',
+              )}
+              onClick={() => updateParam('gender', value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </FilterSection>
+
+      <FilterSection label="PRICE">
+        <RadioGroup
+          value={selectedPrice}
+          onValueChange={value =>
+            updateParam('price', value === '-' ? null : value)
           }
         >
-          전체
-        </Badge>
-        <Badge
-          variant={selectedGender === 'MALE' ? 'default' : 'outline'}
-          className="cursor-pointer"
-          onClick={() =>
-            router.replace(
-              `?gender=MALE&price=${selectedPrice}&color=${selectedColor}`,
-              { scroll: false },
-            )
-          }
+          {priceList.map(({ value, id, label }) => (
+            <div key={id} className="flex items-center space-x-2">
+              <RadioGroupItem value={value} id={id} />
+              <Label
+                htmlFor={id}
+                className={cn(
+                  'cursor-pointer font-normal',
+                  selectedPrice === value
+                    ? 'text-foreground'
+                    : 'text-muted-foreground',
+                )}
+              >
+                {label}
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </FilterSection>
+
+      <FilterSection label="COLOR">
+        <div className="flex flex-wrap items-center gap-3">
+          {colorList.map(({ value, className }) => {
+            const isSelected = selectedColor === value;
+
+            return (
+              <button
+                key={value}
+                type="button"
+                className={cn(
+                  'h-7 w-7 border transition-all',
+                  isSelected
+                    ? 'scale-110 border-volt shadow-street-sm'
+                    : 'border-input hover:scale-110',
+                  className,
+                )}
+                onClick={() => updateParam('color', isSelected ? null : value)}
+                aria-label={`${value} 색상 필터`}
+                aria-pressed={isSelected}
+              />
+            );
+          })}
+        </div>
+      </FilterSection>
+
+      {hasActiveFilter && (
+        <button
+          type="button"
+          onClick={resetFilters}
+          className="flex w-fit items-center gap-1 text-0.75 text-muted-foreground transition-colors hover:text-volt"
         >
-          남성
-        </Badge>
-        <Badge
-          variant={selectedGender === 'FEMALE' ? 'default' : 'outline'}
-          className="cursor-pointer"
-          onClick={() =>
-            router.replace(
-              `?gender=FEMALE&price=${selectedPrice}&color=${selectedColor}`,
-              { scroll: false },
-            )
-          }
-        >
-          여성
-        </Badge>
-      </div>
-      <Separator className="my-2" />
-      <span className="font-semibold">가격</span>
-      <RadioGroup
-        defaultValue="-"
-        onValueChange={value =>
-          router.replace(
-            `?gender=${selectedGender}&price=${value}&color=${selectedColor}`,
-            { scroll: false },
-          )
-        }
-      >
-        {priceList.map(({ value, id, label }) => (
-          <div key={id} className="flex items-center space-x-2">
-            <RadioGroupItem value={value} id={id} />
-            <Label htmlFor={id}>{label}</Label>
-          </div>
-        ))}
-      </RadioGroup>
-      <Separator className="my-2" />
-      <span className="font-semibold">색상</span>
-      <div className="flex flex-wrap items-center gap-6">
-        {colorList.map(({ value, className }) => (
-          <button
-            key={value}
-            type="button"
-            className={cn(
-              `col-span-1 grid h-7 w-7 rounded-sm border border-gray-200`,
-              {
-                'border-2': value === 'white',
-              },
-              className,
-            )}
-            onClick={() =>
-              router.replace(
-                `?gender=${selectedGender}&price=${selectedPrice}&color=${value}`,
-                { scroll: false },
-              )
-            }
-            aria-label={`${value}-button`}
-          />
-        ))}
-      </div>
+          <IoClose size={14} />
+          필터 초기화
+        </button>
+      )}
     </>
   );
 };
