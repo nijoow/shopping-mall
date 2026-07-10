@@ -1,11 +1,4 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-});
-
 const nextConfig = {
   images: {
     // 자체 제작 제품 아트(SVG) 서빙용 — 스크립트 실행이 차단된 샌드박스로 제한
@@ -29,4 +22,4 @@ const nextConfig = {
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = nextConfig;
