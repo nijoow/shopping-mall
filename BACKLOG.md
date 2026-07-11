@@ -33,7 +33,7 @@
 
 잔여:
 - [ ] **dev DB 분리** — 로컬 개발이 프로덕션 Vercel Postgres에 직접 연결됨. *Vercel 계정 필요.* 실행: Vercel 대시보드 → Storage에서 별도 Postgres(또는 브랜치 DB) 생성 → `.env.development.local`에 그 연결 문자열 → `next dev`가 dev DB를 쓰도록. 시드 스크립트를 dev DB에 재실행.
-- [ ] **상품 이미지 자체 호스팅** — 현재 타사 핫링크(`http://bbbtan.cafe24.com`, http라 https 배포 시 mixed content). *Vercel Blob 토큰 필요.* 실행: `@vercel/blob` 설치 → 이미지 다운로드 후 `put()`으로 업로드 → products.imageUrl을 Blob URL로 UPDATE → next.config remotePatterns 정리. (진행 중: `public/images/products/*.png` 자체 에셋이 이미 추가되어 있음)
+- [x] **상품 이미지 자체 호스팅** — `public/images/products`의 PNG 20종으로 전환(seed-all-products.ts). 타사 핫링크/SVG 제거. *남은 최적화: 일부 PNG가 2MB대(green/orange-beanie) — 소스 용량 축소 또는 Vercel Blob 이전은 선택.* next.config remotePatterns의 cafe24/adererror는 이제 미사용이라 정리 가능.
 - [ ] **DB 스키마 일원화 마무리** — users/address도 drizzle pgTable로 이관 + 발견된 드리프트 수정: 실 DB엔 `birth`가 없고 `age`(int)가 있음 → `userSchema`/마이페이지 `PROFILE_FIELDS`가 존재하지 않는 `user.birth` 참조(항상 미입력 처리). gender는 char. drizzle-kit generate는 tsconfig target(es5) × drizzle-kit 0.20.x esbuild 충돌로 **drizzle-kit 버전 업** 후 가능.
 - [ ] e2e 스모크 테스트 자동화 (현재는 수동 검증 스크립트: `scripts/verify-*.ts`)
 - [ ] Modal 포커스 트랩 + Escape 닫기 (Search 모달은 됨)
