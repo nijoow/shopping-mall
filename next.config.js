@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // 자체 제작 제품 아트(SVG) 서빙용 — 스크립트 실행이 차단된 샌드박스로 제한
+    // 소셜 로그인 아이콘(kakao/naver/google.svg)을 next/image로 서빙하기 위함 —
+    // 스크립트 실행이 차단된 샌드박스 CSP로 제한
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
