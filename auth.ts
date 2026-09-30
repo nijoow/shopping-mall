@@ -1,109 +1,74 @@
-import {
-  CredentialsValidationError,
-  NotCredentialsUserError,
-  PasswordNotMatchedError,
-  UserNotFoundError,
-} from '@/lib/auth/error';
-import {
-  getUserByEmail,
-  getUserByEmailAndProvider,
-  getUserPassword,
-  registerUserBySocialLogin,
-} from '@/lib/database/user';
-import { User } from '@/types/types';
-import * as bcrypt from 'bcrypt';
-import NextAuth, { NextAuthConfig } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import NextAuth, { customFetch } from 'next-auth';
 import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
 import Naver from 'next-auth/providers/naver';
-import { z } from 'zod';
-import authConfig from './auth.config';
+import { repository } from '@/server/repository';
 
-export const { auth, signIn, signOut, handlers } = NextAuth({
-  ...authConfig,
-  providers: [
-    Credentials({
-      name: 'Sign In',
-      credentials: {
-        email: { type: 'text' },
-        password: { type: 'password' },
-      },
-      async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string() })
-          .safeParse(credentials);
-        if (!parsedCredentials.success) {
-          throw new CredentialsValidationError() as Error;
-        }
+const naverFetch: typeof fetch = async (input, init) => {
+  const response = await fetch(input, init);
+  const url = new URL(
+    typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url,
+  );
+  if (
+    response.ok &&
+    url.hostname === 'nid.naver.com' &&
+    url.pathname === '/oauth2.0/token'
+  ) {
+    const data = await response.clone().json();
+    if (typeof data.expires_in === 'string') {
+      data.expires_in = Number(data.expires_in);
+      const headers = new Headers(response.headers);
+      headers.delete('content-length');
+      headers.delete('content-encoding');
+      return new Response(JSON.stringify(data), {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    }
+  }
+  return response;
+};
 
-        const { email, password } = parsedCredentials.data;
-        const user = await getUserByEmail(email);
-        if (!user) {
-          throw new UserNotFoundError() as Error;
-        }
-
-        const hashedPassword = await getUserPassword(user.user_id);
-        if (!hashedPassword) {
-          throw new NotCredentialsUserError() as Error;
-        }
-
-        const passwordsMatch = await bcrypt.compare(password, hashedPassword);
-        if (!passwordsMatch) {
-          throw new PasswordNotMatchedError() as Error;
-        }
-
-        return user as User;
-      },
-    }),
-    Kakao,
-    Naver,
-    Google,
-  ],
+export const { auth, handlers, signIn, signOut } = NextAuth({
+  trustHost:
+    process.env.AUTH_TRUST_HOST === 'true' ||
+    process.env.NODE_ENV === 'development' ||
+    Boolean(process.env.VERCEL),
+  providers: [Kakao, Naver({ [customFetch]: naverFetch }), Google],
+  pages: { signIn: '/auth/login', error: '/auth/login' },
+  session: { strategy: 'jwt' },
   callbacks: {
-    async signIn({ user, account }) {
-      try {
-        if (account?.provider === 'credentials') return true;
-
-        if (account && user) {
-          const existUser = await getUserByEmailAndProvider(
-            user.email as string,
-            account.provider,
-          );
-          if (existUser) return true;
-
-          await registerUserBySocialLogin({
-            email: user.email!,
-            name: user.name,
-            accountId: account.providerAccountId,
-            provider: account.provider,
-          });
-        }
-        return true;
-      } catch (error) {
-        return `/auth/login?error=${encodeURIComponent((error as Error).message)}`;
+    async jwt({ token, user, account }) {
+      if (account && user) {
+        token.sub = await repository().account(
+          account.provider,
+          account.providerAccountId,
+          user.name ?? 'NIJOOW 멤버',
+        );
+      } else if (
+        token.sub &&
+        !(await repository().row(
+          'SELECT id FROM accounts WHERE id=?',
+          token.sub,
+        ))
+      ) {
+        // A token from the archived implementation does not identify a new local account.
+        return null;
       }
-    },
-    async jwt({ token }) {
-      const user = await getUserByEmail(token.email as string);
-      token.nickname = user?.nickname;
-      token.name = user?.name;
-      token.user_id = user?.user_id;
       return token;
     },
     async session({ session, token }) {
-      if (token.nickname && session.user) {
-        session.user.name = token.name as string;
-        session.user.nickname = token.nickname as string;
-        session.user.user_id = token.user_id as number;
-      }
+      if (session.user && token.sub) session.user.id = token.sub;
       return session;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith('/')) return `${baseUrl}${url}`;
-      return baseUrl;
+      const target = new URL(url, baseUrl);
+      return target.origin === new URL(baseUrl).origin ? target.href : baseUrl;
     },
   },
-} satisfies NextAuthConfig);
-
-export const { GET, POST } = handlers;
+});

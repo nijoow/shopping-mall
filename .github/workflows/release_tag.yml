@@ -1,20 +1,42 @@
 name: Release Tag
+
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-tag
+  cancel-in-progress: false
+
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: 버전 정보 추출
-        run: echo "##[set-output name=version;]$(echo '${{ github.event.head_commit.message }}' | egrep -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')"
-        id: extract_version_name
-      - name: Release 생성
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+
+      - name: Create release
+        uses: actions/github-script@v7
         with:
-          tag_name: ${{ steps.extract_version_name.outputs.version }}
-          release_name: ${{ steps.extract_version_name.outputs.version }}
+          script: |
+            const { version } = require('./package.json');
+            if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+              throw new Error(`Invalid package version: ${version}`);
+            }
+            const tag = `v${version}`;
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+            try {
+              await github.rest.repos.getReleaseByTag({ ...repo, tag });
+              core.info(`${tag} already exists`);
+              return;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createRelease({
+              ...repo,
+              tag_name: tag,
+              name: tag,
+              target_commitish: context.sha,
+            });
