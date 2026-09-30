@@ -1,33 +1,44 @@
-import { nanumSquareRound, outfit } from '@/fonts/font';
-import ReactQueryProvider from '@/lib/react-query/ReactQueryProvider';
-import type { Metadata, Viewport } from 'next';
-import { ReactNode } from 'react';
+import type { Metadata } from 'next';
+import localFont from 'next/font/local';
+import { DemoProvider } from '@/components/commerce/DemoProvider';
+import { Footer, Header } from '@/components/commerce/Header';
 import './globals.css';
-
+const body = localFont({
+  src: '../fonts/NanumSquareRoundR.ttf',
+  variable: '--font-body',
+  display: 'swap',
+});
+const display = localFont({
+  src: '../fonts/Anton-Regular.ttf',
+  variable: '--font-display',
+  display: 'swap',
+});
 export const metadata: Metadata = {
   title: {
-    default: 'NIJOOW — Street Casual Shop',
+    default: 'NIJOOW — A new perspective on everyday.',
     template: '%s | NIJOOW',
   },
   description:
-    '스트릿캐쥬얼 셀렉트샵 NIJOOW. 3D 커스터마이저로 나만의 스니커즈를 만들어 보세요.',
-  manifest: '/manifest.json',
+    '스니커즈와 일상을 새롭게 편집하는 NIJOOW. 3D로 나만의 디자인을 만들고 주문까지 체험해봐.',
 };
-
-export const viewport: Viewport = {
-  themeColor: '#0a0a0c',
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <ReactQueryProvider>
-      <html lang="ko" className="h-full !scroll-smooth">
-        <body
-          className={`${nanumSquareRound.className} ${outfit.variable} relative flex h-full flex-col`}
-        >
-          {children}
-        </body>
-      </html>
-    </ReactQueryProvider>
+    <html
+      lang="ko"
+      data-scroll-behavior="smooth"
+      className={`${body.variable} ${display.variable}`}
+    >
+      <body>
+        <DemoProvider>
+          <Header />
+          <main id="main-content">{children}</main>
+          <Footer />
+        </DemoProvider>
+      </body>
+    </html>
   );
 }

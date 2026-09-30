@@ -1,26 +1,15 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
+  poweredByHeader: false,
   images: {
-    // 소셜 로그인 아이콘(kakao/naver/google.svg)을 next/image로 서빙하기 위함 —
-    // 스크립트 실행이 차단된 샌드박스 CSP로 제한
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'bbbtan.cafe24.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'adererror.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+    localPatterns: [{ pathname: '/editorial/**' }, { pathname: '/images/**' }],
   },
-  transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
+  async redirects() {
+    return [
+      { source: '/3d-shop', destination: '/studio/runner', permanent: true },
+      { source: '/shop', destination: '/shop/all', permanent: true },
+      { source: '/auth/sign-up', destination: '/auth/login', permanent: true },
+      { source: '/admin/:path*', destination: '/my-page', permanent: false },
+    ];
+  },
 };
-
-module.exports = nextConfig;
