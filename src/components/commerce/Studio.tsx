@@ -1,9 +1,17 @@
 'use client';
+import { commerceError, CommerceError, errorMessage } from './client-api';
+import { useRetryDelay } from './useRetryDelay';
 import { SERVICE_COPY } from '@/content/copy';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -35,6 +43,12 @@ import ProductViewer, { type Capture } from '@/components/three/ProductViewer';
 import { useDemo } from './DemoProvider';
 import { DataGuard, EmptyState } from './StateView';
 
+type Recovery = {
+  error: CommerceError;
+  action: 'save' | 'download' | 'share' | 'cart' | 'navigation';
+  buy?: boolean;
+  href?: string;
+};
 interface Draft {
   id: string;
   name: string;
@@ -170,11 +184,15 @@ function StudioEditor({
     [saving, setSaving] = useState('저장 준비'),
     [renderReady, setRenderReady] = useState(false),
     [error, setError] = useState(''),
+    [recovery, setRecovery] = useState<Recovery | null>(null),
+    [leaving, setLeaving] = useState(false),
+    [sharing, setSharing] = useState(false),
     [pending, setPending] = useState(false),
     [past, setPast] = useState<DesignConfig[]>([]),
     [future, setFuture] = useState<DesignConfig[]>([]),
     [review, setReview] = useState(false),
     [shareUrl, setShareUrl] = useState('');
+  const recoveryRef = useRef<Recovery | null>(null);
   const capture = useRef<Capture | null>(null),
     latest = useRef<Draft>(draft),
     saved = useRef<SavedDesign | null>(initial ?? null),
@@ -184,10 +202,30 @@ function StudioEditor({
     queue = useRef<Promise<SavedDesign | null>>(
       Promise.resolve(initial ?? null),
     );
-  const captureReady = useCallback((fn: Capture) => {
+  const captureReady = useCallback((fn: Capture | null) => {
     capture.current = fn;
-    setRenderReady(true);
+    setRenderReady(!!fn);
   }, []);
+  const retryDelay = useRetryDelay(recovery?.error);
+  const clearRecovery = useCallback(() => {
+    recoveryRef.current = null;
+    setError('');
+    setRecovery(null);
+  }, []);
+  const report = useCallback(
+    (
+      error: unknown,
+      action: Recovery['action'],
+      options?: Pick<Recovery, 'buy' | 'href'>,
+    ) => {
+      const failure = commerceError(error);
+      setError(errorMessage(failure));
+      const next = { error: failure, action, ...options };
+      recoveryRef.current = next;
+      setRecovery(next);
+    },
+    [],
+  );
   const save = useCallback(() => {
     const task = async () => {
       const current = latest.current,
@@ -195,7 +233,6 @@ function StudioEditor({
       if (savedKey.current === key && saved.current?.preview)
         return saved.current;
       setSaving('저장 중');
-      setError('');
       let preview: string | null = null;
       try {
         preview = capture.current?.() ?? null;
@@ -214,17 +251,26 @@ function StudioEditor({
             JSON.stringify(latest.current),
           );
         } catch {}
-        setSaving('저장 완료');
+        setSaving(
+          `${latest.current.name}:${configKey(latest.current.config)}` === key
+            ? '저장 완료'
+            : '저장 대기',
+        );
+        if (
+          recoveryRef.current?.action === 'save' ||
+          recoveryRef.current?.error.code === 'CONFLICT'
+        )
+          clearRecovery();
         return result;
       } catch (e) {
         setSaving('저장 실패');
-        setError((e as Error).message);
+        report(e, 'save');
         throw e;
       }
     };
     queue.current = queue.current.catch(() => null).then(task);
     return queue.current;
-  }, [mutate, model, workspaceId]);
+  }, [mutate, model, workspaceId, report, clearRecovery]);
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -237,6 +283,35 @@ function StudioEditor({
     }, 1100);
     return () => clearTimeout(timer);
   }, [config, name, save, model, workspaceId, renderReady]);
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      const current = latest.current;
+      if (savedKey.current !== `${current.name}:${configKey(current.config)}`) {
+        event.preventDefault();
+        event.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, []);
+  async function leave(href: string) {
+    if (leaving || pending || sharing || retryDelay) return;
+    setLeaving(true);
+    try {
+      await save();
+      router.push(href);
+    } catch (error) {
+      report(error, 'navigation', { href });
+    } finally {
+      setLeaving(false);
+    }
+  }
+  function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    event.preventDefault();
+    void leave(href);
+  }
   function change(next: DesignConfig) {
     setPast(p => [...p.slice(-29), config]);
     setFuture([]);
@@ -260,14 +335,26 @@ function StudioEditor({
     setConfig(next);
     latest.current = { ...latest.current, config: next };
   }
+  const sizeOptions = useRef<HTMLDivElement>(null);
+  const requestedSizeFocus = useRef(false);
+  useEffect(() => {
+    if (review && requestedSizeFocus.current) {
+      sizeOptions.current?.querySelector<HTMLButtonElement>('button')?.focus();
+      requestedSizeFocus.current = false;
+    }
+  }, [review]);
   async function purchase(buy: boolean) {
+    if (pending || leaving || sharing || retryDelay) return;
     if (!size) {
       setError(SERVICE_COPY.sizeRequired);
+      setRecovery(null);
+      requestedSizeFocus.current = true;
       setReview(true);
+      sizeOptions.current?.querySelector<HTMLButtonElement>('button')?.focus();
       return;
     }
     setPending(true);
-    setError('');
+    clearRecovery();
     try {
       await save();
       let preview: string | null = null;
@@ -291,12 +378,15 @@ function StudioEditor({
       );
       router.push(buy ? `/checkout?items=${result.lineId}` : '/cart');
     } catch (e) {
-      setError((e as Error).message);
+      report(e, 'cart', { buy });
     } finally {
       setPending(false);
     }
   }
   async function share() {
+    if (sharing || pending || leaving || retryDelay) return;
+    setSharing(true);
+    clearRecovery();
     try {
       const design = await save();
       if (!design) return;
@@ -313,7 +403,9 @@ function StudioEditor({
         notify(SERVICE_COPY.sharedLinkManual);
       }
     } catch (e) {
-      setError((e as Error).message);
+      report(e, 'share');
+    } finally {
+      setSharing(false);
     }
   }
   function download() {
@@ -326,31 +418,47 @@ function StudioEditor({
       link.href = capture.current('image/png');
       link.download = `nijoow-${model}-design.png`;
       link.click();
+      clearRecovery();
     } catch {
-      setError(
-        '이미지를 저장하지 못했습니다. 3D 모델을 다시 불러온 뒤 시도해 주세요.',
+      report(
+        new CommerceError(
+          '이미지를 저장하지 못했습니다. 3D 모델을 다시 불러온 뒤 시도해 주세요.',
+          'CAPTURE_FAILED',
+        ),
+        'download',
       );
     }
   }
   return (
-    <div className="studio">
+    <div className="studio" data-testid="studio">
       <header className="studio-header">
-        <Link className="studio-back" href={`/product/${model}`}>
+        <Link
+          className="studio-back"
+          href={`/product/${model}`}
+          onClick={event => navigate(event, `/product/${model}`)}
+          aria-disabled={leaving || pending || sharing || retryDelay > 0}
+        >
           <ArrowLeft size={18} />
           <span>상품으로</span>
         </Link>
-        <Link className="wordmark" href="/">
+        <Link
+          className="wordmark"
+          href="/"
+          onClick={event => navigate(event, '/')}
+          aria-disabled={leaving || pending || sharing || retryDelay > 0}
+        >
           NIJOOW
         </Link>
         <span className="studio-header-label">YOUR PERSONAL EDIT</span>
         <div className="studio-top-actions">
           <span className="save-status" role="status">
-            {saving === '저장 완료' && <Check size={13} />} {saving}
+            {saving === '저장 완료' && <Check size={13} />}{' '}
+            {leaving ? '저장 후 이동 중' : saving}
           </span>
           <button
             className="icon-button"
             aria-label="실행 취소"
-            disabled={!past.length || pending}
+            disabled={!past.length || pending || leaving || sharing}
             onClick={undo}
           >
             <Undo2 size={18} />
@@ -358,12 +466,17 @@ function StudioEditor({
           <button
             className="icon-button"
             aria-label="다시 실행"
-            disabled={!future.length || pending}
+            disabled={!future.length || pending || leaving || sharing}
             onClick={redo}
           >
             <Redo2 size={18} />
           </button>
-          <Link href="/designs" className="text-link">
+          <Link
+            href="/designs"
+            className="text-link"
+            onClick={event => navigate(event, '/designs')}
+            aria-disabled={leaving || pending || sharing || retryDelay > 0}
+          >
             내 디자인
           </Link>
         </div>
@@ -450,6 +563,8 @@ function StudioEditor({
             <label className="design-name-label">
               디자인 이름
               <input
+                data-testid="design-name"
+                disabled={pending || leaving || sharing}
                 maxLength={40}
                 value={name}
                 onChange={e => {
@@ -459,7 +574,11 @@ function StudioEditor({
               />
             </label>
             {!review ? (
-              <fieldset className="studio-options" disabled={pending}>
+              <fieldset
+                className="studio-options"
+                disabled={pending || leaving || sharing}
+              >
+                <legend className="sr-only">디자인 편집</legend>
                 <div className="option-section">
                   <span className="eyebrow">START WITH A COLORWAY</span>
                   <div className="studio-presets">
@@ -599,12 +718,25 @@ function StudioEditor({
                   )}
                 </div>
                 <div className="option-section">
-                  <span className="eyebrow">SIZE — MM</span>
-                  <div className="size-options">
+                  <span className="eyebrow" id="studio-size-label">
+                    SIZE — MM
+                  </span>
+                  <div
+                    className="size-options"
+                    ref={sizeOptions}
+                    role="group"
+                    aria-labelledby="studio-size-label"
+                    aria-describedby={
+                      error === SERVICE_COPY.sizeRequired
+                        ? 'studio-error'
+                        : undefined
+                    }
+                  >
                     {product.sizes.map(s => (
                       <button
                         key={s}
                         aria-pressed={size === s}
+                        disabled={pending || leaving || sharing}
                         onClick={() => {
                           setSize(s);
                           setError('');
@@ -622,17 +754,60 @@ function StudioEditor({
               </div>
             )}
             {error && (
-              <div className="studio-error" role="alert">
+              <div
+                className="studio-error"
+                role="alert"
+                id="studio-error"
+                data-error-code={recovery?.error.code}
+              >
                 <p>{error}</p>
-                <button
-                  className="text-link"
-                  onClick={() => void save().catch(() => undefined)}
-                >
-                  저장 다시 시도
-                </button>
-                {error.includes('사본') && (
+                {recovery && recovery.error.code !== 'CONFLICT' && (
                   <button
                     className="text-link"
+                    data-testid="studio-retry"
+                    disabled={
+                      pending ||
+                      sharing ||
+                      leaving ||
+                      retryDelay > 0 ||
+                      saving === '저장 중' ||
+                      (recovery.action === 'download' && !renderReady)
+                    }
+                    onClick={() => {
+                      if (recovery.action === 'download') download();
+                      else if (recovery.action === 'share') void share();
+                      else if (recovery.action === 'cart')
+                        void purchase(!!recovery.buy);
+                      else if (
+                        recovery.action === 'navigation' &&
+                        recovery.href
+                      )
+                        void leave(recovery.href);
+                      else void save().catch(() => undefined);
+                    }}
+                  >
+                    {retryDelay
+                      ? `${retryDelay}초 후 다시 시도`
+                      : {
+                          save: '저장 다시 시도',
+                          download: '이미지 저장 다시 시도',
+                          share: '공유 다시 시도',
+                          cart: '장바구니 · 주문 다시 시도',
+                          navigation: '저장 후 이동 다시 시도',
+                        }[recovery.action]}
+                  </button>
+                )}
+                {recovery?.error.code === 'CONFLICT' && (
+                  <button
+                    className="text-link"
+                    data-testid="studio-save-copy"
+                    disabled={
+                      pending ||
+                      sharing ||
+                      leaving ||
+                      saving === '저장 중' ||
+                      retryDelay > 0
+                    }
                     onClick={() => {
                       latest.current = {
                         ...latest.current,
@@ -649,13 +824,21 @@ function StudioEditor({
               </div>
             )}
             <div className="studio-secondary-actions">
-              <button onClick={download} aria-label="PNG 이미지 저장">
+              <button
+                onClick={download}
+                aria-label="PNG 이미지 저장"
+                disabled={!renderReady || pending || leaving || sharing}
+              >
                 <Download size={15} />
                 이미지 저장
               </button>
-              <button onClick={() => void share()}>
+              <button
+                onClick={() => void share()}
+                disabled={pending || leaving || sharing || retryDelay > 0}
+                aria-busy={sharing}
+              >
                 <Share2 size={15} />
-                공유
+                {sharing ? '공유 중…' : '공유'}
               </button>
             </div>
             {shareUrl && (
@@ -678,14 +861,14 @@ function StudioEditor({
               <div className="studio-purchase-buttons">
                 <button
                   className="button outline"
-                  disabled={pending}
+                  disabled={pending || leaving || sharing || retryDelay > 0}
                   onClick={() => void purchase(false)}
                 >
                   {cartLine ? '장바구니 적용' : '장바구니 담기'}
                 </button>
                 <button
                   className="button"
-                  disabled={pending}
+                  disabled={pending || leaving || sharing || retryDelay > 0}
                   onClick={() => void purchase(true)}
                 >
                   {pending ? '저장 중…' : '이 디자인 주문하기'}
@@ -693,7 +876,11 @@ function StudioEditor({
                 </button>
               </div>
             ) : (
-              <button className="button" onClick={() => setReview(true)}>
+              <button
+                className="button"
+                disabled={pending || leaving || sharing}
+                onClick={() => setReview(true)}
+              >
                 사이즈 · 주문 검토 <ArrowUpRight size={17} />
               </button>
             )}

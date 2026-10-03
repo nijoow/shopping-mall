@@ -1,9 +1,12 @@
 'use client';
+import { commerceError, errorMessage, type CommerceError } from './client-api';
+import { useRetryDelay } from './useRetryDelay';
 import { SERVICE_COPY } from '@/content/copy';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, Copy, Trash2, Share2 } from 'lucide-react';
 import { useState } from 'react';
+import { ConfirmDialog } from './ConfirmDialog';
 import { PRODUCTS, modelPoster } from '@/domain/catalog';
 import { DataGuard, EmptyState } from './StateView';
 import { ProductCard } from './ProductCard';
@@ -44,7 +47,13 @@ export function Designs() {
   const { state, mutate, notify } = useDemo();
   const [deleting, setDeleting] = useState<string | null>(null);
   const [link, setLink] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<CommerceError | null>(null);
+  const retryDelay = useRetryDelay(failure);
   async function copy(design: SavedDesign) {
+    if (busy || retryDelay) return;
+    setBusy(true);
+    setFailure(null);
     try {
       await mutate('design.save', {
         id: crypto.randomUUID(),
@@ -55,10 +64,16 @@ export function Designs() {
       });
       notify('디자인 사본을 만들었습니다.');
     } catch (e) {
-      notify((e as Error).message);
+      setFailure(commerceError(e));
+      notify(errorMessage(e));
+    } finally {
+      setBusy(false);
     }
   }
   async function share(id: string) {
+    if (busy || retryDelay) return;
+    setBusy(true);
+    setFailure(null);
     try {
       const { token } = await mutate<{ token: string }>('design.share', id);
       const url = `${location.origin}/share/${token}`;
@@ -70,7 +85,10 @@ export function Designs() {
         notify(SERVICE_COPY.sharedLinkManual);
       }
     } catch (e) {
-      notify((e as Error).message);
+      setFailure(commerceError(e));
+      notify(errorMessage(e));
+    } finally {
+      setBusy(false);
     }
   }
   return (
@@ -83,7 +101,7 @@ export function Designs() {
           </h1>
           <p>내 취향으로 완성한, 하나뿐인 조합.</p>
         </div>
-        <Link className="button" href="/studio/runner">
+        <Link className="button" href="/studio/runner" data-confirm-fallback>
           새 디자인 <ArrowUpRight size={18} />
         </Link>
       </div>
@@ -96,6 +114,12 @@ export function Designs() {
             onFocus={e => e.currentTarget.select()}
           />
         </label>
+      )}
+      {busy && <p role="status">처리 중…</p>}
+      {failure && !deleting && (
+        <p className="notice-box" role="alert">
+          {errorMessage(failure)}
+        </p>
       )}
       <DataGuard>
         {state?.designs.length ? (
@@ -130,46 +154,32 @@ export function Designs() {
                     {d.config.engraving && <span>{d.config.engraving}</span>}
                   </div>
                   <div className="design-card-actions">
-                    <button onClick={() => void copy(d)}>
+                    <button
+                      disabled={busy || retryDelay > 0}
+                      onClick={() => void copy(d)}
+                    >
                       <Copy size={14} />
                       복제
                     </button>
-                    <button onClick={() => void share(d.id)}>
+                    <button
+                      disabled={busy || retryDelay > 0}
+                      onClick={() => void share(d.id)}
+                    >
                       <Share2 size={14} />
                       공유
                     </button>
-                    <button onClick={() => setDeleting(d.id)}>
+                    <button
+                      disabled={busy || retryDelay > 0}
+                      aria-haspopup="dialog"
+                      onClick={() => {
+                        setFailure(null);
+                        setDeleting(d.id);
+                      }}
+                    >
                       <Trash2 size={14} />
                       삭제
                     </button>
                   </div>
-                  {deleting === d.id && (
-                    <div className="inline-confirm">
-                      <p>
-                        디자인을 삭제하시겠습니까? 기존 주문의 디자인은
-                        유지됩니다.
-                      </p>
-                      <button
-                        className="button small danger"
-                        onClick={async () => {
-                          try {
-                            await mutate('design.delete', d.id);
-                            setDeleting(null);
-                          } catch (e) {
-                            notify((e as Error).message);
-                          }
-                        }}
-                      >
-                        삭제
-                      </button>
-                      <button
-                        className="button small outline"
-                        onClick={() => setDeleting(null)}
-                      >
-                        취소
-                      </button>
-                    </div>
-                  )}
                 </div>
               </article>
             ))}
@@ -183,6 +193,28 @@ export function Designs() {
           />
         )}
       </DataGuard>
+      <ConfirmDialog
+        open={deleting !== null}
+        onClose={() => setDeleting(null)}
+        title="디자인 삭제"
+        description="디자인을 삭제하시겠습니까? 기존 주문의 디자인은 유지됩니다."
+        action="삭제"
+        pending={busy}
+        error={failure ? errorMessage(failure) : undefined}
+        retryDelay={retryDelay}
+        onConfirm={() => {
+          if (!deleting || busy || retryDelay) return;
+          setFailure(null);
+          setBusy(true);
+          void mutate('design.delete', deleting)
+            .then(() => setDeleting(null))
+            .catch(e => {
+              setFailure(commerceError(e));
+              notify(errorMessage(e));
+            })
+            .finally(() => setBusy(false));
+        }}
+      />
     </div>
   );
 }

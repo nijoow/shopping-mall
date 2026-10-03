@@ -1,4 +1,5 @@
 'use client';
+import { errorMessage } from './client-api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUpRight, Heart } from 'lucide-react';
@@ -40,7 +41,7 @@ export function ProductCard({
             try {
               await mutate('favorite', product.id);
             } catch (e) {
-              notify((e as Error).message);
+              notify(errorMessage(e));
             }
           }}
         >

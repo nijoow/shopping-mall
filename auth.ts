@@ -3,6 +3,7 @@ import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
 import Naver from 'next-auth/providers/naver';
 import { repository } from '@/server/repository';
+import { configuredSocialProviders } from './auth.providers';
 
 const naverFetch: typeof fetch = async (input, init) => {
   const response = await fetch(input, init);
@@ -39,7 +40,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     process.env.AUTH_TRUST_HOST === 'true' ||
     process.env.NODE_ENV === 'development' ||
     Boolean(process.env.VERCEL),
-  providers: [Kakao, Naver({ [customFetch]: naverFetch }), Google],
+  providers: configuredSocialProviders().map(provider => {
+    if (provider === 'kakao') return Kakao;
+    if (provider === 'naver') return Naver({ [customFetch]: naverFetch });
+    return Google;
+  }),
   pages: { signIn: '/auth/login', error: '/auth/login' },
   session: { strategy: 'jwt' },
   callbacks: {
@@ -67,8 +72,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      const target = new URL(url, baseUrl);
-      return target.origin === new URL(baseUrl).origin ? target.href : baseUrl;
+      try {
+        const target = new URL(url, baseUrl);
+        return target.origin === new URL(baseUrl).origin
+          ? target.href
+          : baseUrl;
+      } catch {
+        return baseUrl;
+      }
     },
   },
 });

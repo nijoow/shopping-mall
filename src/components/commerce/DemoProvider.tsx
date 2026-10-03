@@ -1,5 +1,5 @@
 'use client';
-import { SERVICE_COPY } from '@/content/copy';
+import { commerceError, demoRequest, type CommerceError } from './client-api';
 import {
   createContext,
   useCallback,
@@ -14,7 +14,7 @@ import type { DemoState } from '@/domain/types';
 interface DemoContextValue {
   state: DemoState | null;
   loading: boolean;
-  error: string | null;
+  error: CommerceError | null;
   refresh: () => Promise<DemoState | null>;
   mutate: <T = unknown>(op: string, data?: unknown) => Promise<T>;
   notify: (message: string) => void;
@@ -23,29 +23,30 @@ const DemoContext = createContext<DemoContextValue | null>(null);
 export function DemoProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState | null>(null),
     [loading, setLoading] = useState(true),
-    [error, setError] = useState<string | null>(null),
+    [error, setError] = useState<CommerceError | null>(null),
     [notice, setNotice] = useState('');
   const generation = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null),
     channel = useRef<BroadcastChannel | null>(null),
     busy = useRef(false),
+    cooldown = useRef(new Map<string, CommerceError>()),
     mutationQueue = useRef<Promise<unknown>>(Promise.resolve());
   const refresh = useCallback(async () => {
     if (busy.current) return null;
     const current = ++generation.current;
     try {
-      const response = await fetch('/api/demo', { cache: 'no-store' });
-      const payload = await response.json();
-      if (!response.ok)
-        throw new Error(payload.error ?? SERVICE_COPY.loadFailed);
+      const waiting = cooldown.current.get('GET');
+      if (waiting?.retryAt && waiting.retryAt > Date.now()) throw waiting;
+      const payload = await demoRequest({ cache: 'no-store' });
       if (current === generation.current) {
         setState(payload.state);
         setError(null);
       }
       return payload.state as DemoState;
     } catch (e) {
-      if (current === generation.current)
-        setError(e instanceof Error ? e.message : SERVICE_COPY.loadFailed);
+      const failure = commerceError(e);
+      if (failure.retryAt) cooldown.current.set('GET', failure);
+      if (current === generation.current) setError(failure);
       return null;
     } finally {
       if (current === generation.current) setLoading(false);
@@ -62,18 +63,21 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         busy.current = true;
         ++generation.current;
         try {
-          const response = await fetch('/api/demo', {
+          const waiting = cooldown.current.get(op);
+          if (waiting?.retryAt && waiting.retryAt > Date.now()) throw waiting;
+          const payload = await demoRequest<T>({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ op, data }),
           });
-          const payload = await response.json();
-          if (!response.ok)
-            throw new Error(payload.error ?? SERVICE_COPY.saveFailed);
           setState(payload.state);
           setError(null);
           channel.current?.postMessage('changed');
           return payload.result as T;
+        } catch (error) {
+          const failure = commerceError(error);
+          if (failure.retryAt) cooldown.current.set(op, failure);
+          throw failure;
         } finally {
           busy.current = false;
         }
