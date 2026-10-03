@@ -31,7 +31,7 @@
     "tests/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "scripts/setup-demo-database.ts"
+    "scripts/**/*.ts"
   ],
   "exclude": ["node_modules", "archive"]
 }

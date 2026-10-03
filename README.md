@@ -1,93 +1,79 @@
 # NIJOOW — Editorial 3D Store
 
-패션 매거진형 UI에서 스니커즈를 3D로 편집하고, 디자인을 저장·공유·모의 주문하는 포트폴리오야. 실제 결제와 배송은 발생하지 않아.
+스니커즈를 3D로 편집하고 의류·잡화와 함께 저장·공유·모의 주문하는 포트폴리오야. 실제 결제와 배송은 발생하지 않아.
 
-현재는 **첫 로컬 실행 버전**이야. 전체 제품이 최종 완성됐다는 뜻은 아니고, 모델의 조형/표면 개선과 실제 소셜 로그인·배포 환경 검증이 남아 있어.
+2026-09-30에 [PR #9](https://github.com/nijoow/shopping-mall/pull/9)를 통해 운영에 반영했어(`79b8deb`). [운영 사이트](https://nijoow-shopping-mall.vercel.app)의 현재 배포 상태는 Vercel에서 따로 확인해. 3D 조형 완성도·실제 OAuth 완주·모바일 실기기 검수는 후속 범위야.
 
 ## 실행
 
-Node.js 22.13 이상이 필요해. 로컬에서는 Node의 SQLite를 사용하고, Cloud에서는 PostgreSQL 어댑터를 선택할 수 있어. Vercel에서는 PostgreSQL을 사용해.
+Node **22.13 이상**, 권장 기준은 [`.nvmrc`](.nvmrc)의 Node 22야. Yarn 4.0.2는 저장소에 포함돼 있어.
 
 ```sh
 node .yarn/releases/yarn-4.0.2.cjs install --immutable
-node .yarn/releases/yarn-4.0.2.cjs dev --port 3100
+node .yarn/releases/yarn-4.0.2.cjs dev
 ```
 
-브라우저에서 `http://127.0.0.1:3100`을 열면 돼. 비로그인 데모는 소셜 제공자 설정 없이도 체험할 수 있어. 데이터는 기본적으로 `.data/editorial.sqlite`에 저장되고 Git에는 포함되지 않아.
-
-소셜 로그인은 기존 카카오·네이버·구글 제공자를 사용해. `.env.example`의 변수명을 참고하되 기존 `.env.local`을 덮어쓰지 않아야 해. 제공자 콘솔의 callback URL은 실행 주소의 `/api/auth/callback/kakao`, `/api/auth/callback/naver`, `/api/auth/callback/google`과 일치해야 해. 실제 인증 성공은 별도로 확인해야 해.
+기본 주소는 `http://127.0.0.1:3000`. 기존 `.env.local`을 덮어쓰지 마. 소셜 키 없이 게스트 데모를 사용할 수 있고, 로컬 데이터는 기본적으로 `.data/editorial.sqlite`에 저장돼.
 
 ## 검증
 
 ```sh
-node .yarn/releases/yarn-4.0.2.cjs test
-node .yarn/releases/yarn-4.0.2.cjs typecheck
-node .yarn/releases/yarn-4.0.2.cjs lint
-node .yarn/releases/yarn-4.0.2.cjs build
-# 로컬 서버가 실행 중일 때 별도 테스트 공간으로 실제 HTTP 흐름 검증
-node .yarn/releases/yarn-4.0.2.cjs test:http
+# 타입 생성·타입 검사·린트·단위 테스트·에셋 계약
+node .yarn/releases/yarn-4.0.2.cjs check
+# 위 검사 + 빌드 + 임시 서버/SQLite에서 실제 HTTP 커머스 검증
+node .yarn/releases/yarn-4.0.2.cjs check:full
 ```
 
-HTTP 테스트는 localhost/127.0.0.1에서만 실행하도록 제한돼 있어. 주문·재고·계정 이관 단위 테스트는 독립된 메모리 DB를 사용해.
+`test:http`는 준비된 빌드를 사용해 전용 임시 서버를 띄우고 종료 시 서버와 DB를 정리해. 기존 개발 서버나 3100 포트를 준비할 필요가 없어. PostgreSQL 테스트는 기본 단위 테스트와 분리했어. 별도 테스트 DB에 `NIJOOW_TEST_POSTGRES_URL`을 설정한 뒤 `test:postgres`로 실행해. 자세한 절차와 검증 범위는 [하네스](docs/development/harness.md)에 있어.
 
-## 구현한 흐름
+## Cloud와 환경 변수
 
-- 매거진형 홈, 스니커즈·의류·잡화 목록, 검색·정렬·3D 필터.
-- 상세의 기본 3D, 전체 화면 편집, 4개 부위 색, 어퍼 재질, 각인, Undo/Redo, 비교·확대·시점 전환.
-- 서버 디자인 저장, 충돌 검증, 복제·공유, 이미지 내보내기.
-- 일반/커스텀 장바구니, 수량·선택 주문, 장바구니 디자인 수정, 바로 주문.
-- 가상 배송지, 모의 승인·실패·응답 유실 복구, 주문 중복 방지와 원자적 재고 차감.
-- 주문 당시 구성의 3D 다시 보기, 배송 진행·취소·반품·모의 환불.
-- 데모/소셜 계정 경계, 익명 디자인·찜·장바구니·주문의 계정 이관.
-- 주문·장바구니 초기화 시 디자인·찜 보존.
-
-## 에셋과 현재 한계
-
-러너는 Shopify의 Materials Variants Shoe(CC BY 4.0)를 가공한 자산이야. 원본 출처와 변경 내용은 `/about`과 `public/models/source/shopify-source.md`에 있어. 로우탑은 Blender/Python으로 직접 제작한 모델이야. 재킷·니트·가방의 2D 이미지는 built-in image_gen으로 제작한 가상 제품 이미지이며 생성 프롬프트를 문서에 남겼어.
-
-모델·부품 교체의 최종 품질은 아직 검수 중이야. 현재는 색·재질·각인 기능을 먼저 연결했고, 부품 형태 교체는 제공하지 않아. 실제 iOS/Android 기기의 성능도 아직 검증하지 않았어.
-
-macOS의 Blender로 스니커즈 에셋을 다시 만들려면:
+현재 `main`과 저장소의 Yarn을 사용해. Cloud 개발 서버는 다음처럼 외부 미리보기 연결을 허용해.
 
 ```sh
-/Applications/Blender.app/Contents/MacOS/Blender --background --factory-startup --python scripts/build-assets.py -- runner low
-```
-
-SQLite는 로컬 또는 지속 디스크가 있는 단일 서버에서 사용해. Vercel 배포에서는 `NIJOOW_POSTGRES_URL` 또는 기존 `POSTGRES_URL`을 사용해. 모든 새 테이블은 `nijoow_demo` 스키마에 만들어 기존 public 테이블과 분리해. 로컬의 기존 SQLite 데이터는 자동으로 원격에 복사되지 않아.
-
-## Cloud 실행과 환경 변수
-
-연결한 Cloud 작업의 예전 Next.js 14 설정 대신 이 브랜치를 사용해야 해. Node 22.13 이상과 저장소의 Yarn 4를 사용해.
-
-```sh
-node .yarn/releases/yarn-4.0.2.cjs install --immutable
-# PostgreSQL을 사용한다면 선택한 DB에 최초 1회 실행
-node .yarn/releases/yarn-4.0.2.cjs db:setup
 node .yarn/releases/yarn-4.0.2.cjs dev --hostname 0.0.0.0 --port 3000
 ```
 
-| 변수                                   | 용도                                                                                                      |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `AUTH_SECRET`                          | 세션 서명용 비밀값. 배포·재시작 사이에 같은 값을 유지해.                                                  |
-| `AUTH_URL`                             | 로그인 콜백과 요청 origin 검증에 사용하는 실제 HTTPS 실행 주소. 개발은 해당 미리보기 주소 또는 로컬 주소. |
-| `AUTH_TRUST_HOST`                      | 신뢰하는 프록시 뒤에서 `true`. Vercel은 자동으로 신뢰해.                                                  |
-| `NIJOOW_POSTGRES_URL`                  | Cloud에서 PostgreSQL을 선택하는 암호화 연결 문자열. Vercel도 이 값을 우선 사용해.                         |
-| `POSTGRES_URL`                         | Vercel에서 위 변수가 없을 때 사용하는 기존 DB 연결 변수.                                                  |
-| `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | 구글 로그인 키.                                                                                           |
-| `AUTH_KAKAO_ID`, `AUTH_KAKAO_SECRET`   | 카카오 로그인 키.                                                                                         |
-| `AUTH_NAVER_ID`, `AUTH_NAVER_SECRET`   | 네이버 로그인 키.                                                                                         |
-| `NIJOOW_DEMO_DB_PATH`                  | SQLite를 선택했을 때 파일 경로. 영구 디스크가 없으면 데이터도 유지되지 않아.                              |
+| 변수                                   | 용도                                                             |
+| -------------------------------------- | ---------------------------------------------------------------- |
+| `AUTH_SECRET`                          | 인증 세션 서명. 배포·재시작 사이에 같은 비밀값 유지              |
+| `AUTH_URL`                             | 해당 실행 환경의 실제 URL. 운영은 HTTPS                          |
+| `AUTH_TRUST_HOST`                      | 신뢰하는 프록시에서 `true`; Vercel은 자동 신뢰                   |
+| `NIJOOW_POSTGRES_URL`                  | Cloud PostgreSQL 연결. 로컬에서도 이 값이 있으면 PostgreSQL 사용 |
+| `POSTGRES_URL`                         | Vercel에서 위 변수가 없을 때 쓰는 기존 연결 변수                 |
+| `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | 구글 로그인                                                      |
+| `AUTH_KAKAO_ID`, `AUTH_KAKAO_SECRET`   | 카카오 로그인                                                    |
+| `AUTH_NAVER_ID`, `AUTH_NAVER_SECRET`   | 네이버 로그인                                                    |
+| `NIJOOW_DEMO_DB_PATH`                  | SQLite 파일 경로. 기본 `.data/editorial.sqlite`                  |
+| `NIJOOW_TEST_POSTGRES_URL`             | 통합 테스트 전용 DB. 운영 연결과 분리                            |
 
-소셜 로그인 키 없이 게스트 데모를 검증할 수 있어. 세 소셜 로그인을 모두 사용하려면 세 제공자의 키 쌍을 모두 설정해야 해. 비밀값은 Cloud/Vercel 환경 설정에 넣고 Git이나 메시지에 기록하지 않아. API 키에 `NEXT_PUBLIC_` 접두사를 붙이지 않아.
+설정 예시는 [`.env.example`](.env.example). 사용하지 않는 PostgreSQL 변수는 빈 값으로 등록하기보다 생략해. 현재 Vercel fallback은 변수의 **부재**를 기준으로 동작해.
 
-Vercel의 `POSTGRES_URL`이 이미 연결돼 있으면 새 서비스를 만들 필요가 없어. `db:setup`은 데모 스키마만 생성하고 기존 테이블을 변경하지 않아. 트랜잭션은 같은 연결에서 실행하고 충돌은 제한적으로 재시도해. 연결 간 저장, 동시 주문·환불·디자인 수정은 `tests/postgres.test.ts`로 별도 검증해.
+PostgreSQL은 `nijoow_demo` 스키마를 사용해. 선택한 새 DB에 최초 한 번 `node .yarn/releases/yarn-4.0.2.cjs db:setup`을 실행해. 이 명령은 실제 DB에 스키마를 생성하므로 대상 연결부터 확인해. 기존 public 테이블과 로컬 SQLite 데이터는 자동 이전하지 않아. 개발·테스트는 운영과 다른 DB를 사용해.
 
-배포 후 로그인 제공자 콘솔에 `AUTH_URL`의 `/api/auth/callback/google`, `/api/auth/callback/kakao`, `/api/auth/callback/naver`를 등록해야 해. 실제 OAuth 로그인은 해당 콜백을 등록한 주소에서 검증해야 해.
+소셜 로그인을 사용하는 환경의 제공자 콘솔에 다음 callback을 등록해. 제공자 목록 조회 성공과 실제 로그인 완료는 별개야.
 
-이전 구현은 `archive/pre-editorial`에 보존돼 있고 현재 라우트·타입 검사·린트 대상에서 제외했어. 이전 가입/관리자 API는 새 앱에서 사용하지 않아.
+- `/api/auth/callback/google`
+- `/api/auth/callback/kakao`
+- `/api/auth/callback/naver`
 
-## 기획과 작업 기록
+## 구현 범위와 에셋
 
-- `docs/planning/3d-commerce-portfolio.md`: 확정한 제품 범위와 후속 기능.
-- `docs/planning/desktop-experience-spec.md`: 데스크톱 중심 화면 명세.
-- `docs/implementation/2026-09-10-checkpoint.md`: 이번 구현·검증과 남은 작업.
+- 매거진형 홈·목록·상세, 검색·정렬·카테고리·찜.
+- 3D 색상·재질·각인, 전체 화면 편집, Undo/Redo, 저장·복제·공유·PNG.
+- 일반/커스텀 장바구니, 모의 결제·배송·취소·반품·환불.
+- 소유권 분리, 주문 중복 방지, 게스트 데이터의 소셜 계정 이관.
+- 실제 결제, 문의·후기, 별도 관리자, 부품 형태 교체는 제공하지 않아.
+
+러너는 Shopify CC BY 4.0 모델을 가공했고 로우탑은 직접 제작했어. 의류·잡화 이미지는 가상 제품을 위해 제작했어. [출처](public/models/source/shopify-source.md)와 [프롬프트 기록](docs/planning/product-image-prompts-2026-09-21.md)을 보관해.
+
+`assets:check`는 파일·모델 버전·편집 재질의 연결만 검사해. 모양과 조작 품질은 화면에서 확인해야 해. 기존 제작 스크립트는 v1/v2 파일을 고정 경로에 출력하므로 보존된 모델을 무심코 재생성하지 마. 새 제작 작업은 다음 모델 버전의 출력 경로부터 정해.
+
+## 작업 안내
+
+- [현재 백로그](BACKLOG.md) → [다음 작업 계획](docs/planning/next-steps.md)
+- [사이트 문구 교체 계획](docs/planning/ui-copy.md)
+- [에이전트 작업 규칙](AGENTS.md) · [실행·검증 하네스](docs/development/harness.md)
+- [문서 색인](docs/README.md)
+
+`archive/`는 이전 소스, `docs/archive/`와 날짜가 붙은 구현 기록은 과거 증거야. 현재 동작은 `src/`, 테스트, 실행 결과를 기준으로 판단해.

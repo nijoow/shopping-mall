@@ -4,20 +4,19 @@ import { randomUUID } from 'node:crypto';
 import { PostgresStore } from '../src/server/database';
 import { DemoRepository } from '../src/server/repository';
 import { defaultConfig, SHIPPING_FEE } from '../src/domain/catalog';
-const url =
-  process.env.NIJOOW_TEST_POSTGRES_URL ??
-  (process.env.NIJOOW_RUN_PG_TESTS === '1'
-    ? process.env.POSTGRES_URL
-    : undefined);
+const url = process.env.NIJOOW_TEST_POSTGRES_URL?.trim();
 test(
   'PostgreSQL persists across connections and serializes orders, revisions and refunds',
   { skip: !url },
   async () => {
     const stores = [new PostgresStore(url!), new PostgresStore(url!)];
     const repos = stores.map(s => new DemoRepository(s));
-    const workspace = await repos[0].workspace();
-    const stranger = await repos[1].workspace();
+    const owned: string[] = [];
     try {
+      const workspace = await repos[0].workspace();
+      owned.push(workspace.id);
+      const stranger = await repos[1].workspace();
+      owned.push(stranger.id);
       const config = defaultConfig('low');
       const line = await repos[0].addCart(workspace.id, {
         productId: 'low',
@@ -79,19 +78,22 @@ test(
       const share = await repos[0].share(workspace.id, design.id);
       assert.equal((await repos[1].shared(share))!.config.modelVersion, 2);
     } finally {
-      for (const w of [workspace, stranger]) {
-        for (const table of [
-          'shares',
-          'orders',
-          'inventory',
-          'designs',
-          'favorites',
-          'cart',
-        ])
-          await repos[0].run(`DELETE FROM ${table} WHERE workspace_id=?`, w.id);
-        await repos[0].run('DELETE FROM workspaces WHERE id=?', w.id);
+      try {
+        for (const id of owned) {
+          for (const table of [
+            'shares',
+            'orders',
+            'inventory',
+            'designs',
+            'favorites',
+            'cart',
+          ])
+            await repos[0].run(`DELETE FROM ${table} WHERE workspace_id=?`, id);
+          await repos[0].run('DELETE FROM workspaces WHERE id=?', id);
+        }
+      } finally {
+        await Promise.all(stores.map(s => s.close()));
       }
-      await Promise.all(stores.map(s => s.close()));
     }
   },
 );
