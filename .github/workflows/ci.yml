@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   quality:
-    name: type-check · lint · tests · build · HTTP · PostgreSQL
+    name: type-check · lint · tests · build · browser · PostgreSQL
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -49,6 +49,10 @@ jobs:
         run: node .yarn/releases/yarn-4.0.2.cjs build
       - name: Isolated HTTP commerce checks
         run: node .yarn/releases/yarn-4.0.2.cjs test:http
+      - name: Install test browser
+        run: node .yarn/releases/yarn-4.0.2.cjs exec playwright install --with-deps chromium
+      - name: Three core browser flows
+        run: node .yarn/releases/yarn-4.0.2.cjs test:browser
       - name: Initialize disposable PostgreSQL schema
         run: node .yarn/releases/yarn-4.0.2.cjs db:setup
         env:

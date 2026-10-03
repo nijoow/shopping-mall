@@ -9,16 +9,20 @@
     "dev": "next dev --webpack --hostname 127.0.0.1",
     "build": "next build --webpack",
     "start": "next start --hostname 0.0.0.0",
-    "lint": "eslint src auth.ts tests scripts",
+    "lint": "eslint src auth.ts auth.providers.ts tests scripts playwright.config.ts",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --import tsx --test tests/commerce.test.ts tests/model-version.test.ts",
+    "test": "node --import tsx --test tests/commerce.test.ts tests/model-version.test.ts tests/client-api.test.ts tests/data-operations.test.ts tests/auth-config.test.ts",
     "assets:build": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build-assets.py",
     "test:http": "node scripts/test-http.mjs",
     "db:setup": "node --import tsx scripts/setup-demo-database.ts",
     "test:postgres": "node scripts/test-postgres.mjs",
     "assets:check": "node --import tsx scripts/check-assets.ts",
     "check": "yarn typecheck && yarn lint && yarn test && yarn assets:check",
-    "check:full": "yarn check && yarn build && yarn test:http"
+    "check:full": "yarn check && yarn build && yarn test:http && yarn test:browser",
+    "test:browser": "playwright test",
+    "data:cleanup": "node --import tsx scripts/demo-data.ts cleanup",
+    "data:backup": "node --import tsx scripts/demo-data.ts backup",
+    "data:restore": "node --import tsx scripts/demo-data.ts restore"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -35,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.19.0",
     "@types/pg": "8.15.5",
     "@types/react": "19.2.18",
