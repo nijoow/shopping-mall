@@ -1,4 +1,5 @@
 'use client';
+import { SERVICE_COPY } from '@/content/copy';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -25,7 +26,7 @@ export function ProductDetail({ product }: { product: Product }) {
   const favorite = state?.favorites.includes(product.id) ?? false;
   async function add(buy = false) {
     if (!size) {
-      setError('사이즈를 선택해줘.');
+      setError(SERVICE_COPY.sizeRequired);
       sizeRef.current?.querySelector('button')?.focus();
       return;
     }
@@ -39,7 +40,7 @@ export function ProductDetail({ product }: { product: Product }) {
         config,
       });
       if (buy) router.push(`/checkout?items=${result.lineId}`);
-      else notify('장바구니에 담았어.');
+      else notify(SERVICE_COPY.addedToCart);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -127,8 +128,8 @@ export function ProductDetail({ product }: { product: Product }) {
           )}
           <p className="media-help">
             {product.model
-              ? '드래그해서 돌려봐. 나만의 구성은 커스텀 스튜디오에서 만들 수 있어.'
-              : '이미지와 옵션을 확인하고 데모 주문까지 체험해봐.'}
+              ? '드래그하면 모델을 회전할 수 있습니다. 디자인 스튜디오에서 색상·재질·각인을 편집해 보세요.'
+              : '상품 이미지와 옵션을 확인하고 주문 과정을 체험해 보세요.'}
           </p>
         </div>
         <aside className="product-information">
@@ -219,28 +220,26 @@ export function ProductDetail({ product }: { product: Product }) {
               </button>
             </div>
           </div>
-          <p className="demo-caption">
-            포트폴리오 데모 · 실제 결제와 배송은 발생하지 않아.
-          </p>
+          <p className="demo-caption">{SERVICE_COPY.demoNotice}</p>
           <div className="product-accordions">
             <details>
-              <summary>제품과 소재</summary>
+              <summary>제품 안내</summary>
               <p>{product.composition}</p>
             </details>
             <details>
               <summary>사이즈 가이드</summary>
               <p>
                 {product.model
-                  ? '사이즈는 mm 단위의 가상 구매 옵션이야. 이 데모는 실제 착화나 발 크기를 측정하지 않아.'
-                  : '표시된 사이즈는 쇼핑 체험용 옵션이야. ONE SIZE 상품은 별도 사이즈 선택 없이 담을 수 있어.'}
+                  ? '사이즈는 mm 단위의 체험용 옵션입니다. 실제 착화나 발 크기 측정은 제공하지 않습니다.'
+                  : '표시된 사이즈는 체험용 옵션입니다. ONE SIZE 상품은 별도 사이즈 선택 없이 담을 수 있습니다.'}
               </p>
             </details>
             <details>
               <summary>배송 · 취소 · 반품 체험</summary>
               <p>
-                15만원 이상 무료배송, 미만은 가상 배송비 3,000원. 주문 상세에서
-                배송 단계를 진행하고 출고 전 취소·배송 완료 후 반품을 체험할 수
-                있어.
+                모의 주문에는 상품 금액 15만원 미만일 때 가상 배송비 3,000원이
+                적용됩니다. 주문 상세에서 배송 단계를 진행하고 출고 전 취소·배송
+                완료 후 반품을 체험할 수 있습니다.
               </p>
             </details>
           </div>

@@ -74,7 +74,7 @@ export function Header() {
                   </Dialog.Close>
                 </div>
                 <Dialog.Description>
-                  제품 이름이나 컬렉션을 찾아봐.
+                  제품명 또는 컬렉션을 검색해 주세요.
                 </Dialog.Description>
                 <form onSubmit={submit}>
                   <label htmlFor="site-search">검색어</label>
@@ -113,7 +113,7 @@ export function Header() {
           <Link
             href="/like"
             className="icon-button optional-action"
-            aria-label="위시리스트"
+            aria-label="찜"
           >
             <Heart size={20} />
           </Link>
@@ -128,7 +128,7 @@ export function Header() {
           <Link
             href="/my-page"
             className="icon-button optional-action"
-            aria-label="내 공간"
+            aria-label="마이페이지"
           >
             <UserRound size={20} />
           </Link>
@@ -151,16 +151,18 @@ export function Header() {
                   YOUR EVERYDAY, REEDITED.
                 </Dialog.Description>
                 <nav>
-                  {[
-                    ...links,
-                    ['내 공간', '/my-page'],
-                    ['위시리스트', '/like'],
-                  ].map(([name, href]) => (
-                    <Link key={href} href={href} onClick={() => setMenu(false)}>
-                      {name}
-                      <ArrowUpRight />
-                    </Link>
-                  ))}
+                  {[...links, ['마이페이지', '/my-page'], ['찜', '/like']].map(
+                    ([name, href]) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => setMenu(false)}
+                      >
+                        {name}
+                        <ArrowUpRight />
+                      </Link>
+                    ),
+                  )}
                 </nav>
               </Dialog.Content>
             </Dialog.Portal>
@@ -184,11 +186,11 @@ export function Footer() {
           <br />A SELECT SHOP FOR YOUR EVERYDAY.
         </p>
         <Link href="/studio/runner">
-          나의 디자인 시작하기 <ArrowUpRight size={18} />
+          디자인 만들기 <ArrowUpRight size={18} />
         </Link>
       </div>
       <div className="footer-bottom">
-        <span>PORTFOLIO DEMO · 실제 결제와 배송은 발생하지 않아.</span>
+        <span>PORTFOLIO DEMO · 실제 결제와 배송은 진행되지 않습니다.</span>
         <Link href="/about">프로젝트 · 에셋 안내</Link>
         <span>© NIJOOW 2026</span>
       </div>

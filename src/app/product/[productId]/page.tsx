@@ -9,7 +9,7 @@ export async function generateMetadata({
   const { productId } = await params;
   const p = findProduct(productId);
   return {
-    title: p?.name ?? '상품을 찾을 수 없어',
+    title: p?.name ?? '상품을 찾을 수 없습니다',
     description: p?.description,
   };
 }

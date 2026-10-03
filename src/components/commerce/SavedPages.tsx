@@ -1,4 +1,5 @@
 'use client';
+import { SERVICE_COPY } from '@/content/copy';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight, Copy, Trash2, Share2 } from 'lucide-react';
@@ -31,8 +32,8 @@ export function Favorites() {
           </div>
         ) : (
           <EmptyState
-            title="마음에 드는 것을 모아봐."
-            text="상품의 하트를 누르면 이곳에 보관돼."
+            title="찜한 상품이 없습니다."
+            text="상품의 찜 버튼을 누르면 이곳에서 확인할 수 있습니다."
           />
         )}
       </DataGuard>
@@ -52,7 +53,7 @@ export function Designs() {
         version: 0,
         preview: design.preview,
       });
-      notify('디자인 사본을 만들었어.');
+      notify('디자인 사본을 만들었습니다.');
     } catch (e) {
       notify((e as Error).message);
     }
@@ -64,9 +65,9 @@ export function Designs() {
       setLink(url);
       try {
         await navigator.clipboard.writeText(url);
-        notify('공유 링크를 복사했어.');
+        notify(SERVICE_COPY.sharedLinkCopied);
       } catch {
-        notify('아래 링크를 직접 복사해줘.');
+        notify(SERVICE_COPY.sharedLinkManual);
       }
     } catch (e) {
       notify((e as Error).message);
@@ -88,7 +89,7 @@ export function Designs() {
       </div>
       {link && (
         <label className="shared-link-box">
-          공유 링크 · 7일간 유효
+          {SERVICE_COPY.sharedLinkValidity}
           <input
             readOnly
             value={link}
@@ -144,7 +145,10 @@ export function Designs() {
                   </div>
                   {deleting === d.id && (
                     <div className="inline-confirm">
-                      <p>디자인을 삭제할까? 이미 만든 주문은 유지돼.</p>
+                      <p>
+                        디자인을 삭제하시겠습니까? 기존 주문의 디자인은
+                        유지됩니다.
+                      </p>
                       <button
                         className="button small danger"
                         onClick={async () => {
@@ -172,10 +176,10 @@ export function Designs() {
           </div>
         ) : (
           <EmptyState
-            title="첫 번째 디자인을 만들어봐."
-            text="색과 재질, 한 줄의 각인으로 너만의 스니커즈를 완성해."
+            title="저장한 디자인이 없습니다."
+            text="색상·재질·각인을 선택해 나만의 디자인을 만들어 보세요."
             href="/studio/runner"
-            action="커스텀 시작"
+            action="디자인 만들기"
           />
         )}
       </DataGuard>

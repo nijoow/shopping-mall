@@ -94,8 +94,8 @@ export function Shop({ category }: { category: string }) {
       ) : (
         <>
           <EmptyState
-            title="다른 조합을 찾아볼까?"
-            text="조건에 맞는 상품이 없어. 검색어나 필터를 바꿔봐."
+            title="검색 결과가 없습니다."
+            text="검색어나 필터를 변경해 주세요."
           />
           <button
             className="button outline"

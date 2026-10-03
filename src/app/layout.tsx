@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: '%s | NIJOOW',
   },
   description:
-    '스니커즈와 일상을 새롭게 편집하는 NIJOOW. 3D로 나만의 디자인을 만들고 주문까지 체험해봐.',
+    '스니커즈를 3D로 편집하고 나만의 디자인으로 주문 과정을 체험하세요. NIJOOW는 스니커즈 중심의 가상 편집숍입니다.',
 };
 export default function RootLayout({
   children,

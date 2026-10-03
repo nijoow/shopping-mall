@@ -1,4 +1,5 @@
 'use client';
+import { SERVICE_COPY } from '@/content/copy';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -63,8 +64,8 @@ export function Studio({
   if (designId && (!existing || existing.config.model !== model))
     return (
       <EmptyState
-        title="디자인을 찾을 수 없어."
-        text="삭제됐거나 현재 계정에서 열 수 없는 디자인이야."
+        title="디자인을 찾을 수 없습니다."
+        text="삭제되었거나 현재 이용 중인 체험 또는 계정에서 열 수 없는 디자인입니다."
         href={`/studio/${model}`}
         action="새 디자인 만들기"
       />
@@ -75,8 +76,8 @@ export function Studio({
   if (cartId && !cartLine)
     return (
       <EmptyState
-        title="수정할 구성을 찾을 수 없어."
-        text="장바구니 항목이 변경되었거나 주문됐어."
+        title="수정할 구성을 찾을 수 없습니다."
+        text="장바구니 항목이 변경되었거나 이미 주문되었습니다."
         href="/cart"
         action="장바구니 확인"
       />
@@ -213,7 +214,7 @@ function StudioEditor({
             JSON.stringify(latest.current),
           );
         } catch {}
-        setSaving('저장됨');
+        setSaving('저장 완료');
         return result;
       } catch (e) {
         setSaving('저장 실패');
@@ -261,7 +262,7 @@ function StudioEditor({
   }
   async function purchase(buy: boolean) {
     if (!size) {
-      setError('주문할 사이즈를 선택해줘.');
+      setError(SERVICE_COPY.sizeRequired);
       setReview(true);
       return;
     }
@@ -286,9 +287,7 @@ function StudioEditor({
             preview,
           });
       notify(
-        cartLine
-          ? '장바구니 디자인을 수정했어.'
-          : '내 디자인을 장바구니에 담았어.',
+        cartLine ? '장바구니 디자인을 수정했습니다.' : SERVICE_COPY.addedToCart,
       );
       router.push(buy ? `/checkout?items=${result.lineId}` : '/cart');
     } catch (e) {
@@ -309,9 +308,9 @@ function StudioEditor({
       setShareUrl(url);
       try {
         await navigator.clipboard.writeText(url);
-        notify('공유 링크를 복사했어.');
+        notify(SERVICE_COPY.sharedLinkCopied);
       } catch {
-        notify('아래 공유 링크를 복사해줘.');
+        notify(SERVICE_COPY.sharedLinkManual);
       }
     } catch (e) {
       setError((e as Error).message);
@@ -320,7 +319,7 @@ function StudioEditor({
   function download() {
     try {
       if (!capture.current) {
-        notify('3D 로딩이 끝나면 저장할 수 있어.');
+        notify('3D 모델을 불러온 뒤 이미지를 저장할 수 있습니다.');
         return;
       }
       const link = document.createElement('a');
@@ -328,7 +327,9 @@ function StudioEditor({
       link.download = `nijoow-${model}-design.png`;
       link.click();
     } catch {
-      setError('이미지를 저장하지 못했어. 3D를 다시 불러온 뒤 시도해줘.');
+      setError(
+        '이미지를 저장하지 못했습니다. 3D 모델을 다시 불러온 뒤 시도해 주세요.',
+      );
     }
   }
   return (
@@ -344,7 +345,7 @@ function StudioEditor({
         <span className="studio-header-label">YOUR PERSONAL EDIT</span>
         <div className="studio-top-actions">
           <span className="save-status" role="status">
-            {saving === '저장됨' && <Check size={13} />} {saving}
+            {saving === '저장 완료' && <Check size={13} />} {saving}
           </span>
           <button
             className="icon-button"
@@ -433,7 +434,7 @@ function StudioEditor({
             </button>
           </div>
           <span className="studio-drag-hint">
-            DRAG TO ROTATE · 부위를 클릭해 선택해봐
+            DRAG TO ROTATE · 편집할 부위를 선택해 주세요
           </span>
         </section>
         <aside className="studio-panel">
@@ -575,7 +576,7 @@ function StudioEditor({
               </fieldset>
             ) : (
               <div className="studio-review">
-                <h2>나의 조합을 확인해봐.</h2>
+                <h2>디자인 확인</h2>
                 <div className="configuration-list">
                   {PARTS.map(p => (
                     <div key={p.id}>
@@ -615,8 +616,8 @@ function StudioEditor({
                   </div>
                 </div>
                 <p className="notice-box">
-                  이 디자인은 데모 주문에 그대로 저장돼. 이후 디자인을 수정해도
-                  주문 당시 구성은 유지돼.
+                  주문에는 현재 디자인이 저장됩니다. 이후 디자인을 수정해도 주문
+                  당시 구성은 유지됩니다.
                 </p>
               </div>
             )}
@@ -659,7 +660,7 @@ function StudioEditor({
             </div>
             {shareUrl && (
               <label className="share-url">
-                공유 링크 · 7일간 유효
+                {SERVICE_COPY.sharedLinkValidity}
                 <input
                   readOnly
                   value={shareUrl}
@@ -680,14 +681,14 @@ function StudioEditor({
                   disabled={pending}
                   onClick={() => void purchase(false)}
                 >
-                  {cartLine ? '장바구니 적용' : '담기'}
+                  {cartLine ? '장바구니 적용' : '장바구니 담기'}
                 </button>
                 <button
                   className="button"
                   disabled={pending}
                   onClick={() => void purchase(true)}
                 >
-                  {pending ? '저장하고 있어…' : '이 디자인 주문하기'}
+                  {pending ? '저장 중…' : '이 디자인 주문하기'}
                   <ArrowUpRight size={17} />
                 </button>
               </div>
@@ -696,7 +697,7 @@ function StudioEditor({
                 사이즈 · 주문 검토 <ArrowUpRight size={17} />
               </button>
             )}
-            <p>실제 청구 없는 포트폴리오 데모</p>
+            <p>체험용 주문 · 실제 결제와 배송 없음</p>
           </div>
         </aside>
       </div>

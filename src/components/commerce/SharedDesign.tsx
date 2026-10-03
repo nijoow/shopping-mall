@@ -20,8 +20,9 @@ export function SharedDesign({
         <span className="eyebrow">A SHARED PERSPECTIVE</span>
         <h1>{design.name}</h1>
         <p>
-          공유된 디자인의 읽기 전용 스냅샷이야.
-          <br />내 사본을 만들어 새로운 조합으로 이어가봐.
+          공유 시점에 저장된 디자인입니다.
+          <br />
+          사본을 만들어 내 디자인으로 편집할 수 있습니다.
         </p>
         <div className="configuration-list">
           {PARTS.map(p => (
