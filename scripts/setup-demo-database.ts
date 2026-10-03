@@ -1,8 +1,11 @@
 import { loadEnvConfig } from '@next/env';
 import { PostgresStore } from '../src/server/database';
+import { normalizedSetting } from '../src/server/database-config';
 loadEnvConfig(process.cwd());
 async function main() {
-  const url = process.env.NIJOOW_POSTGRES_URL ?? process.env.POSTGRES_URL;
+  const url =
+    normalizedSetting(process.env.NIJOOW_POSTGRES_URL) ??
+    normalizedSetting(process.env.POSTGRES_URL);
   if (!url) throw new Error('NIJOOW_POSTGRES_URL or POSTGRES_URL is required.');
   const store = new PostgresStore(url);
   try {

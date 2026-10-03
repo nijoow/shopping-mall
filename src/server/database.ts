@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS designs (id TEXT PRIMARY KEY, workspace_id TEXT NOT N
 CREATE TABLE IF NOT EXISTS inventory (workspace_id TEXT NOT NULL REFERENCES workspaces(id), product_id TEXT NOT NULL, size TEXT NOT NULL, stock INTEGER NOT NULL CHECK(stock>=0), PRIMARY KEY(workspace_id,product_id,size));
 CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id), request_key TEXT NOT NULL, payload TEXT NOT NULL, UNIQUE(workspace_id,request_key));
 CREATE TABLE IF NOT EXISTS shares (token TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id), payload TEXT NOT NULL, expires_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS operation_limits (key TEXT PRIMARY KEY, window_start BIGINT NOT NULL, hits INTEGER NOT NULL CHECK(hits>0));
+CREATE INDEX IF NOT EXISTS shares_expiry ON shares(expires_at);
+CREATE INDEX IF NOT EXISTS workspace_expiry ON workspaces(account_id,updated_at);
 CREATE INDEX IF NOT EXISTS workspace_account ON workspaces(account_id);
 CREATE INDEX IF NOT EXISTS orders_workspace ON orders(workspace_id);
 CREATE INDEX IF NOT EXISTS designs_workspace ON designs(workspace_id);`;
@@ -81,20 +84,30 @@ export class SqliteStore implements Store {
   }
 }
 
+/** Match application and backup-tool TLS policy without exposing invalid input. */
+export function postgresConnectionString(connectionString: string) {
+  let url: URL;
+  try {
+    url = new URL(connectionString.trim());
+  } catch {
+    throw new Error('A valid PostgreSQL connection URL is required.');
+  }
+  if (!['postgres:', 'postgresql:'].includes(url.protocol))
+    throw new Error('A PostgreSQL connection URL is required.');
+  if (
+    !['localhost', '127.0.0.1', '::1', '[::1]'].includes(url.hostname) &&
+    !url.searchParams.has('sslmode')
+  )
+    url.searchParams.set('sslmode', 'verify-full');
+  return url.toString();
+}
+
 export class PostgresStore implements Store {
   readonly pool: Pool;
   private readonly active = new AsyncLocalStorage<PoolClient>();
   constructor(connectionString: string) {
     this.pool = new Pool({
-      connectionString: (() => {
-        const url = new URL(connectionString);
-        if (
-          !['localhost', '127.0.0.1', '::1'].includes(url.hostname) &&
-          !url.searchParams.has('sslmode')
-        )
-          url.searchParams.set('sslmode', 'verify-full');
-        return url.toString();
-      })(),
+      connectionString: postgresConnectionString(connectionString),
       max: 4,
       connectionTimeoutMillis: 10000,
       idleTimeoutMillis: 10000,
@@ -105,7 +118,7 @@ export class PostgresStore implements Store {
   }
   private qualify(text: string) {
     return text.replace(
-      /\b(accounts|workspaces|cart|favorites|designs|inventory|orders|shares)\b/g,
+      /\b(accounts|workspaces|cart|favorites|designs|inventory|orders|shares|operation_limits)\b/g,
       'nijoow_demo.$1',
     );
   }

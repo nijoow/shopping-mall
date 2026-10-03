@@ -41,26 +41,43 @@ function response(data: unknown, token: string) {
 function failure(error: unknown) {
   if (error instanceof SyntaxError)
     return NextResponse.json(
-      { error: '올바른 요청 형식이 아니야.', code: 'INVALID_INPUT' },
+      { error: '올바른 요청 형식이 아닙니다.', code: 'INVALID_INPUT' },
       { status: 400 },
     );
   if (error instanceof z.ZodError)
     return NextResponse.json(
-      { error: '입력값을 다시 확인해줘.', code: 'INVALID_INPUT' },
+      { error: '입력값을 다시 확인해 주세요.', code: 'INVALID_INPUT' },
       { status: 400 },
     );
   if (error instanceof DomainError)
     return NextResponse.json(
-      { error: error.message, code: error.code },
-      { status: error.status },
+      {
+        error: error.message,
+        code: error.code,
+        ...(error.retryAfter ? { retryAfter: error.retryAfter } : {}),
+      },
+      {
+        status: error.status,
+        headers: {
+          'Cache-Control': 'private, no-store',
+          ...(error.retryAfter
+            ? { 'Retry-After': String(error.retryAfter) }
+            : {}),
+        },
+      },
     );
+  const code = (error as { code?: unknown })?.code;
   console.error(
     '[demo-api]',
-    error instanceof Error ? error.message : 'Unknown error',
+    typeof code === 'string' && /^[A-Z0-9_]{1,40}$/.test(code)
+      ? code
+      : error instanceof Error
+        ? error.name
+        : 'Unknown error',
   );
   return NextResponse.json(
     {
-      error: '요청을 처리하지 못했어. 내용을 유지한 채 다시 시도해줘.',
+      error: '요청을 처리하지 못했습니다. 내용을 유지한 채 다시 시도해 주세요.',
       code: 'UNAVAILABLE',
     },
     { status: 500 },
@@ -89,15 +106,21 @@ export async function POST(request: NextRequest) {
     request.headers.get('sec-fetch-site') === 'cross-site'
   )
     return NextResponse.json(
-      { error: '허용되지 않은 요청이야.' },
+      { error: '허용되지 않은 요청입니다.', code: 'FORBIDDEN' },
       { status: 403 },
     );
   if (!request.headers.get('content-type')?.includes('application/json'))
-    return NextResponse.json({ error: 'JSON 요청이 필요해.' }, { status: 415 });
+    return NextResponse.json(
+      { error: 'JSON 요청이 필요합니다.', code: 'UNSUPPORTED_MEDIA_TYPE' },
+      { status: 415 },
+    );
   try {
     const raw = await request.text();
     if (raw.length > 200000)
-      return NextResponse.json({ error: '요청이 너무 커.' }, { status: 413 });
+      return NextResponse.json(
+        { error: '요청 용량을 초과했습니다.', code: 'PAYLOAD_TOO_LARGE' },
+        { status: 413 },
+      );
     const body = z
       .object({ op: z.string(), data: z.unknown().optional() })
       .strict()
@@ -150,7 +173,10 @@ export async function POST(request: NextRequest) {
         break;
       case 'orders.reset':
         if (body.data !== 'CONFIRM_RESET')
-          throw new DomainError('CONFIRM_REQUIRED', '초기화 확인이 필요해.');
+          throw new DomainError(
+            'CONFIRM_REQUIRED',
+            '초기화 확인이 필요합니다.',
+          );
         await repo.resetOrders(workspace.id);
         break;
       case 'order.advance': {
@@ -172,7 +198,7 @@ export async function POST(request: NextRequest) {
         break;
       }
       default:
-        throw new DomainError('INVALID_OPERATION', '알 수 없는 작업이야.');
+        throw new DomainError('INVALID_OPERATION', '알 수 없는 작업입니다.');
     }
     return response(
       { state: await repo.state(workspace.id), result },

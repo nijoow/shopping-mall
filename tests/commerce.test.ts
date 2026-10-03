@@ -82,7 +82,7 @@ test('same size across different designs is aggregated and a failed order rolls 
   );
   await assert.rejects(
     async () => await repo.checkout(w.id, await input(repo, w.id, [a, b])),
-    /재고/,
+    { code: 'OUT_OF_STOCK', status: 400 },
   );
   assert.equal(await repo.stock(w.id, 'runner', '270'), 5);
   assert.equal((await repo.state(w.id)).orders.length, 0);
@@ -106,11 +106,11 @@ test('server quote prevents tampered totals; simulated failure preserves cart an
   const data = await input(repo, w.id, [id]);
   await assert.rejects(
     async () => await repo.checkout(w.id, { ...data, quotedTotal: 1 }),
-    /금액/,
+    { code: 'QUOTE_CHANGED', status: 409 },
   );
   await assert.rejects(
     async () => await repo.checkout(w.id, { ...data, scenario: 'declined' }),
-    /모의/,
+    { code: 'DEMO_DECLINED', status: 400 },
   );
   assert.equal((await repo.state(w.id)).cart.length, 1);
   assert.equal(await repo.stock(w.id, 'runner', '270'), 20);
@@ -134,11 +134,11 @@ test('order ownership and state transitions are enforced and refunds restore inv
   const order = await repo.checkout(w.id, await input(repo, w.id, [id]));
   await assert.rejects(
     async () => await repo.advanceOrder(stranger.id, order.id, 'CANCELLED'),
-    /찾을/,
+    { code: 'NOT_FOUND', status: 404 },
   );
   await assert.rejects(
     async () => await repo.advanceOrder(w.id, order.id, 'DELIVERED'),
-    /현재/,
+    { code: 'INVALID_TRANSITION', status: 409 },
   );
   await repo.advanceOrder(w.id, order.id, 'CANCELLED');
   await repo.advanceOrder(w.id, order.id, 'CANCELLED');
@@ -173,7 +173,7 @@ test('shares freeze a design revision and optimistic revision checks prevent ove
         version: 1,
         config: next,
       }),
-    /다른 창/,
+    { code: 'CONFLICT', status: 409 },
   );
   await repo.close();
 });
@@ -231,7 +231,7 @@ test('cart design replacement preserves quantity and updates only its owned line
   await assert.rejects(
     async () =>
       await repo.replaceCart(stranger.id, line, { size: '270', config }),
-    /찾을/,
+    { code: 'NOT_FOUND', status: 404 },
   );
   await repo.close();
 });
