@@ -1,7 +1,7 @@
 'use client';
 import { useGLTF, OrbitControls, ContactShadows } from '@react-three/drei';
 import { Canvas, useThree, type ThreeEvent } from '@react-three/fiber';
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
 import { DecalGeometry } from 'three/examples/jsm/geometries/DecalGeometry.js';
 import { modelAsset, type DesignConfig, type Part } from '@/domain/catalog';
@@ -24,15 +24,20 @@ function Model({
   const { invalidate, gl, scene: root, camera } = useThree();
   const { scene, originals } = useMemo(() => {
     const clone = gltf.scene.clone(true);
+    const materialClones = new Map<THREE.Material, THREE.Material>();
     const originals = new Map<
       THREE.Material,
       { map: THREE.Texture | null; normal: THREE.Texture | null }
     >();
     clone.traverse(o => {
       if (o instanceof THREE.Mesh) {
+        const cloneMaterial = (m: THREE.Material) => {
+          if (!materialClones.has(m)) materialClones.set(m, m.clone());
+          return materialClones.get(m)!;
+        };
         o.material = Array.isArray(o.material)
-          ? o.material.map(m => m.clone())
-          : o.material.clone();
+          ? o.material.map(cloneMaterial)
+          : cloneMaterial(o.material);
         o.castShadow = true;
         o.receiveShadow = true;
         for (const m of Array.isArray(o.material) ? o.material : [o.material])
@@ -64,7 +69,12 @@ function Model({
         if (!(material instanceof THREE.MeshStandardMaterial)) return;
         const part = material.name.split('.')[0] as Part;
         if (config.colors[part]) material.color.set(config.colors[part]);
-        if (part === 'upper') {
+        if (
+          part === 'upper' ||
+          (part === 'panel' &&
+            config.model === 'low' &&
+            config.modelVersion >= 3)
+        ) {
           material.roughness =
             config.material === 'leather'
               ? 0.4
@@ -77,12 +87,17 @@ function Model({
             config.material === 'mesh' && config.model === 'runner'
               ? (source?.map ?? null)
               : surfaces[config.material].map;
+          material.roughnessMap = surfaces[config.material].roughness;
           material.normalMap =
             config.material === 'mesh' && config.model === 'runner'
               ? (source?.normal ?? null)
               : surfaces[config.material].normal;
           material.normalScale.setScalar(
-            config.material === 'suede' ? 0.32 : 0.18,
+            config.material === 'suede'
+              ? 0.12
+              : config.material === 'leather'
+                ? 0.16
+                : 0.26,
           );
           material.needsUpdate = true;
         }
@@ -94,12 +109,14 @@ function Model({
   }, [config, selected, scene, invalidate, originals, surfaces]);
   useEffect(
     () => () => {
+      const owned = new Set<THREE.Material>();
       scene.traverse(o => {
         if (o instanceof THREE.Mesh)
           (Array.isArray(o.material) ? o.material : [o.material]).forEach(m =>
-            m.dispose(),
+            owned.add(m),
           );
       });
+      owned.forEach(m => m.dispose());
     },
     [scene],
   );
@@ -130,26 +147,43 @@ function Model({
     }
   }, [zoom, camera, invalidate]);
   useEffect(() => {
-    onCaptureReady?.((format = 'image/webp') => {
+    let available = true;
+    const frame = requestAnimationFrame(() => {
+      if (!available || gl.getContext().isContextLost()) return;
       gl.render(root, camera);
-      const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 384;
-      const ctx = canvas.getContext('2d');
-      const factor = Math.min(
-        512 / gl.domElement.width,
-        384 / gl.domElement.height,
-      );
-      const w = gl.domElement.width * factor,
-        h = gl.domElement.height * factor;
-      ctx?.drawImage(gl.domElement, (512 - w) / 2, (384 - h) / 2, w, h);
-      return canvas.toDataURL(format, 0.8);
+      onCaptureReady?.((format = 'image/webp') => {
+        if (!available || gl.getContext().isContextLost())
+          throw new Error(
+            '3D 이미지가 준비되지 않았습니다. 다시 시도해 주세요.',
+          );
+        gl.render(root, camera);
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 384;
+        const ctx = canvas.getContext('2d');
+        if (!ctx)
+          throw new Error('이미지를 생성하지 못했습니다. 다시 시도해 주세요.');
+        ctx.fillStyle = '#e7e5de';
+        ctx.fillRect(0, 0, 512, 384);
+        const factor = Math.min(
+          512 / gl.domElement.width,
+          384 / gl.domElement.height,
+        );
+        const w = gl.domElement.width * factor,
+          h = gl.domElement.height * factor;
+        ctx.drawImage(gl.domElement, (512 - w) / 2, (384 - h) / 2, w, h);
+        return canvas.toDataURL(format, 0.8);
+      });
     });
-  }, [onCaptureReady, gl, root, camera]);
+    return () => {
+      available = false;
+      cancelAnimationFrame(frame);
+    };
+  }, [onCaptureReady, gl, root, camera, scene]);
   const stamp = useMemo(() => {
     if (!config.engraving) return null;
     scene.updateMatrixWorld(true);
-    const revisedLow = config.model === 'low' && config.modelVersion === 2;
+    const revisedLow = config.model === 'low' && config.modelVersion >= 2;
     const ray = new THREE.Raycaster(
       new THREE.Vector3(-0.75, revisedLow ? 0.02 : -0.18, 4),
       new THREE.Vector3(0, 0, -1),
@@ -175,7 +209,7 @@ function Model({
       ).getHSL({ h: 0, s: 0, l: 0 }).l < 0.3
         ? '#eeeae2'
         : '#252525';
-    ctx.font = 'bold 92px Arial';
+    ctx.font = '600 84px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(config.engraving, 256, 80, 480);
@@ -184,8 +218,15 @@ function Model({
     const geometry = new DecalGeometry(
       hit.object,
       hit.point,
-      new THREE.Euler(0, 0, 0),
-      new THREE.Vector3(0.5, 0.15, 0.12),
+      new THREE.Euler().setFromQuaternion(
+        new THREE.Quaternion().setFromUnitVectors(
+          new THREE.Vector3(0, 0, 1),
+          (
+            hit.face?.normal.clone() ?? new THREE.Vector3(0, 0, 1)
+          ).transformDirection(hit.object.matrixWorld),
+        ),
+      ),
+      new THREE.Vector3(0.66, 0.16, 0.08),
     );
     return { geometry, texture };
   }, [
@@ -230,6 +271,21 @@ function Model({
     </group>
   );
 }
+function ContextHealth() {
+  const { gl } = useThree();
+  const [lost, setLost] = useState(false);
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const fail = (event: Event) => {
+      event.preventDefault();
+      setLost(true);
+    };
+    canvas.addEventListener('webglcontextlost', fail);
+    return () => canvas.removeEventListener('webglcontextlost', fail);
+  }, [gl]);
+  if (lost) throw new Error('WebGL context lost');
+  return null;
+}
 export default function ShoeCanvas(props: ViewerProps) {
   return (
     <Canvas
@@ -240,18 +296,27 @@ export default function ShoeCanvas(props: ViewerProps) {
       gl={{ alpha: true, antialias: true }}
       fallback={
         <div className="viewer-fallback">
-          이 기기에서는 사진으로 상품을 확인할 수 있어.
+          이 기기에서는 대표 이미지로 상품을 확인해 주세요.
         </div>
       }
     >
+      <ContextHealth />
       <color attach="background" args={['#e7e5de']} />
-      <ambientLight intensity={1.35} />
-      <directionalLight position={[3, 5, 6]} intensity={3} />
-      <directionalLight position={[-4, 2, -3]} intensity={2.4} />
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[3, 5, 6]} intensity={2.6} />
+      <directionalLight position={[-4, 2, -3]} intensity={1.8} />
       <Suspense fallback={null}>
         <Model {...props} />
         <ContactShadows
-          position={[0, -0.8, 0]}
+          position={[
+            0,
+            props.config.model === 'low'
+              ? props.config.modelVersion >= 3
+                ? -0.465
+                : -0.45
+              : -0.78,
+            0,
+          ]}
           opacity={0.24}
           scale={8}
           blur={2.5}

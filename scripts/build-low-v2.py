@@ -1,17 +1,30 @@
 """Original low-top v2: continuous collar topology and fitted construction.
-Run: Blender --background --factory-startup --python scripts/build-low-v2.py
+Run: Blender --background --factory-startup --python scripts/build-low-v2.py --
+  --model-output public/models/low-v3.glb --poster-prefix public/editorial/low-v3 --quality-v3
 """
 import runpy, sys, math
 from pathlib import Path
-sys.argv = [__file__, '--', 'helpers-only']
+import argparse
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--model-output',required=True)
+parser.add_argument('--poster-prefix',required=True)
+parser.add_argument('--quality-v3',action='store_true')
+args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
 h = runpy.run_path(str(Path(__file__).with_name('build-assets.py')))
-globals().update({k: h[k] for k in ['bpy','Vector','ROOT','MODELS','clean','material','mesh','curve','stage_render']})
+globals().update({k: h[k] for k in ['bpy','Vector','ROOT','MODELS','clean','material','mesh','curve','stage_render','cube','new_output']})
+output=new_output(args.model_output)
+prefix=Path(args.poster_prefix).resolve()
+new_output(str(prefix)+'.png');new_output(str(prefix)+'-detail.png')
+stage_render.__globals__['OUT']=prefix.parent
+if args.quality_v3:
+    curve.__globals__['CURVE_RESOLUTION']=4
+    curve.__globals__['CURVE_BEVEL']=2
 clean()
 mats = {p: material(p,c,r) for p,c,r in [('upper','#e6e1d7',.48),('panel','#e6e1d7',.55),('sole','#bc9b73',.78),('laces','#e6e1d7',.85)]}
 lining = material('lining','#aaa397',.95)
 thread = material('stitch','#c5bfb2',.85)
 metal = material('eyelet','#b4afa3',.4,.3)
-N=160
+N=96 if args.quality_v3 else 160
 
 def signed(v,p): return math.copysign(abs(v)**p,v)
 def outline(a):
@@ -41,7 +54,7 @@ def sheet(name,fn,nu,nv,mat,wrap=False,thickness=0):
         mod=obj.modifiers.new('leather thickness','SOLIDIFY');mod.thickness=thickness;mod.offset=-1
     return obj
 
-sheet('upper',lambda u,t:surf(u*2*math.pi,t),N,36,mats['upper'],True,.022)
+sheet('upper',lambda u,t:surf(u*2*math.pi,t),N,24 if args.quality_v3 else 36,mats['upper'],True,.022)
 # Collar binding follows an exact continuous boundary.
 curve('padded collar',[surf(i*2*math.pi/N,1,.001) for i in range(N+1)],.022,mats['panel'])
 sheet('inner lining',lambda u,t:(-.85+(.43-.035*t)*math.cos(u*2*math.pi),(.255-.03*t)*math.sin(u*2*math.pi),.420+.04*math.cos(u*2*math.pi)-.42*t),N,12,lining,True,.012)
@@ -107,6 +120,14 @@ for side in [-1,1]:
 for i in range(180):
     a=i*2*math.pi/180;b=a+.017
     curve('sole stitch',[(outline(t)[0]*1.024,outline(t)[1]*1.024,-.244) for t in [a,b]],.0022,thread)
+# A shallow geometric herringbone tread is visible in the sole view; the closed
+# cupsole remains intact. Rounded ribs intersect the sole, never float below it.
+if args.quality_v3:
+    for x in [-1.18+i*.17 for i in range(15)]:
+        width=.34 if abs(x)>1.1 else .43
+        for side in [-1,1]:
+            rib=cube('rubber tread',(x,side*width*.43,-.448),(.075,width*.85,.026),mats['sole'],.010)
+            rib.rotation_euler.z=side*.30
 # All original model components use the same physical coordinates.
 bpy.ops.object.select_all(action='SELECT')
 bpy.context.view_layer.objects.active=next(o for o in bpy.context.scene.objects if o.type=='MESH')
@@ -120,7 +141,7 @@ for mat in list(mats.values())+[lining,thread,metal]:
         bpy.context.view_layer.objects.active=objects[0]
         bpy.ops.object.join();bpy.context.object.name=mat.name
 bpy.ops.object.select_all(action='SELECT')
-bpy.ops.export_scene.gltf(filepath=str(MODELS/'low-v2.glb'),export_format='GLB',use_selection=True,export_apply=True,export_materials='EXPORT')
-stage_render('low-v2.png')
-stage_render('low-detail-v2.png',True)
-print('LOW_V2_COMPLETE')
+bpy.ops.export_scene.gltf(filepath=str(output),export_format='GLB',use_selection=True,export_apply=True,export_materials='EXPORT')
+stage_render(prefix.name+'.png')
+stage_render(prefix.name+'-detail.png',True)
+print('LOW_NEW_VERSION_COMPLETE',output)

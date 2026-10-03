@@ -10,6 +10,9 @@ from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'public'/'editorial'; OUT.mkdir(exist_ok=True)
 MODELS=ROOT/'public'/'models'
+MODEL_OUTPUT=None
+CURVE_RESOLUTION=12
+CURVE_BEVEL=3
 BASE={'upper':'#a6a9ac','panel':'#343639','sole':'#e6e1d7','laces':'#e6e1d7'}
 
 def rgb(hex):
@@ -40,7 +43,7 @@ def mesh(name,verts,faces,mat):
                 co=m.vertices[m.loops[loop].vertex_index].co;uv.data[loop].uv=tuple((co[a]-lo[a])/max(span[a],.001) for a in axes)
     o=bpy.data.objects.new(name,m);bpy.context.collection.objects.link(o);assign(o,mat);smooth(o);return o
 def curve(name,points,radius,mat):
-    c=bpy.data.curves.new(name,'CURVE');c.dimensions='3D';c.resolution_u=12;c.bevel_depth=radius;c.bevel_resolution=3
+    c=bpy.data.curves.new(name,'CURVE');c.dimensions='3D';c.resolution_u=CURVE_RESOLUTION;c.bevel_depth=radius;c.bevel_resolution=CURVE_BEVEL
     s=c.splines.new('BEZIER');s.bezier_points.add(len(points)-1)
     for b,p in zip(s.bezier_points,points):b.co=p;b.handle_left_type='AUTO';b.handle_right_type='AUTO'
     o=bpy.data.objects.new(name,c);bpy.context.collection.objects.link(o);o.data.materials.append(mat);return o
@@ -49,10 +52,11 @@ def cube(name,loc,scale,mat,bevel=.08):
     assign(o,mat);mod=o.modifiers.new('soft construction','BEVEL');mod.width=bevel;mod.segments=5
     o.modifiers.new('weighted normals','WEIGHTED_NORMAL');smooth(o);return o
 def export_model(name):
+    if MODEL_OUTPUT is None:raise ValueError('An explicit new --model-output path is required')
     bpy.ops.object.select_all(action='DESELECT')
     for o in bpy.context.scene.objects:
         if o.type in ('MESH','CURVE','FONT'):o.select_set(True)
-    bpy.ops.export_scene.gltf(filepath=str(MODELS/(name+'-v1.glb')),export_format='GLB',use_selection=True,export_apply=True,export_materials='EXPORT')
+    bpy.ops.export_scene.gltf(filepath=str(MODEL_OUTPUT),export_format='GLB',use_selection=True,export_apply=True,export_materials='EXPORT')
 
 def runner():
     clean();bpy.ops.import_scene.gltf(filepath=str(MODELS/'source'/'shopify-shoe.glb'))
@@ -218,10 +222,27 @@ def stage_render(filename,detail=False,clothing=False):
     for o in list(scene.objects):
         if o.type in ('CAMERA','LIGHT'):bpy.data.objects.remove(o,do_unlink=True)
 
-import sys
-targets=sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else ['runner','low']
-if 'runner' in targets:runner();stage_render('runner.png');stage_render('runner-detail.png',True)
-if 'low' in targets:lowtop();stage_render('low.png');stage_render('low-detail.png',True)
-for name in ['jacket','knit','trouser','bag','cap']:
-    if name in targets:garment(name);stage_render(name+'.png',clothing=True)
-print('Editorial assets built.')
+def new_output(value):
+    path=Path(value).resolve()
+    if path.exists():raise ValueError(f'Preserved output already exists: {path}')
+    path.parent.mkdir(parents=True,exist_ok=True)
+    return path
+
+if __name__=='__main__':
+    import argparse,sys
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('target',choices=['runner','low','jacket','knit','trouser','bag','cap'])
+    parser.add_argument('--model-output',help='New versioned GLB path; never overwritten')
+    parser.add_argument('--poster-prefix',required=True,help='New poster path without .png')
+    args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
+    prefix=Path(args.poster_prefix).resolve()
+    new_output(str(prefix)+'.png');new_output(str(prefix)+'-detail.png')
+    OUT=prefix.parent
+    if args.target in ('runner','low'):
+        if not args.model_output:parser.error('--model-output is required for a shoe')
+        MODEL_OUTPUT=new_output(args.model_output)
+        (runner if args.target=='runner' else lowtop)()
+        stage_render(prefix.name+'.png');stage_render(prefix.name+'-detail.png',True)
+    else:
+        garment(args.target);stage_render(prefix.name+'.png',clothing=True)
+    print('Editorial assets built at explicit new paths.')

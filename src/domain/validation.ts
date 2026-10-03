@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   defaultConfig,
+  isSupportedModelVersion,
   findProduct,
   type DesignConfig,
   MAX_QUANTITY,
@@ -13,7 +14,7 @@ const hex = z
 export const configSchema = z
   .object({
     model: z.enum(['runner', 'low']),
-    modelVersion: z.union([z.literal(1), z.literal(2)]),
+    modelVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     colors: z
       .object({ upper: hex, panel: hex, sole: hex, laces: hex })
       .strict(),
@@ -24,10 +25,13 @@ export const configSchema = z
       .regex(/^[A-Z0-9 ]*$/),
   })
   .strict()
-  .refine(config => config.model === 'low' || config.modelVersion === 1, {
-    message: '지원하지 않는 모델 버전이야.',
-    path: ['modelVersion'],
-  });
+  .refine(
+    config => isSupportedModelVersion(config.model, config.modelVersion),
+    {
+      message: '지원하지 않는 모델 버전입니다.',
+      path: ['modelVersion'],
+    },
+  );
 export const previewSchema = z
   .string()
   .max(180000)
@@ -39,6 +43,7 @@ export class DomainError extends Error {
     public code: string,
     message: string,
     public status = 400,
+    public retryAfter?: number,
   ) {
     super(message);
   }
@@ -58,10 +63,13 @@ export function productInput(input: unknown) {
   if (!product)
     throw new DomainError(
       'PRODUCT_NOT_FOUND',
-      '더 이상 구매할 수 없는 상품이야.',
+      '현재 선택할 수 없는 상품입니다.',
     );
   if (!product.sizes.includes(parsed.size))
-    throw new DomainError('INVALID_SIZE', '구매 가능한 사이즈를 선택해줘.');
+    throw new DomainError(
+      'INVALID_SIZE',
+      '선택 가능한 사이즈를 확인해 주세요.',
+    );
   const config: DesignConfig | null = product.model
     ? (parsed.config ?? defaultConfig(product.model))
     : null;
@@ -69,7 +77,10 @@ export function productInput(input: unknown) {
     parsed.config &&
     (!product.model || parsed.config.model !== product.model)
   )
-    throw new DomainError('INVALID_CONFIG', '상품과 디자인이 일치하지 않아.');
+    throw new DomainError(
+      'INVALID_CONFIG',
+      '상품과 디자인이 일치하지 않습니다.',
+    );
   return { ...parsed, config, product };
 }
 export const idSchema = z
