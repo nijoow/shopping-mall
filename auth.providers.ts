@@ -24,6 +24,7 @@ export function safeReturnPath(value?: unknown): string {
     if (
       url.origin !== 'https://nijoow.invalid' ||
       decoded.startsWith('//') ||
+      /^\/(?:auth|api)(?:\/|$)/.test(decoded) ||
       /[\\\u0000-\u001f]/.test(decoded)
     )
       return '/my-page';
