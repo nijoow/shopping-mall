@@ -4,7 +4,6 @@ import { useRetryDelay } from './useRetryDelay';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { signOut } from 'next-auth/react';
 import { ArrowUpRight, Check, ChevronRight, X } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { money } from '@/domain/catalog';
@@ -26,22 +25,10 @@ export function Account() {
         <div>
           <span className="eyebrow">YOUR PERSONAL SPACE</span>
           <h1>
-            MY NIJOOW<span className="red-dot">.</span>
+            내 공간<span className="red-dot">.</span>
           </h1>
-          <p>{state?.name ?? '게스트'}, 나만의 관점으로 채워가는 컬렉션.</p>
+          <p>저장한 디자인과 찜, 장바구니와 주문을 한곳에서 확인하세요.</p>
         </div>
-        {state?.signedIn ? (
-          <button
-            className="text-link"
-            onClick={() => void signOut({ redirectTo: '/' })}
-          >
-            로그아웃
-          </button>
-        ) : (
-          <Link className="button" href="/auth/login?callbackUrl=/my-page">
-            소셜 로그인 <ArrowUpRight size={17} />
-          </Link>
-        )}
       </div>
       <DataGuard>
         <div className="account-stats">
@@ -61,12 +48,11 @@ export function Account() {
             <ArrowUpRight />
           </a>
         </div>
-        {!state?.signedIn && (
-          <p className="notice-box">
-            게스트로 체험 중입니다. 소셜 로그인하면 디자인과 주문을 계정에
-            이어서 보관할 수 있습니다.
-          </p>
-        )}
+        <p className="notice-box">
+          내 공간은 이 브라우저에 저장된 쿠키로 구분됩니다. 쿠키를 삭제하거나
+          다른 브라우저·기기를 이용하면 기존 디자인·찜·장바구니·주문을 확인할 수
+          없습니다. 7일 동안 접속하지 않으면 기존 체험을 이어갈 수 없습니다.
+        </p>
         <section id="my-orders" className="account-orders">
           <div className="section-heading">
             <h2>
@@ -230,7 +216,7 @@ export function OrderDetails({ id }: { id: string }) {
                 </p>
               </div>
               <Link href="/my-page" className="text-link" data-confirm-fallback>
-                주문 목록 <ArrowUpRight size={17} />
+                내 공간 <ArrowUpRight size={17} />
               </Link>
             </div>
             <div className="order-progress">
@@ -455,9 +441,9 @@ export function OrderDetails({ id }: { id: string }) {
         ) : (
           <EmptyState
             title="주문을 조회할 수 없습니다."
-            text="현재 이용 중인 체험 또는 로그인한 계정의 주문만 조회할 수 있습니다."
+            text="현재 브라우저에서 이용 중인 체험의 주문만 조회할 수 있습니다. 내 공간에서 주문 내역을 확인해 주세요."
             href="/my-page"
-            action="주문 내역 확인"
+            action="내 공간으로 이동"
           />
         )}
       </DataGuard>

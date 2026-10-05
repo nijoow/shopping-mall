@@ -137,7 +137,7 @@ export function Header() {
           <Link
             href="/my-page"
             className="icon-button optional-action"
-            aria-label="마이페이지"
+            aria-label="내 공간"
           >
             <UserRound size={20} />
           </Link>
@@ -168,7 +168,7 @@ export function Header() {
                   YOUR EVERYDAY, REEDITED.
                 </Dialog.Description>
                 <nav ref={menuNav} aria-label="모바일 주 메뉴">
-                  {[...links, ['마이페이지', '/my-page'], ['찜', '/like']].map(
+                  {[...links, ['내 공간', '/my-page'], ['찜', '/like']].map(
                     ([name, href]) => (
                       <Link
                         key={href}

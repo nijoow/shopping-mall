@@ -14,6 +14,7 @@ test(
     const stores = [new PostgresStore(url!), new PostgresStore(url!)];
     const repos = stores.map(s => new DemoRepository(s));
     const owned: string[] = [];
+    const ownedAccounts: string[] = [];
     try {
       const workspace = await repos[0].workspace();
       owned.push(workspace.id);
@@ -108,6 +109,54 @@ test(
       assert.equal((await repos[1].state(limited.id)).designs.length, 30);
       const share = await repos[0].share(workspace.id, design.id);
       assert.equal((await repos[1].shared(share))!.config.modelVersion, 3);
+      // Historical rows are fixtures, not an active OAuth/account-creation path.
+      const accountId = randomUUID();
+      ownedAccounts.push(accountId);
+      await repos[0].run(
+        'INSERT INTO accounts VALUES(?,?,?,?)',
+        accountId,
+        'historical',
+        randomUUID(),
+        'Previous member',
+      );
+      const unclaimed = await repos[0].workspace();
+      owned.push(unclaimed.id);
+      for (const space of [workspace, unclaimed])
+        await repos[0].run(
+          'UPDATE workspaces SET account_id=? WHERE id=?',
+          accountId,
+          space.id,
+        );
+      const before = await repos[0].state(workspace.id);
+      const converted = await Promise.all(
+        repos.map(repo => repo.workspace(workspace.token)),
+      );
+      for (const visitor of converted) assert.deepEqual(visitor, workspace);
+      assert.deepEqual(await repos[1].state(workspace.id), before);
+      assert.equal(
+        (await repos[1].row(
+          'SELECT account_id FROM workspaces WHERE id=?',
+          workspace.id,
+        ))!.account_id,
+        null,
+      );
+      assert.equal(
+        (await repos[1].row(
+          'SELECT account_id FROM workspaces WHERE id=?',
+          unclaimed.id,
+        ))!.account_id,
+        accountId,
+      );
+      assert.ok(
+        await repos[1].row('SELECT id FROM accounts WHERE id=?', accountId),
+      );
+      assert.equal(Object.hasOwn(before, 'signedIn'), false);
+      assert.equal(Object.hasOwn(before, 'name'), false);
+      assert.equal((await repos[1].shared(share))!.config.modelVersion, 3);
+      const isolated = await repos[1].workspace(unclaimed.id);
+      owned.push(isolated.id);
+      assert.notEqual(isolated.id, unclaimed.id);
+      assert.equal((await repos[1].state(isolated.id)).designs.length, 0);
     } finally {
       try {
         for (const id of owned) {
@@ -127,6 +176,8 @@ test(
           );
           await repos[0].run('DELETE FROM workspaces WHERE id=?', id);
         }
+        for (const id of ownedAccounts)
+          await repos[0].run('DELETE FROM accounts WHERE id=?', id);
       } finally {
         await Promise.all(stores.map(s => s.close()));
       }

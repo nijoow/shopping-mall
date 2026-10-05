@@ -26,19 +26,13 @@ const env = {
   NEXT_TELEMETRY_DISABLED: '1',
   NIJOOW_TEST_SQLITE_ONLY: '1',
   NIJOOW_DEMO_DB_PATH: join(directory, 'test.sqlite'),
-  // Empty values override .env.local without sending its DB/auth settings to the test app.
+  // Empty values override .env.local without sending its DB settings to the test app.
   NIJOOW_POSTGRES_URL: '',
   POSTGRES_URL: '',
   VERCEL: '',
-  AUTH_SECRET: 'nijoow-isolated-http-test-only-not-a-production-secret',
-  AUTH_URL: base,
-  AUTH_TRUST_HOST: 'true',
+  NIJOOW_APP_URL: base,
   NIJOOW_TEST_BASE_URL: base,
 };
-for (const provider of ['GOOGLE', 'KAKAO', 'NAVER']) {
-  env[`AUTH_${provider}_ID`] = '';
-  env[`AUTH_${provider}_SECRET`] = '';
-}
 const server = spawn(
   process.execPath,
   [

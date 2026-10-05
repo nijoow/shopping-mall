@@ -79,7 +79,7 @@ export function Studio({
     return (
       <EmptyState
         title="디자인을 찾을 수 없습니다."
-        text="삭제되었거나 현재 이용 중인 체험 또는 계정에서 열 수 없는 디자인입니다."
+        text="삭제되었거나 현재 브라우저의 체험에서 열 수 없는 디자인입니다."
         href={`/studio/${model}`}
         action="새 디자인 만들기"
       />

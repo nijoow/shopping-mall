@@ -62,6 +62,18 @@ test('normal clothing order: keyboard size selection, mobile checkout and immuta
   });
   await page.reload();
   expect((await state(page)).orders[0].id).toBe(after.orders[0].id);
+  await page.goto('/my-page');
+  await expect(page.getByRole('heading', { name: /^내 공간/ })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /로그인|로그아웃/ }),
+  ).toHaveCount(0);
+  await expect(page.locator('a[href*="/auth/"]')).toHaveCount(0);
+  const visitor = await state(page);
+  expect(visitor.workspaceId).toBe(after.workspaceId);
+  expect(visitor.orders[0].id).toBe(after.orders[0].id);
+  expect(visitor).not.toHaveProperty('signedIn');
+  expect(visitor).not.toHaveProperty('name');
+  await noHorizontalOverflow(page);
 });
 
 test('low v3: real 3D edit, PNG export, save/reopen/share, dialog keyboard and configured order', async ({

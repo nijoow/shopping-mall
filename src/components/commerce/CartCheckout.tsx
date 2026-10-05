@@ -425,7 +425,8 @@ export function Checkout() {
                 </div>
                 <div className="notice-box">
                   실제 결제와 배송은 진행되지 않습니다. 주문과 디자인은 현재
-                  이용 중인 체험 또는 로그인한 계정에 저장됩니다.
+                  체험에 저장되며, 같은 브라우저의 내 공간에서 확인할 수
+                  있습니다.
                 </div>
                 <details className="scenario-options">
                   <summary>다른 결제 상황 체험하기</summary>
@@ -447,12 +448,6 @@ export function Checkout() {
                   </label>
                 </details>
               </section>
-              {!state?.signedIn && (
-                <p className="checkout-login">
-                  소셜 로그인하면 체험 중인 디자인과 주문을 계정에 이어서 보관할
-                  수 있습니다.
-                </p>
-              )}
             </div>
             <Totals subtotal={subtotal}>
               {error && (
