@@ -1,5 +1,7 @@
 # NIJOOW 3D 커머스 포트폴리오 — 제품 기획 및 개발 계획
 
+> **2026-10-05 변경:** 이 문서는 초기 기획 이력이야. 로그인·소셜 3종·회원 이관·인증 검증 항목은 사용자의 최신 결정으로 종료했어. 현재는 방문자별 쿠키로 내 공간을 사용하며 공유·PNG는 유지해. 실행 범위와 완료 기준은 [다음 작업 계획](next-steps.md), 호환·검증 근거는 [방문자 전환 기록](../implementation/2026-10-05-visitor-only.md)을 우선해. 아래 초기 제안·치수·미구현 항목을 현재 구현으로 취급하지 마.
+
 작성일: 2026-09-09 · 상태: 제품 방향·3D 진입/편집/표현 확정 / 추천안에 따른 상세 기획 진행 · 기준 코드: d416204
 
 2026-09-10: 첫 로컬 실행 버전을 구현했어. 아래는 목표 명세이며, 실제 구현/검증 범위와 남은 작업은 [구현 체크포인트](/Users/woojin/Desktop/works/shopping-mall/docs/implementation/2026-09-10-checkpoint.md)를 기준으로 봐.
@@ -561,4 +563,4 @@ DB 수준에서도 소유 관계, 고유 주문 키, 음수 재고 방지, 적�
 - [model-viewer 로딩 예제](https://modelviewer.dev/examples/loading/): 로딩 전 poster와 모델 실패 시 이미지 유지 패턴을 참고했어. 이 문서에서 해당 라이브러리로 교체를 확정한 것은 아니야.
 - [React Three Fiber 성능 가이드](https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/docs/advanced/scaling-performance.mdx): 필요할 때 렌더링, 자산 재사용, 품질 단계/적응형 해상도 원칙을 렌더러 요구사항에 반영했어.
 
-기준 검토: [2026-09-08 실제 코드·DB·화면 검토서](/tmp/shopping-mall-review-20260908.md). 이번 기획은 해당 문서의 실판매 전제에서 포트폴리오 전제로 범위와 우선순위를 다시 설계한 결과야.
+기준 검토: 2026-09-08 실제 코드·DB·화면 검토서(원래 임시 파일 `/tmp/shopping-mall-review-20260908.md`는 현재 남아 있지 않아). 이번 기획은 해당 문서의 실판매 전제에서 포트폴리오 전제로 범위와 우선순위를 다시 설계한 결과야.
