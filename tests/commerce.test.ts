@@ -7,6 +7,7 @@ import {
   FREE_SHIPPING,
   SHIPPING_FEE,
 } from '../src/domain/catalog';
+import { orderTotals } from '../src/domain/orders';
 
 async function setup() {
   const repo = new DemoRepository(':memory:');
@@ -336,4 +337,66 @@ test('resetting demo orders keeps saved designs and favorites', async () => {
   assert.deepEqual(state.favorites, ['runner']);
   assert.equal(await repo.stock(w.id, 'runner', '270'), 20);
   await repo.close();
+});
+
+test('quotes keep the free-shipping boundary and quantity-weighted totals', () => {
+  for (const [subtotal, shipping] of [
+    [149999, 3000],
+    [150000, 0],
+    [150001, 0],
+  ]) {
+    assert.deepEqual(orderTotals([{ unitPrice: subtotal, quantity: 1 }]), {
+      subtotal,
+      shipping,
+      total: subtotal + shipping,
+    });
+  }
+  assert.deepEqual(
+    orderTotals([
+      { unitPrice: 39000, quantity: 2 },
+      { unitPrice: 69000, quantity: 1 },
+    ]),
+    { subtotal: 147000, shipping: 3000, total: 150000 },
+  );
+});
+
+test('delivery and return preserve the order snapshot and refund inventory only once', async () => {
+  const { repo, workspace: w } = await setup();
+  try {
+    const line = await add(repo, w.id, 2);
+    const original = await repo.checkout(w.id, await input(repo, w.id, [line]));
+    await repo.advanceOrder(w.id, original.id, 'PREPARING');
+    await repo.advanceOrder(w.id, original.id, 'SHIPPED');
+    await assert.rejects(repo.advanceOrder(w.id, original.id, 'CANCELLED'), {
+      code: 'INVALID_TRANSITION',
+    });
+    await assert.rejects(repo.advanceOrder(w.id, original.id, 'REFUNDED'), {
+      code: 'INVALID_TRANSITION',
+    });
+    await repo.advanceOrder(w.id, original.id, 'DELIVERED');
+    await repo.advanceOrder(w.id, original.id, 'RETURN_REQUESTED');
+    assert.equal(await repo.stock(w.id, 'runner', '270'), 18);
+    const refunded = await repo.advanceOrder(w.id, original.id, 'REFUNDED');
+    const repeated = await repo.advanceOrder(w.id, original.id, 'REFUNDED');
+    assert.deepEqual(repeated, refunded);
+    assert.deepEqual(refunded.items, original.items);
+    assert.equal(refunded.total, original.total);
+    assert.equal(await repo.stock(w.id, 'runner', '270'), 20);
+    assert.deepEqual(
+      refunded.events.map(event => event.status),
+      [
+        'CONFIRMED',
+        'PREPARING',
+        'SHIPPED',
+        'DELIVERED',
+        'RETURN_REQUESTED',
+        'REFUNDED',
+      ],
+    );
+    await assert.rejects(repo.advanceOrder(w.id, original.id, 'PREPARING'), {
+      code: 'INVALID_TRANSITION',
+    });
+  } finally {
+    await repo.close();
+  }
 });

@@ -11,9 +11,9 @@ import {
   FREE_SHIPPING,
   MAX_QUANTITY,
   money,
-  SHIPPING_FEE,
   MATERIALS,
 } from '@/domain/catalog';
+import { orderTotals } from '@/domain/orders';
 import { ADDRESSES, type CartLine, type DemoOrder } from '@/domain/types';
 import { useDemo } from './DemoProvider';
 import { DataGuard, EmptyState } from './StateView';
@@ -64,13 +64,13 @@ function LineSummary({ line }: { line: CartLine }) {
   );
 }
 function Totals({
-  subtotal,
+  totals,
   children,
 }: {
-  subtotal: number;
+  totals: ReturnType<typeof orderTotals>;
   children: React.ReactNode;
 }) {
-  const shipping = subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE;
+  const { subtotal, shipping, total } = totals;
   return (
     <aside className="order-summary">
       <span className="eyebrow">YOUR ORDER</span>
@@ -92,7 +92,7 @@ function Totals({
       )}
       <div className="order-total">
         <span>TOTAL</span>
-        <strong>{money(subtotal + shipping)}</strong>
+        <strong>{money(total)}</strong>
       </div>
       {children}
       <p className="demo-caption">{SERVICE_COPY.demoNotice}</p>
@@ -113,7 +113,7 @@ export function Cart() {
   const retryDelay = useRetryDelay(failure?.error);
   const cart = state?.cart ?? [];
   const selected = cart.filter(l => !excluded.includes(l.id)),
-    subtotal = selected.reduce((n, l) => n + l.unitPrice * l.quantity, 0);
+    totals = orderTotals(selected);
   async function change(op: string, data: unknown, id: string) {
     if (busy || retryDelay) return;
     setBusy(id);
@@ -267,7 +267,7 @@ export function Cart() {
               </Link>
             </section>
             {selected.length ? (
-              <Totals subtotal={subtotal}>
+              <Totals totals={totals}>
                 <button
                   className="button"
                   data-testid="cart-checkout"
@@ -315,7 +315,7 @@ export function Checkout() {
     l => !requested || requested.includes(l.id),
   );
   const lines = pending && submitted ? submitted : selected,
-    subtotal = lines.reduce((n, l) => n + l.quantity * l.unitPrice, 0);
+    totals = orderTotals(lines);
   const missing =
     !!requested && requested.some(id => !state?.cart.some(l => l.id === id));
   async function checkout() {
@@ -331,7 +331,7 @@ export function Checkout() {
         requestKey: requestKey.current,
         lineIds: selected.map(l => l.id),
         addressId: address,
-        quotedTotal: subtotal + (subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE),
+        quotedTotal: totals.total,
         scenario,
       });
       if (scenario === 'delayed') {
@@ -449,7 +449,7 @@ export function Checkout() {
                 </details>
               </section>
             </div>
-            <Totals subtotal={subtotal}>
+            <Totals totals={totals}>
               {error && (
                 <p
                   role="alert"
@@ -475,7 +475,7 @@ export function Checkout() {
                   ? '주문 처리 중…'
                   : retryDelay
                     ? `${retryDelay}초 후 다시 시도`
-                    : `${money(subtotal + (subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE))} 모의 결제하기`}
+                    : `${money(totals.total)} 모의 결제하기`}
                 <ArrowUpRight size={17} />
               </button>
             </Totals>

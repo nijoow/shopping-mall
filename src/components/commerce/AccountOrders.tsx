@@ -8,6 +8,7 @@ import { ArrowUpRight, Check, ChevronRight, X } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { money } from '@/domain/catalog';
 import { ADDRESSES, STATUS_LABEL, type OrderStatus } from '@/domain/types';
+import { canAdvanceOrder, ORDER_PROGRESS } from '@/domain/orders';
 import ProductViewer from '@/components/three/ProductViewer';
 import { useDemo } from './DemoProvider';
 import { DataGuard, EmptyState } from './StateView';
@@ -163,17 +164,10 @@ export function Account() {
     </div>
   );
 }
-const transitions: Partial<
-  Record<OrderStatus, { next: OrderStatus; label: string }>
-> = {
-  CONFIRMED: { next: 'PREPARING', label: '출고 준비로 진행' },
-  PREPARING: { next: 'SHIPPED', label: '배송 중으로 진행' },
-  SHIPPED: { next: 'DELIVERED', label: '배송 완료로 진행' },
-  RETURN_REQUESTED: { next: 'REFUNDED', label: '회수 완료 · 모의 환불' },
-};
 export function OrderDetails({ id }: { id: string }) {
   const { state, mutate } = useDemo();
   const order = state?.orders.find(o => o.id === id);
+  const progress = order ? ORDER_PROGRESS[order.status] : undefined;
   const [pending, setPending] = useState(false),
     [error, setError] = useState(''),
     [failure, setFailure] = useState<CommerceError | null>(null),
@@ -337,19 +331,17 @@ export function OrderDetails({ id }: { id: string }) {
                     다음 단계로 진행하며 배송·취소·반품 과정을 체험할 수
                     있습니다.
                   </p>
-                  {transitions[order.status] && (
+                  {progress && (
                     <button
                       className="button"
                       disabled={pending || retryDelay > 0}
-                      onClick={() =>
-                        void advance(transitions[order.status]!.next)
-                      }
+                      onClick={() => void advance(progress.next)}
                     >
-                      {transitions[order.status]!.label}
+                      {progress.label}
                       <ArrowUpRight size={16} />
                     </button>
                   )}
-                  {['CONFIRMED', 'PREPARING'].includes(order.status) && (
+                  {canAdvanceOrder(order.status, 'CANCELLED') && (
                     <button
                       className="button outline"
                       disabled={pending || retryDelay > 0}
@@ -362,7 +354,7 @@ export function OrderDetails({ id }: { id: string }) {
                       주문 취소
                     </button>
                   )}
-                  {order.status === 'DELIVERED' && (
+                  {canAdvanceOrder(order.status, 'RETURN_REQUESTED') && (
                     <button
                       className="button outline"
                       disabled={pending || retryDelay > 0}
