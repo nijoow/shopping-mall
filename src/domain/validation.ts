@@ -88,6 +88,17 @@ export const idSchema = z
   .min(1)
   .max(80)
   .regex(/^[a-zA-Z0-9_-]+$/);
+
+// A local draft may have an empty/untrimmed name while the user is editing.
+// Server saves still require a non-empty trimmed name and a matching revision.
+export const designDraftSchema = z.object({
+  id: idSchema,
+  name: z.string().max(40),
+  config: configSchema,
+  version: z.number().int().nonnegative().default(0),
+});
+export type DesignDraft = z.infer<typeof designDraftSchema>;
+
 export function configKey(config: DesignConfig | null) {
   if (!config) return '';
   return JSON.stringify([
