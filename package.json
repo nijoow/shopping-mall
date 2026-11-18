@@ -9,12 +9,16 @@
     "dev": "next dev --webpack --hostname 127.0.0.1",
     "build": "next build --webpack",
     "start": "next start --hostname 0.0.0.0",
-    "lint": "eslint src auth.ts tests",
-    "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "lint": "eslint src auth.ts tests scripts",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --import tsx --test tests/commerce.test.ts tests/model-version.test.ts",
     "assets:build": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/build-assets.py",
-    "test:http": "node tests/http-smoke.mjs",
-    "db:setup": "node --import tsx scripts/setup-demo-database.ts"
+    "test:http": "node scripts/test-http.mjs",
+    "db:setup": "node --import tsx scripts/setup-demo-database.ts",
+    "test:postgres": "node scripts/test-postgres.mjs",
+    "assets:check": "node --import tsx scripts/check-assets.ts",
+    "check": "yarn typecheck && yarn lint && yarn test && yarn assets:check",
+    "check:full": "yarn check && yarn build && yarn test:http"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

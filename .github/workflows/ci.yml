@@ -4,44 +4,54 @@ on:
   pull_request:
     branches: [main, develop]
   push:
-    branches: [develop]
+    branches: [main, develop]
 
-# 같은 브랜치의 이전 실행은 취소해 러너를 아낀다
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   quality:
-    name: type-check · lint · build
+    name: type-check · lint · tests · build · HTTP · PostgreSQL
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Enable Corepack (Yarn 4)
-        run: corepack enable
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Type check
-        run: yarn typecheck
-
-      - name: Domain regression tests
-        run: yarn test
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Build
-        run: yarn build
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
         env:
-          # 빌드는 동적 라우트를 실행하지 않아 실제 시크릿이 필요 없지만,
-          # NextAuth 초기화가 요구할 수 있어 더미 값을 넣는다.
-          AUTH_SECRET: ci-dummy-secret-not-used-at-runtime
+          POSTGRES_USER: nijoow_test
+          POSTGRES_PASSWORD: nijoow_ci_only
+          POSTGRES_DB: nijoow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U nijoow_test -d nijoow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      AUTH_SECRET: ci-only-secret-not-used-by-any-deployment
+      NIJOOW_TEST_POSTGRES_URL: postgresql://nijoow_test:nijoow_ci_only@127.0.0.1:5432/nijoow_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install pinned dependencies
+        run: node .yarn/releases/yarn-4.0.2.cjs install --immutable
+      - name: Static, domain and asset checks
+        run: node .yarn/releases/yarn-4.0.2.cjs check
+      - name: Production build
+        run: node .yarn/releases/yarn-4.0.2.cjs build
+      - name: Isolated HTTP commerce checks
+        run: node .yarn/releases/yarn-4.0.2.cjs test:http
+      - name: Initialize disposable PostgreSQL schema
+        run: node .yarn/releases/yarn-4.0.2.cjs db:setup
+        env:
+          NIJOOW_POSTGRES_URL: ${{ env.NIJOOW_TEST_POSTGRES_URL }}
+      - name: PostgreSQL persistence and concurrency checks
+        run: node .yarn/releases/yarn-4.0.2.cjs test:postgres
