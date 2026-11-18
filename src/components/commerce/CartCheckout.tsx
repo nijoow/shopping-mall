@@ -1,4 +1,5 @@
 'use client';
+import { SERVICE_COPY } from '@/content/copy';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -84,7 +85,7 @@ function Totals({
       </dl>
       {shipping > 0 && (
         <p className="shipping-hint">
-          {money(FREE_SHIPPING - subtotal)} 더 담으면 무료배송
+          {money(FREE_SHIPPING - subtotal)} 추가 시 가상 배송비 무료
         </p>
       )}
       <div className="order-total">
@@ -92,7 +93,7 @@ function Totals({
         <strong>{money(subtotal + shipping)}</strong>
       </div>
       {children}
-      <p className="demo-caption">실제 청구와 배송 없는 데모 주문이야.</p>
+      <p className="demo-caption">{SERVICE_COPY.demoNotice}</p>
     </aside>
   );
 }
@@ -208,7 +209,7 @@ export function Cart() {
                     </button>
                     {line.stock < line.quantity && (
                       <p className="error-text cart-stock-warning">
-                        재고가 부족해. 수량을 조정해줘.
+                        선택 가능한 수량을 초과했습니다. 수량을 조정해 주세요.
                       </p>
                     )}
                   </li>
@@ -228,13 +229,13 @@ export function Cart() {
                 </Link>
               </Totals>
             ) : (
-              <div className="notice-box">주문할 상품을 선택해줘.</div>
+              <div className="notice-box">주문할 상품을 선택해 주세요.</div>
             )}
           </div>
         ) : (
           <EmptyState
-            title="아직 비어 있는 나의 백."
-            text="마음에 드는 아이템이나 직접 만든 디자인을 담아봐."
+            title="장바구니가 비어 있습니다."
+            text="상품이나 저장한 디자인을 장바구니에 담아 주세요."
           />
         )}
       </DataGuard>
@@ -265,7 +266,7 @@ export function Checkout() {
     requestKey.current ??= crypto.randomUUID();
     setSubmitted(selected);
     setPending(true);
-    setStage('데모 승인을 처리하고 있어.');
+    setStage('모의 결제를 처리하는 중입니다.');
     setError('');
     try {
       const order = await mutate<DemoOrder>('checkout', {
@@ -276,7 +277,7 @@ export function Checkout() {
         scenario,
       });
       if (scenario === 'delayed') {
-        setStage('응답 지연 상황 — 기존 주문 결과를 다시 확인하고 있어.');
+        setStage('기존 주문 결과를 확인하는 중입니다.');
         await refresh();
       }
       router.push(`/orders/${order.id}`);
@@ -302,7 +303,7 @@ export function Checkout() {
           <h1>
             CHECKOUT<span className="red-dot">.</span>
           </h1>
-          <p>만든 디자인 그대로, 주문을 완성해봐.</p>
+          <p>상품과 옵션을 확인하고 모의 결제를 진행해 주세요.</p>
         </div>
       </div>
       <DataGuard>
@@ -311,8 +312,8 @@ export function Checkout() {
             <div className="checkout-content">
               {missing && !pending && (
                 <div className="notice-box">
-                  일부 장바구니 항목이 변경됐어.{' '}
-                  <Link href="/cart">장바구니에서 다시 확인해줘.</Link>
+                  일부 장바구니 항목이 변경되었습니다.{' '}
+                  <Link href="/cart">장바구니에서 다시 확인해 주세요.</Link>
                 </div>
               )}
               <section>
@@ -338,7 +339,7 @@ export function Checkout() {
                   ))}
                 </div>
                 <p className="option-help">
-                  실제 주소나 연락처를 입력할 필요 없어.
+                  실제 주소나 연락처를 입력하지 않습니다.
                 </p>
               </section>
               <section>
@@ -361,11 +362,11 @@ export function Checkout() {
               <section>
                 <div className="subheading">
                   <span>03</span>
-                  <h2>데모 결제</h2>
+                  <h2>모의 결제</h2>
                 </div>
                 <div className="notice-box">
-                  금액 청구와 실제 배송은 발생하지 않아. 주문과 디자인은 나의
-                  공간에 저장돼.
+                  실제 결제와 배송은 진행되지 않습니다. 주문과 디자인은 현재
+                  이용 중인 체험 또는 로그인한 계정에 저장됩니다.
                 </div>
                 <details className="scenario-options">
                   <summary>다른 결제 상황 체험하기</summary>
@@ -389,8 +390,8 @@ export function Checkout() {
               </section>
               {!state?.signedIn && (
                 <p className="checkout-login">
-                  나중에 소셜 로그인하면 디자인과 주문을 계정에 이어서 보관할 수
-                  있어.
+                  소셜 로그인하면 체험 중인 디자인과 주문을 계정에 이어서 보관할
+                  수 있습니다.
                 </p>
               )}
             </div>
@@ -412,15 +413,15 @@ export function Checkout() {
               >
                 {pending
                   ? '주문 처리 중…'
-                  : `${money(subtotal + (subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE))} 데모 결제하기`}
+                  : `${money(subtotal + (subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE))} 모의 결제하기`}
                 <ArrowUpRight size={17} />
               </button>
             </Totals>
           </div>
         ) : (
           <EmptyState
-            title="주문할 상품이 없어."
-            text="장바구니에서 상품을 선택하거나 내 디자인을 담아줘."
+            title="주문할 상품이 없습니다."
+            text="장바구니에서 주문할 상품을 선택해 주세요."
             href="/cart"
             action="장바구니 확인"
           />

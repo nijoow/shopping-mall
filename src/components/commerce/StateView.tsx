@@ -1,4 +1,5 @@
 'use client';
+import { SERVICE_COPY } from '@/content/copy';
 import Link from 'next/link';
 import { useDemo } from './DemoProvider';
 export function DataGuard({ children }: { children: React.ReactNode }) {
@@ -6,8 +7,8 @@ export function DataGuard({ children }: { children: React.ReactNode }) {
   if (error)
     return (
       <section className="empty-state">
-        <span className="eyebrow">CONNECTION</span>
-        <h2>잠시 연결이 끊겼어.</h2>
+        <span className="eyebrow">PLEASE TRY AGAIN</span>
+        <h2>{SERVICE_COPY.loadFailed}</h2>
         <p role="alert">{error}</p>
         <button className="button" onClick={() => void refresh()}>
           다시 불러오기
@@ -18,7 +19,7 @@ export function DataGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="loading-state" role="status">
         <span className="loading-line" />
-        나의 공간을 준비하고 있어.
+        {SERVICE_COPY.loading}
       </div>
     );
   return children;

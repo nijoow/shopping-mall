@@ -21,7 +21,7 @@ export function Login({
   const [pending, setPending] = useState(''),
     [error, setError] = useState(
       errorCode
-        ? '소셜 로그인을 완료하지 못했어. 다시 시도하거나 데모로 계속할 수 있어.'
+        ? '소셜 로그인을 완료하지 못했습니다. 다시 시도하거나 로그인 없이 체험을 계속해 주세요.'
         : '',
     );
   return (
@@ -43,10 +43,9 @@ export function Login({
       </section>
       <section className="login-panel">
         <span className="eyebrow">WELCOME TO NIJOOW</span>
-        <h2>취향을 이어서 보관해봐.</h2>
+        <h2>로그인하고 내 컬렉션을 이어가세요.</h2>
         <p>
-          로그인하면 지금 체험 중인 디자인·찜·장바구니·데모 주문이 계정에 함께
-          보관돼.
+          로그인하면 체험 중인 디자인·찜·장바구니·주문이 계정에 함께 보관됩니다.
         </p>
         <div className="social-buttons">
           {[
@@ -64,13 +63,13 @@ export function Login({
                 try {
                   await signIn(provider.id, { redirectTo: callbackUrl });
                 } catch {
-                  setError('로그인 연결을 시작하지 못했어. 다시 시도해줘.');
+                  setError('로그인을 시작하지 못했습니다. 다시 시도해 주세요.');
                   setPending('');
                 }
               }}
             >
               <span>{provider.icon}</span>
-              {pending === provider.id ? '연결하고 있어…' : provider.label}
+              {pending === provider.id ? '로그인 연결 중…' : provider.label}
               <ArrowUpRight size={17} />
             </button>
           ))}
@@ -84,9 +83,9 @@ export function Login({
           로그인 없이 계속 체험하기
         </Link>
         <p className="demo-caption">
-          이메일 자동 계정 병합을 사용하지 않아.
+          소셜 서비스별로 계정을 구분합니다.
           <br />
-          결제와 배송은 로그인 후에도 데모로 진행돼.
+          로그인 후에도 실제 결제와 배송은 진행되지 않습니다.
         </p>
       </section>
     </div>
@@ -104,7 +103,7 @@ export function Account() {
           <h1>
             MY NIJOOW<span className="red-dot">.</span>
           </h1>
-          <p>{state?.name ?? '나의 공간'}, 나만의 관점으로 채워가는 컬렉션.</p>
+          <p>{state?.name ?? '게스트'}, 나만의 관점으로 채워가는 컬렉션.</p>
         </div>
         {state?.signedIn ? (
           <button
@@ -139,8 +138,8 @@ export function Account() {
         </div>
         {!state?.signedIn && (
           <p className="notice-box">
-            지금은 나만의 게스트 체험 공간이야. 소셜 로그인하면 만든 디자인과
-            데모 주문을 기존 계정 데이터와 함께 보관할 수 있어.
+            게스트로 체험 중입니다. 소셜 로그인하면 디자인과 주문을 계정에
+            이어서 보관할 수 있습니다.
           </p>
         )}
         <section id="my-orders" className="account-orders">
@@ -148,7 +147,7 @@ export function Account() {
             <h2>
               YOUR ORDERS<span>.</span>
             </h2>
-            <span className="eyebrow">실제 청구 없는 데모 주문</span>
+            <span className="eyebrow">모의 결제 주문</span>
           </div>
           {state?.orders.length ? (
             <div className="order-list">
@@ -185,16 +184,16 @@ export function Account() {
             </div>
           ) : (
             <EmptyState
-              title="첫 번째 주문을 기다리고 있어."
-              text="나만의 스니커즈를 만들고 주문까지 체험해봐."
+              title="주문 내역이 없습니다."
+              text="디자인을 만들고 주문 과정을 체험해 보세요."
               href="/studio/runner"
-              action="커스텀 시작"
+              action="디자인 만들기"
             />
           )}
         </section>
         <section className="account-addresses">
           <span className="eyebrow">DEMO ADDRESSES</span>
-          <h2>배송지까지 가볍게 체험해.</h2>
+          <h2>체험용 배송지</h2>
           <div className="address-grid">
             {ADDRESSES.map(a => (
               <div className="address-card" key={a.id}>
@@ -204,17 +203,21 @@ export function Account() {
             ))}
           </div>
           <p className="option-help">
-            개인정보 입력 없이 미리 준비된 가상 주소로 주문할 수 있어.
+            개인정보를 입력하지 않고 미리 준비된 가상 주소를 선택할 수 있습니다.
           </p>
         </section>
         <section className="account-reset">
-          <h2>데모 주문부터 다시 시작할까?</h2>
+          <h2>체험 데이터 초기화</h2>
           <p>
-            주문·장바구니·가상 재고만 초기화돼. 저장한 디자인과 찜은 유지돼.
+            주문·장바구니·체험용 재고를 초기화합니다. 저장한 디자인과 찜은
+            유지됩니다.
           </p>
           {confirmReset ? (
             <div className="inline-confirm">
-              <p>현재 체험 공간의 주문과 장바구니를 초기화할까?</p>
+              <p>
+                현재 이용 중인 체험의 주문·장바구니·체험용 재고를
+                초기화하시겠습니까?
+              </p>
               <button
                 className="button small danger"
                 disabled={resetting}
@@ -223,7 +226,7 @@ export function Account() {
                   try {
                     await mutate('orders.reset', 'CONFIRM_RESET');
                     setConfirmReset(false);
-                    notify('주문과 장바구니를 초기화했어.');
+                    notify('주문·장바구니·체험용 재고를 초기화했습니다.');
                   } catch (e) {
                     notify((e as Error).message);
                   } finally {
@@ -242,7 +245,7 @@ export function Account() {
             </div>
           ) : (
             <button className="text-link" onClick={() => setConfirmReset(true)}>
-              데모 주문·장바구니 초기화
+              체험 데이터 초기화
             </button>
           )}
         </section>
@@ -292,8 +295,8 @@ export function OrderDetails({ id }: { id: string }) {
                   <span className="red-dot">.</span>
                 </h1>
                 <p>
-                  {STATUS_LABEL[order.status]} · 실제 청구와 배송은 발생하지
-                  않아.
+                  {STATUS_LABEL[order.status]} · 모의 결제 주문이며 실제 배송은
+                  진행되지 않습니다.
                 </p>
               </div>
               <Link href="/my-page" className="text-link">
@@ -411,7 +414,10 @@ export function OrderDetails({ id }: { id: string }) {
                 </span>
                 <div className="order-simulation">
                   <span className="eyebrow">배송 진행 체험</span>
-                  <p>다음 단계로 직접 진행하며 주문 후 흐름을 확인해봐.</p>
+                  <p>
+                    다음 단계로 진행하며 배송·취소·반품 과정을 체험할 수
+                    있습니다.
+                  </p>
                   {transitions[order.status] && (
                     <button
                       className="button"
@@ -446,8 +452,8 @@ export function OrderDetails({ id }: { id: string }) {
                     <div className="inline-confirm">
                       <p>
                         {confirm === 'CANCELLED'
-                          ? '주문을 취소하고 가상 재고를 복구할까?'
-                          : '이 주문 전체의 반품을 신청할까?'}
+                          ? '주문을 취소하고 모의 환불을 진행하시겠습니까? 체험용 재고가 복구됩니다.'
+                          : '이 주문의 모든 상품에 대해 반품을 신청하시겠습니까?'}
                       </p>
                       <button
                         className="button small danger"
@@ -491,7 +497,7 @@ export function OrderDetails({ id }: { id: string }) {
                     </Dialog.Close>
                   </div>
                   <Dialog.Description>
-                    수정 이후에도 주문에 저장된 구성이 그대로 유지돼.
+                    디자인을 수정해도 주문 당시 저장된 구성은 유지됩니다.
                   </Dialog.Description>
                   {preview !== null && order.items[preview]?.config && (
                     <ProductViewer config={order.items[preview].config!} />
@@ -502,10 +508,10 @@ export function OrderDetails({ id }: { id: string }) {
           </>
         ) : (
           <EmptyState
-            title="이 주문을 열 수 없어."
-            text="현재 체험 공간이나 로그인한 계정에 속한 주문만 확인할 수 있어."
+            title="주문을 조회할 수 없습니다."
+            text="현재 이용 중인 체험 또는 로그인한 계정의 주문만 조회할 수 있습니다."
             href="/my-page"
-            action="나의 주문 확인"
+            action="주문 내역 확인"
           />
         )}
       </DataGuard>

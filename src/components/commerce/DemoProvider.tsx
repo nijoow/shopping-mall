@@ -1,4 +1,5 @@
 'use client';
+import { SERVICE_COPY } from '@/content/copy';
 import {
   createContext,
   useCallback,
@@ -36,7 +37,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/demo', { cache: 'no-store' });
       const payload = await response.json();
       if (!response.ok)
-        throw new Error(payload.error ?? '데이터를 불러오지 못했어.');
+        throw new Error(payload.error ?? SERVICE_COPY.loadFailed);
       if (current === generation.current) {
         setState(payload.state);
         setError(null);
@@ -44,7 +45,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       return payload.state as DemoState;
     } catch (e) {
       if (current === generation.current)
-        setError(e instanceof Error ? e.message : '데이터를 불러오지 못했어.');
+        setError(e instanceof Error ? e.message : SERVICE_COPY.loadFailed);
       return null;
     } finally {
       if (current === generation.current) setLoading(false);
@@ -68,7 +69,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           });
           const payload = await response.json();
           if (!response.ok)
-            throw new Error(payload.error ?? '변경을 저장하지 못했어.');
+            throw new Error(payload.error ?? SERVICE_COPY.saveFailed);
           setState(payload.state);
           setError(null);
           channel.current?.postMessage('changed');
