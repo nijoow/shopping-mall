@@ -1,6 +1,7 @@
 import { SqliteStore, PostgresStore, type Store } from './database';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
-import { resolve } from 'node:path';
+import { databaseConfiguration } from './database-config';
+import { consumeGuestLimit, assertGuestCapacity } from './guest-limits';
 import { z } from 'zod';
 import {
   findProduct,
@@ -133,6 +134,11 @@ export class DemoRepository {
             );
           }
           await this.run('DELETE FROM inventory WHERE workspace_id=?', from);
+          await this.run(
+            'DELETE FROM operation_limits WHERE key IN (?,?)',
+            `save:${from}`,
+            `share:${from}`,
+          );
           await this.run('DELETE FROM workspaces WHERE id=?', from);
           current = member;
         } else if (member) current = member;
@@ -146,6 +152,10 @@ export class DemoRepository {
         }
       }
       if (!current) {
+        if (!accountId) {
+          await assertGuestCapacity(this.store, 'workspaces');
+          await consumeGuestLimit(this.store, 'create');
+        }
         const fresh = randomBytes(32).toString('hex'),
           id = randomUUID();
         await this.run(
@@ -264,10 +274,13 @@ export class DemoRepository {
       if (next > MAX_QUANTITY)
         throw new DomainError(
           'QUANTITY_LIMIT',
-          `같은 구성은 최대 ${MAX_QUANTITY}개까지 담을 수 있어.`,
+          `같은 구성은 최대 ${MAX_QUANTITY}개까지 담을 수 있습니다.`,
         );
       if (next > (await this.stock(workspace, product.id, size)))
-        throw new DomainError('OUT_OF_STOCK', '선택한 사이즈의 재고가 부족해.');
+        throw new DomainError(
+          'OUT_OF_STOCK',
+          '선택 가능한 수량을 초과했습니다. 수량을 조정해 주세요.',
+        );
       if (
         !same &&
         Number(
@@ -279,7 +292,7 @@ export class DemoRepository {
       )
         throw new DomainError(
           'CART_LIMIT',
-          '장바구니는 30개 구성까지 담을 수 있어.',
+          '장바구니는 30개 구성까지 담을 수 있습니다.',
         );
       const id = String(same?.id ?? randomUUID());
       if (same)
@@ -310,7 +323,7 @@ export class DemoRepository {
       if (!line)
         throw new DomainError(
           'NOT_FOUND',
-          '장바구니 항목을 찾을 수 없어.',
+          '장바구니 항목을 찾을 수 없습니다.',
           404,
         );
       if (
@@ -323,7 +336,7 @@ export class DemoRepository {
       )
         throw new DomainError(
           'OUT_OF_STOCK',
-          '재고보다 많은 수량은 선택할 수 없어.',
+          '선택 가능한 수량을 초과했습니다.',
         );
       await this.run(
         'UPDATE cart SET quantity=? WHERE id=? AND workspace_id=?',
@@ -351,7 +364,7 @@ export class DemoRepository {
       if (!current)
         throw new DomainError(
           'NOT_FOUND',
-          '수정할 장바구니 항목을 찾을 수 없어.',
+          '수정할 장바구니 항목을 찾을 수 없습니다.',
           404,
         );
       const item = productInput({
@@ -375,7 +388,7 @@ export class DemoRepository {
       )
         throw new DomainError(
           'QUANTITY_LIMIT',
-          '같은 구성의 수량이나 재고를 확인해줘.',
+          '같은 구성의 수량을 확인해 주세요.',
         );
       const resultId = String(same?.id ?? id);
       await this.run(
@@ -402,7 +415,7 @@ export class DemoRepository {
   async favorite(workspace: string, product: string) {
     return this.transaction(async () => {
       if (!findProduct(product))
-        throw new DomainError('NOT_FOUND', '상품을 찾을 수 없어.', 404);
+        throw new DomainError('NOT_FOUND', '상품을 찾을 수 없습니다.', 404);
       if (
         await this.row(
           'SELECT * FROM favorites WHERE workspace_id=? AND product_id=?',
@@ -436,17 +449,17 @@ export class DemoRepository {
         data.id,
       );
       if (existing && existing.workspace_id !== workspace)
-        throw new DomainError('NOT_FOUND', '디자인을 찾을 수 없어.', 404);
+        throw new DomainError('NOT_FOUND', '디자인을 찾을 수 없습니다.', 404);
       if (!existing && data.version > 0)
         throw new DomainError(
           'CONFLICT',
-          '삭제된 디자인이야. 사본으로 저장해줘.',
+          '삭제된 디자인입니다. 현재 내용을 사본으로 저장해 주세요.',
           409,
         );
       if (existing && Number(existing.version) !== data.version)
         throw new DomainError(
           'CONFLICT',
-          '다른 창에서 수정된 디자인이야. 사본으로 저장해줘.',
+          '다른 창에서 디자인이 변경되었습니다. 현재 내용을 사본으로 저장해 주세요.',
           409,
         );
       if (
@@ -460,9 +473,21 @@ export class DemoRepository {
       )
         throw new DomainError(
           'DESIGN_LIMIT',
-          '디자인은 50개까지 저장할 수 있어.',
+          '디자인은 50개까지 저장할 수 있습니다.',
         );
+      if (
+        !(
+          await this.row(
+            'SELECT account_id FROM workspaces WHERE id=?',
+            workspace,
+          )
+        )?.account_id
+      ) {
+        if (!existing) await assertGuestCapacity(this.store, 'designs');
+        await consumeGuestLimit(this.store, 'save', workspace);
+      }
       const version = (Number(existing?.version) || 0) + 1;
+      const updatedAt = now();
       await this.run(
         'INSERT INTO designs VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,config=excluded.config,version=excluded.version,updated_at=excluded.updated_at,preview=excluded.preview',
         data.id,
@@ -470,10 +495,10 @@ export class DemoRepository {
         data.name,
         JSON.stringify(data.config),
         version,
-        now(),
+        updatedAt,
         data.preview ?? null,
       );
-      return { ...data, version, updatedAt: now() } as SavedDesign;
+      return { ...data, version, updatedAt } as SavedDesign;
     });
   }
   async deleteDesign(workspace: string, id: string) {
@@ -484,18 +509,42 @@ export class DemoRepository {
     );
   }
   async share(workspace: string, id: string) {
-    const design = (await this.state(workspace)).designs.find(d => d.id === id);
-    if (!design)
-      throw new DomainError('NOT_FOUND', '저장한 디자인을 먼저 선택해줘.', 404);
-    const token = randomBytes(18).toString('base64url');
-    await this.run(
-      'INSERT INTO shares VALUES(?,?,?,?)',
-      token,
-      workspace,
-      JSON.stringify({ name: design.name, config: design.config }),
-      new Date(Date.now() + 7 * 86400000).toISOString(),
-    );
-    return token;
+    return this.transaction(async () => {
+      const row = await this.row(
+        'SELECT * FROM designs WHERE id=? AND workspace_id=?',
+        id,
+        workspace,
+      );
+      if (!row)
+        throw new DomainError(
+          'NOT_FOUND',
+          '저장한 디자인을 먼저 선택해 주세요.',
+          404,
+        );
+      if (
+        !(
+          await this.row(
+            'SELECT account_id FROM workspaces WHERE id=?',
+            workspace,
+          )
+        )?.account_id
+      ) {
+        await assertGuestCapacity(this.store, 'shares', workspace);
+        await consumeGuestLimit(this.store, 'share', workspace);
+      }
+      const token = randomBytes(18).toString('base64url');
+      await this.run(
+        'INSERT INTO shares VALUES(?,?,?,?)',
+        token,
+        workspace,
+        JSON.stringify({
+          name: row.name,
+          config: JSON.parse(String(row.config)),
+        }),
+        new Date(Date.now() + 7 * 86400000).toISOString(),
+      );
+      return token;
+    });
   }
   async shared(token: string) {
     const row = await this.row(
@@ -537,7 +586,7 @@ export class DemoRepository {
       if (data.scenario === 'declined')
         throw new DomainError(
           'DEMO_DECLINED',
-          '모의 승인을 실패하도록 설정했어. 구성을 유지한 채 다시 시도할 수 있어.',
+          '모의 결제가 거절되었습니다. 구성을 유지한 채 다시 시도할 수 있습니다.',
         );
       const cart = (await this.state(workspace)).cart;
       const ids = [...new Set(data.lineIds)];
@@ -545,7 +594,7 @@ export class DemoRepository {
       if (selected.some(line => !line))
         throw new DomainError(
           'CART_CHANGED',
-          '장바구니 구성이 변경됐어. 다시 확인해줘.',
+          '장바구니 구성이 변경되었습니다. 다시 확인해 주세요.',
           409,
         );
       const lines = selected.filter(
@@ -589,7 +638,7 @@ export class DemoRepository {
       if (total !== data.quotedTotal)
         throw new DomainError(
           'QUOTE_CHANGED',
-          '상품 금액이 변경됐어. 새로운 금액을 확인해줘.',
+          '상품 금액이 변경되었습니다. 새로운 금액을 확인해 주세요.',
           409,
         );
       for (const value of quantities.values()) {
@@ -597,7 +646,7 @@ export class DemoRepository {
         if (value.quantity > stock)
           throw new DomainError(
             'OUT_OF_STOCK',
-            '같은 사이즈를 사용하는 디자인의 합계 수량이 재고를 넘었어.',
+            '같은 사이즈를 사용하는 디자인의 합계 수량이 선택 가능한 수량을 초과했습니다.',
           );
         await this.run(
           'INSERT OR IGNORE INTO inventory VALUES(?,?,?,?)',
@@ -617,7 +666,7 @@ export class DemoRepository {
         if (result.changes !== 1)
           throw new DomainError(
             'OUT_OF_STOCK',
-            '재고가 변경됐어. 수량을 다시 확인해줘.',
+            '선택 가능한 수량이 변경되었습니다. 수량을 다시 확인해 주세요.',
           );
       }
       const createdAt = now(),
@@ -653,7 +702,8 @@ export class DemoRepository {
         id,
         workspace,
       );
-      if (!row) throw new DomainError('NOT_FOUND', '주문을 찾을 수 없어.', 404);
+      if (!row)
+        throw new DomainError('NOT_FOUND', '주문을 찾을 수 없습니다.', 404);
       const order = JSON.parse(String(row.payload)) as DemoOrder;
       if (order.status === target) return order;
       const allowed: Record<OrderStatus, OrderStatus[]> = {
@@ -668,7 +718,7 @@ export class DemoRepository {
       if (!allowed[order.status].includes(target))
         throw new DomainError(
           'INVALID_TRANSITION',
-          '현재 주문 상태에서는 이 작업을 할 수 없어.',
+          '현재 주문 상태에서는 이 작업을 할 수 없습니다.',
           409,
         );
       if (target === 'CANCELLED' || target === 'REFUNDED')
@@ -698,20 +748,11 @@ export function repository() {
   if (!currentRepository) {
     let store = globalDb.nijoowStore;
     if (!store) {
-      const url =
-        process.env.NIJOOW_POSTGRES_URL ??
-        (process.env.VERCEL ? process.env.POSTGRES_URL : undefined);
-      if (process.env.VERCEL && !url)
-        throw new Error(
-          'Persistent PostgreSQL must be configured before deployment.',
-        );
-      store = url
-        ? new PostgresStore(url)
-        : new SqliteStore(
-            resolve(
-              process.env.NIJOOW_DEMO_DB_PATH ?? '.data/editorial.sqlite',
-            ),
-          );
+      const config = databaseConfiguration(process.env);
+      store =
+        config.kind === 'postgres'
+          ? new PostgresStore(config.url)
+          : new SqliteStore(config.path);
       globalDb.nijoowStore = store;
     }
     currentRepository = new DemoRepository(store);

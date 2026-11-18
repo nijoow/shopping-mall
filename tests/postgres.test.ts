@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { PostgresStore } from '../src/server/database';
 import { DemoRepository } from '../src/server/repository';
 import { defaultConfig, SHIPPING_FEE } from '../src/domain/catalog';
+import { DomainError } from '../src/domain/validation';
 const url = process.env.NIJOOW_TEST_POSTGRES_URL?.trim();
 test(
   'PostgreSQL persists across connections and serializes orders, revisions and refunds',
@@ -26,7 +27,7 @@ test(
       });
       assert.equal(
         (await repos[1].state(workspace.id)).cart[0].config!.modelVersion,
-        2,
+        3,
       );
       const state = await repos[0].state(workspace.id);
       const subtotal = state.cart.reduce(
@@ -48,7 +49,10 @@ test(
       assert.equal(await repos[1].stock(workspace.id, 'low', '270'), 18);
       await assert.rejects(
         repos[1].advanceOrder(stranger.id, orders[0].id, 'CANCELLED'),
-        /찾을/,
+        (error: unknown) =>
+          error instanceof DomainError &&
+          error.code === 'NOT_FOUND' &&
+          error.status === 404,
       );
       await Promise.all(
         repos.map(r => r.advanceOrder(workspace.id, orders[0].id, 'CANCELLED')),
@@ -74,9 +78,35 @@ test(
       const failed = revisions.find(
         r => r.status === 'rejected',
       ) as PromiseRejectedResult;
-      assert.match(failed.reason.message, /다른 창/);
+      assert.equal(failed.reason.code, 'CONFLICT');
+      const limited = await repos[0].workspace();
+      owned.push(limited.id);
+      for (let i = 0; i < 29; i++)
+        await repos[0].saveDesign(limited.id, {
+          id: randomUUID(),
+          name: `Rate ${i}`,
+          version: 0,
+          config,
+        });
+      const rates = await Promise.allSettled(
+        repos.map(r =>
+          r.saveDesign(limited.id, {
+            id: randomUUID(),
+            name: 'Boundary',
+            version: 0,
+            config,
+          }),
+        ),
+      );
+      assert.equal(rates.filter(r => r.status === 'fulfilled').length, 1);
+      const rateFailure = rates.find(
+        r => r.status === 'rejected',
+      ) as PromiseRejectedResult;
+      assert.equal(rateFailure.reason.code, 'RATE_LIMITED');
+      assert.equal(rateFailure.reason.status, 429);
+      assert.equal((await repos[1].state(limited.id)).designs.length, 30);
       const share = await repos[0].share(workspace.id, design.id);
-      assert.equal((await repos[1].shared(share))!.config.modelVersion, 2);
+      assert.equal((await repos[1].shared(share))!.config.modelVersion, 3);
     } finally {
       try {
         for (const id of owned) {
@@ -89,6 +119,11 @@ test(
             'cart',
           ])
             await repos[0].run(`DELETE FROM ${table} WHERE workspace_id=?`, id);
+          await repos[0].run(
+            'DELETE FROM operation_limits WHERE key IN (?,?)',
+            `save:${id}`,
+            `share:${id}`,
+          );
           await repos[0].run('DELETE FROM workspaces WHERE id=?', id);
         }
       } finally {
