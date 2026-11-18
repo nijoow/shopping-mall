@@ -1,28 +1,15 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-});
-
-const nextConfig = {
+module.exports = {
+  poweredByHeader: false,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'bbbtan.cafe24.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'adererror.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+    localPatterns: [{ pathname: '/editorial/**' }, { pathname: '/images/**' }],
+  },
+  async redirects() {
+    return [
+      { source: '/3d-shop', destination: '/studio/runner', permanent: true },
+      { source: '/shop', destination: '/shop/all', permanent: true },
+      { source: '/auth/sign-up', destination: '/auth/login', permanent: true },
+      { source: '/admin/:path*', destination: '/my-page', permanent: false },
+    ];
   },
 };
-
-module.exports = withPWA(nextConfig);

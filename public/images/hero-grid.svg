@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d7ff00" stop-opacity="0"/>
+      <stop offset="1" stop-color="#d7ff00" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#fade)" stroke-width="1.5" fill="none">
+    <path d="M600 240 L600 600"/>
+    <path d="M520 240 L360 600"/>
+    <path d="M440 240 L120 600"/>
+    <path d="M360 240 L-120 600"/>
+    <path d="M680 240 L840 600"/>
+    <path d="M760 240 L1080 600"/>
+    <path d="M840 240 L1320 600"/>
+    <path d="M240 300 L960 300"/>
+    <path d="M160 360 L1040 360"/>
+    <path d="M60 440 L1140 440"/>
+    <path d="M-80 540 L1280 540"/>
+  </g>
+</svg>

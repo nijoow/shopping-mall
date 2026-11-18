@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <g>
+    <path fill="#d7ff00" stroke="#0b0b0c" stroke-width="3" d="M60 4 L72 22 L92 12 L94 34 L116 36 L104 54 L120 66 L100 76 L108 98 L86 96 L82 118 L60 104 L38 118 L34 96 L12 98 L20 76 L0 66 L16 54 L4 36 L26 34 L28 12 L48 22 Z"/>
+    <text x="60" y="57" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" text-anchor="middle" fill="#0b0b0c">3D</text>
+    <text x="60" y="80" font-family="Arial Black, Arial, sans-serif" font-size="13" font-weight="900" text-anchor="middle" fill="#0b0b0c">CUSTOM</text>
+  </g>
+</svg>
