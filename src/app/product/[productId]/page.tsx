@@ -11,6 +11,14 @@ export async function generateMetadata({
   return {
     title: p?.name ?? '상품을 찾을 수 없습니다',
     description: p?.description,
+    alternates: { canonical: `/product/${productId}` },
+    openGraph: p
+      ? {
+          title: p.name,
+          description: p.description,
+          images: [{ url: p.image, alt: p.name }],
+        }
+      : undefined,
   };
 }
 export default async function Page({

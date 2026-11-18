@@ -24,6 +24,7 @@ const env = {
   ...process.env,
   NODE_ENV: 'production',
   NEXT_TELEMETRY_DISABLED: '1',
+  NIJOOW_TEST_SQLITE_ONLY: '1',
   NIJOOW_DEMO_DB_PATH: join(directory, 'test.sqlite'),
   // Empty values override .env.local without sending its DB/auth settings to the test app.
   NIJOOW_POSTGRES_URL: '',

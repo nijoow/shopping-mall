@@ -9,7 +9,8 @@ const url = process.env.NIJOOW_TEST_POSTGRES_URL?.trim();
 test(
   'PostgreSQL persists across connections and serializes orders, revisions and refunds',
   { skip: !url },
-  async () => {
+  async t => {
+    t.mock.timers.enable({ apis: ['Date'], now: Date.now() });
     const stores = [new PostgresStore(url!), new PostgresStore(url!)];
     const repos = stores.map(s => new DemoRepository(s));
     const owned: string[] = [];

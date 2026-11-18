@@ -1,6 +1,6 @@
 # 사이트 문구 교체 계획
 
-기준: 2026-10-03. 이번에는 교체 기준과 범위를 확정하고, 실제 UI 문구 변경은 다음 P0-1 작업에서 진행해.
+기준: 2026-10-03. 교체 기준과 범위를 정리한 뒤 실제 UI·서버·메타·카탈로그에 반영하고 메인 에이전트가 화면을 검토했어. 결과는 최종 검토 기록을 참고해.
 
 ## 목표와 말투
 
@@ -54,15 +54,15 @@
 
 검색에서 20개 파일·109줄의 후보를 확인했어. 완전한 문구 목록은 아니므로 아래 흐름을 모두 검수해.
 
-- [ ] 글로벌: `src/app/layout.tsx` 메타 설명, `Header.tsx` 검색·푸터·메뉴.
-- [ ] 탐색: `Shop.tsx`, `ProductDetail.tsx`, `src/app/product/[productId]/page.tsx`, `src/domain/catalog.ts`.
-- [ ] 3D: `ProductViewer.tsx`, `ShoeCanvas.tsx`, `Studio.tsx` 로딩·실패·저장·충돌·공유·PNG.
-- [ ] 보관: `SavedPages.tsx`, `SharedDesign.tsx` 빈 상태·삭제·복제·만료.
-- [ ] 주문: `CartCheckout.tsx`, `AccountOrders.tsx` 사이즈·수량·모의 결제·배송 단계·취소·반품·초기화.
-- [ ] 공통 실패: `DemoProvider.tsx`, `StateView.tsx`, `src/app/error.tsx`, `src/app/not-found.tsx`.
-- [ ] 서버에서 전달되는 메시지: `src/server/repository.ts`, `src/domain/validation.ts`, `src/app/api/demo/route.ts`.
-- [ ] 소개: `src/app/about/page.tsx` 사실관계·에셋·데이터 안내.
-- [ ] 접근성: aria-label/title/placeholder/알림 live region/다운로드 이름에 남은 표현.
+- [x] 글로벌: `src/app/layout.tsx` 메타 설명, `Header.tsx` 검색·푸터·메뉴.
+- [x] 탐색: `Shop.tsx`, `ProductDetail.tsx`, `src/app/product/[productId]/page.tsx`, `src/domain/catalog.ts`.
+- [x] 3D: `ProductViewer.tsx`, `ShoeCanvas.tsx`, `Studio.tsx` 로딩·실패·저장·충돌·공유·PNG.
+- [x] 보관: `SavedPages.tsx`, `SharedDesign.tsx` 빈 상태·삭제·복제·만료.
+- [x] 주문: `CartCheckout.tsx`, `AccountOrders.tsx` 사이즈·수량·모의 결제·배송 단계·취소·반품·초기화.
+- [x] 공통 실패: `DemoProvider.tsx`, `StateView.tsx`, `src/app/error.tsx`, `src/app/not-found.tsx`.
+- [x] 서버에서 전달되는 메시지: `src/server/repository.ts`, `src/domain/validation.ts`, `src/app/api/demo/route.ts`.
+- [x] 소개: `src/app/about/page.tsx` 사실관계·에셋·데이터 안내.
+- [x] 접근성: aria-label/title/placeholder/알림 live region/다운로드 이름에 남은 표현.
 
 `not-found`와 aria 속성처럼 검색에 잡히지 않은 중립 문구도 일관성 검수 대상이야. 서버 메시지는 사용자에게 그대로 전달되는 경로를 따라 확인해.
 

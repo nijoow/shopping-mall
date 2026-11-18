@@ -20,9 +20,11 @@ node .yarn/releases/yarn-4.0.2.cjs dev
 ```sh
 # 타입 생성·타입 검사·린트·단위 테스트·에셋 계약
 node .yarn/releases/yarn-4.0.2.cjs check
-# 위 검사 + 빌드 + 임시 서버/SQLite에서 실제 HTTP 커머스 검증
+# 위 검사 + 빌드 + 격리 HTTP 검증 + 핵심 브라우저 3개 흐름
 node .yarn/releases/yarn-4.0.2.cjs check:full
 ```
+
+`test:browser` 실행 전 `node .yarn/releases/yarn-4.0.2.cjs exec playwright install chromium`으로 브라우저를 준비해.
 
 `test:http`는 준비된 빌드를 사용해 전용 임시 서버를 띄우고 종료 시 서버와 DB를 정리해. 기존 개발 서버나 3100 포트를 준비할 필요가 없어. PostgreSQL 테스트는 기본 단위 테스트와 분리했어. 별도 테스트 DB에 `NIJOOW_TEST_POSTGRES_URL`을 설정한 뒤 `test:postgres`로 실행해. 자세한 절차와 검증 범위는 [하네스](docs/development/harness.md)에 있어.
 
@@ -47,7 +49,7 @@ node .yarn/releases/yarn-4.0.2.cjs dev --hostname 0.0.0.0 --port 3000
 | `NIJOOW_DEMO_DB_PATH`                  | SQLite 파일 경로. 기본 `.data/editorial.sqlite`                  |
 | `NIJOOW_TEST_POSTGRES_URL`             | 통합 테스트 전용 DB. 운영 연결과 분리                            |
 
-설정 예시는 [`.env.example`](.env.example). 사용하지 않는 PostgreSQL 변수는 빈 값으로 등록하기보다 생략해. 현재 Vercel fallback은 변수의 **부재**를 기준으로 동작해.
+설정 예시는 [`.env.example`](.env.example). 빈 PostgreSQL 설정은 미설정으로 정규화해. Vercel은 비어 있지 않은 `NIJOOW_POSTGRES_URL`을 우선 사용하고, 없으면 `POSTGRES_URL`로 연결해.
 
 PostgreSQL은 `nijoow_demo` 스키마를 사용해. 선택한 새 DB에 최초 한 번 `node .yarn/releases/yarn-4.0.2.cjs db:setup`을 실행해. 이 명령은 실제 DB에 스키마를 생성하므로 대상 연결부터 확인해. 기존 public 테이블과 로컬 SQLite 데이터는 자동 이전하지 않아. 개발·테스트는 운영과 다른 DB를 사용해.
 
@@ -67,7 +69,7 @@ PostgreSQL은 `nijoow_demo` 스키마를 사용해. 선택한 새 DB에 최초 �
 
 러너는 Shopify CC BY 4.0 모델을 가공했고 로우탑은 직접 제작했어. 의류·잡화 이미지는 가상 제품을 위해 제작했어. [출처](public/models/source/shopify-source.md)와 [프롬프트 기록](docs/planning/product-image-prompts-2026-09-21.md)을 보관해.
 
-`assets:check`는 파일·모델 버전·편집 재질의 연결만 검사해. 모양과 조작 품질은 화면에서 확인해야 해. 기존 제작 스크립트는 v1/v2 파일을 고정 경로에 출력하므로 보존된 모델을 무심코 재생성하지 마. 새 제작 작업은 다음 모델 버전의 출력 경로부터 정해.
+`assets:check`는 파일·모델 버전·편집 재질의 연결만 검사해. 모양과 조작 품질은 화면에서 확인해야 해. 제작 스크립트는 명시적인 새 출력 경로가 필요하고 기존 파일 덮어쓰기를 거절해. 현재 기본 모델은 runner v2 / low v3이며 이전 버전도 유지해. 자세한 명령은 [3D 검증 기록](docs/implementation/2026-10-03-3d-quality.md)을 참고해.
 
 ## 작업 안내
 
@@ -77,3 +79,9 @@ PostgreSQL은 `nijoow_demo` 스키마를 사용해. 선택한 새 DB에 최초 �
 - [문서 색인](docs/README.md)
 
 `archive/`는 이전 소스, `docs/archive/`와 날짜가 붙은 구현 기록은 과거 증거야. 현재 동작은 `src/`, 테스트, 실행 결과를 기준으로 판단해.
+
+## 데이터 운영과 시연
+
+- [운영 도구](docs/development/data-operations.md): 범위를 제한한 만료 정리, SQLite/PostgreSQL 백업·새 DB 복원. 실제 운영 DB 작업은 별도 대상 확인 후 실행해. 새 배포 전 `operation_limits`를 포함한 `db:setup` 적용이 필요해.
+- [브라우저 검증](docs/development/browser-verification.md): 일반 상품 주문, 3D 저장·공유·주문, 저장 실패/충돌/429 복구의 세 시나리오.
+- [75초 시연 가이드](docs/portfolio/demo-guide.md)와 [현재 완료/대기 기록](docs/implementation/2026-10-03-completion-review.md).

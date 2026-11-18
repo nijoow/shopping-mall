@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import { DemoProvider } from '@/components/commerce/DemoProvider';
 import { Footer, Header } from '@/components/commerce/Header';
 import './globals.css';
+import { SITE_URL, SITE_DESCRIPTION } from '@/content/site';
 const body = localFont({
   src: '../fonts/NanumSquareRoundR.ttf',
   variable: '--font-body',
@@ -14,6 +15,15 @@ const display = localFont({
   display: 'swap',
 });
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  openGraph: {
+    type: 'website',
+    siteName: 'NIJOOW',
+    locale: 'ko_KR',
+    title: 'NIJOOW — Your personal edit',
+    description: SITE_DESCRIPTION,
+  },
+  twitter: { card: 'summary_large_image' },
   title: {
     default: 'NIJOOW — A new perspective on everyday.',
     template: '%s | NIJOOW',

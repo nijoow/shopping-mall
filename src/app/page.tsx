@@ -1,7 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { PRODUCTS, modelDetail, defaultConfig } from '@/domain/catalog';
+import {
+  PRODUCTS,
+  modelDetail,
+  modelPoster,
+  defaultConfig,
+} from '@/domain/catalog';
 import { ProductCard } from '@/components/commerce/ProductCard';
 export default function Home() {
   return (
@@ -24,7 +29,7 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <Link className="button" href="/studio/runner">
-              커스텀 시작 <ArrowUpRight size={18} />
+              디자인 만들기 <ArrowUpRight size={18} />
             </Link>
             <Link className="button outline" href="/shop/sneakers">
               상품 보기
@@ -34,7 +39,7 @@ export default function Home() {
         <div className="hero-runner">
           <span className="hero-photo-backdrop" />
           <Image
-            src="/editorial/runner.png?v=20260910"
+            src={modelPoster(defaultConfig('runner'))}
             alt="FORM RUNNER — 나만의 색으로 완성하는 스니커즈"
             fill
             priority
@@ -108,7 +113,7 @@ export default function Home() {
         </Link>
         <Link className="curation-detail" href="/studio/runner">
           <Image
-            src="/editorial/runner-detail.png?v=20260910"
+            src={modelDetail(defaultConfig('runner'))}
             alt="3D 스니커즈 디테일"
             fill
             sizes="20vw"
