@@ -6,7 +6,7 @@ Node.js 버전은 [`.nvmrc`](../../.nvmrc), Yarn 버전과 실행 명령은 [pac
 
 환경 변수의 예시는 [`.env.example`](../../.env.example)에 있습니다. 필요한 값만 `.env.local`에 설정하며, 기존 파일과 데이터는 유지합니다. 로그인·OAuth 키는 필요하지 않습니다.
 
-PostgreSQL 연결 설정이 없으면 `.data/editorial.sqlite`를 사용합니다. 데이터베이스 선택 순서와 테스트 격리는 [데이터 운영 문서](data-operations.md#연결-선택과-테스트-격리)를 참고합니다.
+PostgreSQL 연결 설정이 없으면 `.data/editorial.sqlite`를 사용합니다. 데이터베이스 선택 순서와 테스트 격리는 [데이터 운영 문서](data-operations.md#데이터베이스-선택)를 참고합니다.
 
 ## 환경 변수
 
@@ -41,4 +41,4 @@ node .yarn/releases/yarn-4.0.2.cjs db:setup
 
 이 명령은 `nijoow_demo` 스키마에 테이블·인덱스를 생성합니다. 기존 테이블과 데이터를 초기화하지 않으며, `public` 테이블과 로컬 SQLite 데이터는 자동으로 이전하지 않습니다. `operation_limits`를 포함한 앱 스키마가 준비되어 있어야 합니다.
 
-테스트용 PostgreSQL 실행은 [하네스](harness.md#postgresql-테스트), 데이터 정리·백업·새 DB 복원은 [데이터 운영](data-operations.md)을 참고합니다.
+테스트용 PostgreSQL 실행은 [테스트 실행](testing.md#postgresql-테스트), 데이터 정리·백업·새 DB 복원은 [데이터 운영](data-operations.md)을 참고합니다.
