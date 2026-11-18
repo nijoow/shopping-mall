@@ -33,7 +33,8 @@ export function createSurface(kind: Material) {
       const h = height[i];
       const dx = height[y * size + ((x + 1) % size)] - h,
         dy = height[((y + 1) % size) * size + x] - h;
-      const value = kind === 'mesh' ? 185 + h * 90 : 230 + h * 30;
+      // Neutral albedo preserves the user's tint; relief and roughness carry texture.
+      const value = kind === 'mesh' ? 190 + h * 60 : 244 + h * 10;
       pixels.data[p] = pixels.data[p + 1] = pixels.data[p + 2] = value;
       pixels.data[p + 3] = 255;
       normals.data[p] = 128 + dx * 110;
@@ -41,21 +42,38 @@ export function createSurface(kind: Material) {
       normals.data[p + 2] = 250;
       normals.data[p + 3] = 255;
     }
+  const roughCanvas = document.createElement('canvas');
+  roughCanvas.width = roughCanvas.height = size;
+  const roughContext = roughCanvas.getContext('2d')!;
+  const roughPixels = roughContext.createImageData(size, size);
+  for (let i = 0; i < height.length; i++) {
+    const value =
+      kind === 'leather' ? 210 + height[i] * 40 : 235 + height[i] * 25;
+    roughPixels.data[i * 4] =
+      roughPixels.data[i * 4 + 1] =
+      roughPixels.data[i * 4 + 2] =
+        value;
+    roughPixels.data[i * 4 + 3] = 255;
+  }
+  roughContext.putImageData(roughPixels, 0, 0);
   context.putImageData(pixels, 0, 0);
   normalContext.putImageData(normals, 0, 0);
   const map = new THREE.CanvasTexture(canvas),
-    normal = new THREE.CanvasTexture(normalCanvas);
+    normal = new THREE.CanvasTexture(normalCanvas),
+    roughness = new THREE.CanvasTexture(roughCanvas);
   map.colorSpace = THREE.SRGBColorSpace;
-  for (const texture of [map, normal]) {
+  for (const texture of [map, normal, roughness]) {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(kind === 'mesh' ? 9 : 5, kind === 'mesh' ? 9 : 5);
+    texture.repeat.set(kind === 'mesh' ? 3 : 5, kind === 'mesh' ? 3 : 5);
   }
   return {
     map,
     normal,
+    roughness,
     dispose() {
       map.dispose();
       normal.dispose();
+      roughness.dispose();
     },
   };
 }

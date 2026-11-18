@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
-import { PRODUCTS } from '@/domain/catalog';
+import { PRODUCTS, modelDetail, defaultConfig } from '@/domain/catalog';
 import { ProductCard } from '@/components/commerce/ProductCard';
 export default function Home() {
   return (
@@ -49,7 +49,7 @@ export default function Home() {
         <div className="hero-side">
           <Link className="hero-low" href="/product/low">
             <Image
-              src="/editorial/low-detail-v2.png?v=20260930"
+              src={modelDetail(defaultConfig('low'))}
               alt="EVERYDAY LOW의 소재와 디테일"
               fill
               priority

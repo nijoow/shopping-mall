@@ -3,17 +3,56 @@ export type Part = 'upper' | 'panel' | 'sole' | 'laces';
 export type Material = 'mesh' | 'leather' | 'suede';
 export interface DesignConfig {
   model: ModelId;
-  modelVersion: 1 | 2;
+  modelVersion: 1 | 2 | 3;
   colors: Record<Part, string>;
   material: Material;
   engraving: string;
 }
-export const modelAsset = (config: DesignConfig) =>
-  `/models/${config.model}-v${config.modelVersion}.glb`;
-export const modelPoster = (config: DesignConfig) =>
-  config.model === 'low' && config.modelVersion === 2
-    ? '/editorial/low-v2.png?v=20260930'
-    : `/editorial/${config.model}.png?v=20260910`;
+type ModelFiles = { model: string; poster: string; detail: string };
+export const MODEL_FILES: Record<
+  ModelId,
+  Partial<Record<DesignConfig['modelVersion'], ModelFiles>>
+> = {
+  runner: {
+    1: {
+      model: '/models/runner-v1.glb',
+      poster: '/editorial/runner.png?v=20260910',
+      detail: '/editorial/runner-detail.png?v=20260910',
+    },
+    2: {
+      model: '/models/runner-v2.glb',
+      poster: '/editorial/runner-v2.png',
+      detail: '/editorial/runner-v2-detail.png',
+    },
+  },
+  low: {
+    1: {
+      model: '/models/low-v1.glb',
+      poster: '/editorial/low.png?v=20260910',
+      detail: '/editorial/low-detail.png?v=20260910',
+    },
+    2: {
+      model: '/models/low-v2.glb',
+      poster: '/editorial/low-v2.png?v=20260930',
+      detail: '/editorial/low-detail-v2.png?v=20260930',
+    },
+    3: {
+      model: '/models/low-v3.glb',
+      poster: '/editorial/low-v3.png',
+      detail: '/editorial/low-v3-detail.png',
+    },
+  },
+};
+export const isSupportedModelVersion = (model: ModelId, version: number) =>
+  Object.hasOwn(MODEL_FILES[model], version);
+function modelFiles(config: DesignConfig) {
+  const files = MODEL_FILES[config.model][config.modelVersion];
+  if (!files) throw new Error('Unsupported model version');
+  return files;
+}
+export const modelAsset = (config: DesignConfig) => modelFiles(config).model;
+export const modelPoster = (config: DesignConfig) => modelFiles(config).poster;
+export const modelDetail = (config: DesignConfig) => modelFiles(config).detail;
 export interface Product {
   id: string;
   name: string;
@@ -60,7 +99,7 @@ export const MATERIALS: { id: Material; name: string; description: string }[] =
   ];
 export const defaultConfig = (model: ModelId): DesignConfig => ({
   model,
-  modelVersion: model === 'low' ? 2 : 1,
+  modelVersion: model === 'low' ? 3 : 2,
   colors:
     model === 'runner'
       ? {
@@ -120,8 +159,8 @@ export const PRODUCTS: Product[] = [
     model: 'runner',
     price: 219000,
     sizes: shoes,
-    image: '/editorial/runner.png?v=20260910',
-    detail: '/editorial/runner-detail.png?v=20260910',
+    image: modelPoster(defaultConfig('runner')),
+    detail: modelDetail(defaultConfig('runner')),
     colors: ['#a6a9ac', '#343639', '#315684'],
     description:
       '부드러운 곡선과 겹쳐진 패널, 서로 다른 표면이 만들어내는 입체감. 내 취향의 색과 재질로 완성하는 러너.',
@@ -136,8 +175,8 @@ export const PRODUCTS: Product[] = [
     model: 'low',
     price: 179000,
     sizes: shoes,
-    image: '/editorial/low-v2.png?v=20260930',
-    detail: '/editorial/low-detail-v2.png?v=20260930',
+    image: modelPoster(defaultConfig('low')),
+    detail: modelDetail(defaultConfig('low')),
     colors: ['#e6e1d7', '#bc9b73', '#343639'],
     description:
       '단정한 비율과 낮은 실루엣, 은은한 표면의 결. 절제된 디테일 위에 나만의 한 줄을 더하는 로우탑.',
@@ -156,8 +195,7 @@ export const PRODUCTS: Product[] = [
     colors: ['#464b45'],
     description:
       '가볍게 걸쳐도 실루엣이 살아나는 필드 재킷. 스니커즈와 함께 균형을 만드는 차분한 올리브 컬러.',
-    composition:
-      '포트폴리오를 위한 가상 컬렉션. 사이즈와 가격은 쇼핑 체험용이야.',
+    composition: '박시한 실루엣과 올리브 컬러, 전면 포켓을 담은 디자인입니다.',
   },
   {
     id: 'crew-knit',
@@ -171,7 +209,7 @@ export const PRODUCTS: Product[] = [
     colors: ['#b8ac97'],
     description:
       '조금 여유 있는 어깨와 단정한 넥 라인. 따뜻한 페이퍼 톤으로 컬렉션을 연결하는 크루넥.',
-    composition: '포트폴리오를 위한 가상 컬렉션. 실제 제조·판매 상품이 아니야.',
+    composition: '크루넥과 여유 있는 어깨선, 밝은 페이퍼 톤의 디자인입니다.',
   },
   {
     id: 'wide-trouser',
@@ -184,9 +222,8 @@ export const PRODUCTS: Product[] = [
     detail: '/editorial/trouser-photo-v2.png',
     colors: ['#4c4c4a'],
     description:
-      '발끝까지 여유롭게 이어지는 실루엣. 볼륨 러너와 낮은 로우탑, 어느 쪽에도 자연스럽게 어울려.',
-    composition:
-      '포트폴리오용 가상 제품. 실제 착용감과 제조 사양을 보증하지 않아.',
+      '발끝까지 여유롭게 이어지는 실루엣. 볼륨 러너와 낮은 로우탑, 어느 쪽에도 자연스럽게 어울리는 와이드 핏.',
+    composition: '넓은 밑단과 주름선을 살린 차콜 컬러의 디자인입니다.',
   },
   {
     id: 'crossbody',
@@ -200,7 +237,8 @@ export const PRODUCTS: Product[] = [
     colors: ['#272b2b'],
     description:
       '단정한 수납 공간과 넓은 스트랩. 일상의 움직임을 따라가는 컴팩트한 크로스백.',
-    composition: '데모 컬렉션. 옵션·장바구니·모의 주문을 체험할 수 있어.',
+    composition:
+      '컴팩트한 본체와 넓은 스트랩, 전면 포켓을 구성한 디자인입니다.',
   },
   {
     id: 'everyday-cap',
@@ -213,8 +251,8 @@ export const PRODUCTS: Product[] = [
     detail: '/editorial/cap-photo-v2.png',
     colors: ['#7d816e'],
     description:
-      '낮은 크라운과 부드러운 챙. 과하지 않은 올리브 톤으로 나만의 조합을 완성해.',
-    composition: '데모 컬렉션. 실제 결제와 배송은 발생하지 않아.',
+      '낮은 크라운과 부드러운 챙. 과하지 않은 올리브 톤으로 완성하는 일상의 조합.',
+    composition: '낮은 크라운과 곡선형 챙, 올리브 컬러의 디자인입니다.',
   },
 ];
 export const findProduct = (id: string) => PRODUCTS.find(p => p.id === id);

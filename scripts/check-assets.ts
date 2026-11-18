@@ -3,7 +3,9 @@ import { readFileSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import {
   PRODUCTS,
+  MODEL_FILES,
   defaultConfig,
+  type ModelId,
   modelAsset,
   modelPoster,
   type DesignConfig,
@@ -17,11 +19,14 @@ function asset(url: string) {
   return file;
 }
 const images = new Set(PRODUCTS.flatMap(p => [p.image, p.detail]));
-const models: DesignConfig[] = [
-  defaultConfig('runner'),
-  { ...defaultConfig('low'), modelVersion: 1 },
-  defaultConfig('low'),
-];
+const models: DesignConfig[] = (Object.keys(MODEL_FILES) as ModelId[]).flatMap(
+  model =>
+    Object.keys(MODEL_FILES[model]).map(version => ({
+      ...defaultConfig(model),
+      modelVersion: Number(version) as DesignConfig['modelVersion'],
+    })),
+);
+
 for (const config of models) {
   images.add(modelPoster(config));
   const url = modelAsset(config),
