@@ -1,8 +1,10 @@
 'use client';
+import { commerceError, errorMessage, type CommerceError } from './client-api';
+import { useRetryDelay } from './useRetryDelay';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import { signIn, signOut } from 'next-auth/react';
+import { useRef, useState } from 'react';
+import { signOut } from 'next-auth/react';
 import { ArrowUpRight, Check, ChevronRight, X } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { money } from '@/domain/catalog';
@@ -10,91 +12,14 @@ import { ADDRESSES, STATUS_LABEL, type OrderStatus } from '@/domain/types';
 import ProductViewer from '@/components/three/ProductViewer';
 import { useDemo } from './DemoProvider';
 import { DataGuard, EmptyState } from './StateView';
+import { ConfirmDialog } from './ConfirmDialog';
 
-export function Login({
-  callbackUrl,
-  errorCode,
-}: {
-  callbackUrl: string;
-  errorCode?: string;
-}) {
-  const [pending, setPending] = useState(''),
-    [error, setError] = useState(
-      errorCode
-        ? '소셜 로그인을 완료하지 못했습니다. 다시 시도하거나 로그인 없이 체험을 계속해 주세요.'
-        : '',
-    );
-  return (
-    <div className="login-page">
-      <section className="login-intro">
-        <span className="eyebrow">YOUR EDIT, EVERYWHERE.</span>
-        <h1>
-          KEEP
-          <br />
-          YOUR
-          <br />
-          PERSPECTIVE<span>.</span>
-        </h1>
-        <p>
-          내가 만든 디자인, 골라둔 아이템,
-          <br />
-          주문한 스니커즈까지 한곳에.
-        </p>
-      </section>
-      <section className="login-panel">
-        <span className="eyebrow">WELCOME TO NIJOOW</span>
-        <h2>로그인하고 내 컬렉션을 이어가세요.</h2>
-        <p>
-          로그인하면 체험 중인 디자인·찜·장바구니·주문이 계정에 함께 보관됩니다.
-        </p>
-        <div className="social-buttons">
-          {[
-            { id: 'kakao', label: '카카오로 계속하기', icon: 'K' },
-            { id: 'naver', label: '네이버로 계속하기', icon: 'N' },
-            { id: 'google', label: 'Google로 계속하기', icon: 'G' },
-          ].map(provider => (
-            <button
-              key={provider.id}
-              className={`social-button ${provider.id}`}
-              disabled={!!pending}
-              onClick={async () => {
-                setPending(provider.id);
-                setError('');
-                try {
-                  await signIn(provider.id, { redirectTo: callbackUrl });
-                } catch {
-                  setError('로그인을 시작하지 못했습니다. 다시 시도해 주세요.');
-                  setPending('');
-                }
-              }}
-            >
-              <span>{provider.icon}</span>
-              {pending === provider.id ? '로그인 연결 중…' : provider.label}
-              <ArrowUpRight size={17} />
-            </button>
-          ))}
-        </div>
-        {error && (
-          <p role="alert" className="error-text">
-            {error}
-          </p>
-        )}
-        <Link href={callbackUrl} className="button outline">
-          로그인 없이 계속 체험하기
-        </Link>
-        <p className="demo-caption">
-          소셜 서비스별로 계정을 구분합니다.
-          <br />
-          로그인 후에도 실제 결제와 배송은 진행되지 않습니다.
-        </p>
-      </section>
-    </div>
-  );
-}
 export function Account() {
   const { state, mutate, notify } = useDemo();
   const [resetting, setResetting] = useState(false),
-    [confirmReset, setConfirmReset] = useState(false);
+    [confirmReset, setConfirmReset] = useState(false),
+    [resetError, setResetError] = useState<CommerceError | null>(null);
+  const resetDelay = useRetryDelay(resetError);
   return (
     <div className="page-shell">
       <div className="page-heading">
@@ -212,42 +137,41 @@ export function Account() {
             주문·장바구니·체험용 재고를 초기화합니다. 저장한 디자인과 찜은
             유지됩니다.
           </p>
-          {confirmReset ? (
-            <div className="inline-confirm">
-              <p>
-                현재 이용 중인 체험의 주문·장바구니·체험용 재고를
-                초기화하시겠습니까?
-              </p>
-              <button
-                className="button small danger"
-                disabled={resetting}
-                onClick={async () => {
-                  setResetting(true);
-                  try {
-                    await mutate('orders.reset', 'CONFIRM_RESET');
-                    setConfirmReset(false);
-                    notify('주문·장바구니·체험용 재고를 초기화했습니다.');
-                  } catch (e) {
-                    notify((e as Error).message);
-                  } finally {
-                    setResetting(false);
-                  }
-                }}
-              >
-                초기화
-              </button>
-              <button
-                className="button small outline"
-                onClick={() => setConfirmReset(false)}
-              >
-                취소
-              </button>
-            </div>
-          ) : (
-            <button className="text-link" onClick={() => setConfirmReset(true)}>
-              체험 데이터 초기화
-            </button>
-          )}
+          <button
+            className="text-link"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setResetError(null);
+              setConfirmReset(true);
+            }}
+          >
+            체험 데이터 초기화
+          </button>
+          <ConfirmDialog
+            open={confirmReset}
+            onClose={() => setConfirmReset(false)}
+            title="체험 데이터 초기화"
+            description="현재 이용 중인 체험의 주문·장바구니·체험용 재고를 초기화하시겠습니까? 저장한 디자인과 찜은 유지됩니다."
+            action="초기화"
+            pending={resetting}
+            error={resetError ? errorMessage(resetError) : undefined}
+            retryDelay={resetDelay}
+            onConfirm={() => {
+              if (resetting || resetDelay) return;
+              setResetError(null);
+              setResetting(true);
+              void mutate('orders.reset', 'CONFIRM_RESET')
+                .then(() => {
+                  setConfirmReset(false);
+                  notify('주문·장바구니·체험용 재고를 초기화했습니다.');
+                })
+                .catch(e => {
+                  setResetError(commerceError(e));
+                  notify(errorMessage(e));
+                })
+                .finally(() => setResetting(false));
+            }}
+          />
         </section>
       </DataGuard>
     </div>
@@ -266,16 +190,22 @@ export function OrderDetails({ id }: { id: string }) {
   const order = state?.orders.find(o => o.id === id);
   const [pending, setPending] = useState(false),
     [error, setError] = useState(''),
+    [failure, setFailure] = useState<CommerceError | null>(null),
     [confirm, setConfirm] = useState<OrderStatus | null>(null),
     [preview, setPreview] = useState<number | null>(null);
+  const retryDelay = useRetryDelay(failure);
+  const previewOpener = useRef<HTMLButtonElement | null>(null);
   async function advance(status: OrderStatus) {
+    if (pending || retryDelay) return;
     setPending(true);
     setError('');
+    setFailure(null);
     try {
       await mutate('order.advance', { id, status });
       setConfirm(null);
     } catch (e) {
-      setError((e as Error).message);
+      setFailure(commerceError(e));
+      setError(errorMessage(e));
     } finally {
       setPending(false);
     }
@@ -299,7 +229,7 @@ export function OrderDetails({ id }: { id: string }) {
                   진행되지 않습니다.
                 </p>
               </div>
-              <Link href="/my-page" className="text-link">
+              <Link href="/my-page" className="text-link" data-confirm-fallback>
                 주문 목록 <ArrowUpRight size={17} />
               </Link>
             </div>
@@ -367,7 +297,10 @@ export function OrderDetails({ id }: { id: string }) {
                             </div>
                             <button
                               className="text-link"
-                              onClick={() => setPreview(i)}
+                              onClick={event => {
+                                previewOpener.current = event.currentTarget;
+                                setPreview(i);
+                              }}
                             >
                               주문한 3D 다시 보기 <ArrowUpRight size={15} />
                             </button>
@@ -421,7 +354,7 @@ export function OrderDetails({ id }: { id: string }) {
                   {transitions[order.status] && (
                     <button
                       className="button"
-                      disabled={pending}
+                      disabled={pending || retryDelay > 0}
                       onClick={() =>
                         void advance(transitions[order.status]!.next)
                       }
@@ -433,8 +366,12 @@ export function OrderDetails({ id }: { id: string }) {
                   {['CONFIRMED', 'PREPARING'].includes(order.status) && (
                     <button
                       className="button outline"
-                      disabled={pending}
-                      onClick={() => setConfirm('CANCELLED')}
+                      disabled={pending || retryDelay > 0}
+                      aria-haspopup="dialog"
+                      onClick={() => {
+                        setError('');
+                        setConfirm('CANCELLED');
+                      }}
                     >
                       주문 취소
                     </button>
@@ -442,34 +379,37 @@ export function OrderDetails({ id }: { id: string }) {
                   {order.status === 'DELIVERED' && (
                     <button
                       className="button outline"
-                      disabled={pending}
-                      onClick={() => setConfirm('RETURN_REQUESTED')}
+                      disabled={pending || retryDelay > 0}
+                      aria-haspopup="dialog"
+                      onClick={() => {
+                        setError('');
+                        setConfirm('RETURN_REQUESTED');
+                      }}
                     >
                       전체 주문 반품 신청
                     </button>
                   )}
-                  {confirm && (
-                    <div className="inline-confirm">
-                      <p>
-                        {confirm === 'CANCELLED'
-                          ? '주문을 취소하고 모의 환불을 진행하시겠습니까? 체험용 재고가 복구됩니다.'
-                          : '이 주문의 모든 상품에 대해 반품을 신청하시겠습니까?'}
-                      </p>
-                      <button
-                        className="button small danger"
-                        disabled={pending}
-                        onClick={() => void advance(confirm)}
-                      >
-                        확인
-                      </button>
-                      <button
-                        className="button small outline"
-                        onClick={() => setConfirm(null)}
-                      >
-                        돌아가기
-                      </button>
-                    </div>
-                  )}
+                  <ConfirmDialog
+                    open={confirm !== null}
+                    onClose={() => setConfirm(null)}
+                    title={
+                      confirm === 'CANCELLED'
+                        ? '주문 취소 · 모의 환불'
+                        : '전체 주문 반품'
+                    }
+                    description={
+                      confirm === 'CANCELLED'
+                        ? '주문을 취소하고 모의 환불을 진행하시겠습니까? 체험용 재고가 복구됩니다.'
+                        : '이 주문의 모든 상품에 대해 반품을 신청하시겠습니까?'
+                    }
+                    action="확인"
+                    pending={pending}
+                    error={error || undefined}
+                    retryDelay={retryDelay}
+                    onConfirm={() => {
+                      if (confirm) void advance(confirm);
+                    }}
+                  />
                   {error && (
                     <p role="alert" className="error-text">
                       {error}
@@ -486,7 +426,13 @@ export function OrderDetails({ id }: { id: string }) {
             >
               <Dialog.Portal>
                 <Dialog.Overlay className="dialog-overlay" />
-                <Dialog.Content className="order-preview-dialog">
+                <Dialog.Content
+                  className="order-preview-dialog"
+                  onCloseAutoFocus={event => {
+                    event.preventDefault();
+                    previewOpener.current?.focus();
+                  }}
+                >
                   <div className="dialog-top">
                     <Dialog.Title>주문 당시의 디자인</Dialog.Title>
                     <Dialog.Close

@@ -11,7 +11,7 @@ import {
   Menu,
 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useDemo } from './DemoProvider';
 
 const links = [
@@ -28,6 +28,8 @@ export function Header() {
   const [search, setSearch] = useState(false),
     [menu, setMenu] = useState(false),
     [query, setQuery] = useState('');
+  const searchInput = useRef<HTMLInputElement>(null);
+  const menuNav = useRef<HTMLElement>(null);
   if (pathname.startsWith('/studio/')) return null;
   const total = state?.cart.reduce((n, l) => n + l.quantity, 0) ?? 0;
   function submit(e: FormEvent) {
@@ -64,7 +66,13 @@ export function Header() {
             </Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay className="dialog-overlay" />
-              <Dialog.Content className="search-dialog">
+              <Dialog.Content
+                className="search-dialog"
+                onOpenAutoFocus={event => {
+                  event.preventDefault();
+                  searchInput.current?.focus();
+                }}
+              >
                 <div className="dialog-top">
                   <Dialog.Title className="display">
                     FIND YOUR EDIT.
@@ -80,6 +88,7 @@ export function Header() {
                   <label htmlFor="site-search">검색어</label>
                   <div className="search-input">
                     <input
+                      ref={searchInput}
                       id="site-search"
                       value={query}
                       onChange={e => setQuery(e.target.value)}
@@ -140,7 +149,15 @@ export function Header() {
             </Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay className="dialog-overlay" />
-              <Dialog.Content className="menu-dialog">
+              <Dialog.Content
+                className="menu-dialog"
+                onOpenAutoFocus={event => {
+                  event.preventDefault();
+                  menuNav.current
+                    ?.querySelector<HTMLAnchorElement>('a')
+                    ?.focus();
+                }}
+              >
                 <div className="dialog-top">
                   <Dialog.Title className="wordmark">NIJOOW</Dialog.Title>
                   <Dialog.Close className="icon-button" aria-label="메뉴 닫기">
@@ -150,7 +167,7 @@ export function Header() {
                 <Dialog.Description className="eyebrow">
                   YOUR EVERYDAY, REEDITED.
                 </Dialog.Description>
-                <nav>
+                <nav ref={menuNav} aria-label="모바일 주 메뉴">
                   {[...links, ['마이페이지', '/my-page'], ['찜', '/like']].map(
                     ([name, href]) => (
                       <Link

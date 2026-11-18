@@ -1,4 +1,6 @@
 'use client';
+import { commerceError, errorMessage, type CommerceError } from './client-api';
+import { useRetryDelay } from './useRetryDelay';
 import { SERVICE_COPY } from '@/content/copy';
 import { useRef, useState } from 'react';
 import Link from 'next/link';
@@ -20,11 +22,14 @@ export function ProductDetail({ product }: { product: Product }) {
     [view, setView] = useState('front'),
     [zoom, setZoom] = useState(1.2),
     [pending, setPending] = useState(false),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [failure, setFailure] = useState<CommerceError | null>(null);
   const sizeRef = useRef<HTMLDivElement>(null);
   const config = product.model ? presetConfig(product.model, preset) : null;
   const favorite = state?.favorites.includes(product.id) ?? false;
+  const retryDelay = useRetryDelay(failure);
   async function add(buy = false) {
+    if (pending || retryDelay) return;
     if (!size) {
       setError(SERVICE_COPY.sizeRequired);
       sizeRef.current?.querySelector('button')?.focus();
@@ -32,6 +37,7 @@ export function ProductDetail({ product }: { product: Product }) {
     }
     setPending(true);
     setError('');
+    setFailure(null);
     try {
       const result = await mutate<{ lineId: string }>('cart.add', {
         productId: product.id,
@@ -42,7 +48,8 @@ export function ProductDetail({ product }: { product: Product }) {
       if (buy) router.push(`/checkout?items=${result.lineId}`);
       else notify(SERVICE_COPY.addedToCart);
     } catch (e) {
-      setError((e as Error).message);
+      setFailure(commerceError(e));
+      setError(errorMessage(e));
     } finally {
       setPending(false);
     }
@@ -144,7 +151,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 try {
                   await mutate('favorite', product.id);
                 } catch (e) {
-                  notify((e as Error).message);
+                  notify(errorMessage(e));
                 }
               }}
             >
@@ -174,11 +181,17 @@ export function ProductDetail({ product }: { product: Product }) {
           )}
           <div className="option-section" ref={sizeRef}>
             <span className="eyebrow">SIZE</span>
-            <div className="size-options">
+            <div
+              className="size-options"
+              role="group"
+              aria-label="사이즈 선택"
+              aria-describedby={error ? 'product-error' : undefined}
+            >
               {product.sizes.map(s => (
                 <button
                   key={s}
                   aria-pressed={size === s}
+                  disabled={pending}
                   onClick={() => {
                     setSize(s);
                     setError('');
@@ -190,7 +203,12 @@ export function ProductDetail({ product }: { product: Product }) {
             </div>
           </div>
           {error && (
-            <p role="alert" className="error-text">
+            <p
+              role="alert"
+              className="error-text"
+              id="product-error"
+              data-error-code={failure?.code}
+            >
               {error}
             </p>
           )}
@@ -206,17 +224,23 @@ export function ProductDetail({ product }: { product: Product }) {
             <div>
               <button
                 className={`button ${product.model ? 'outline' : ''}`}
-                disabled={pending || !state}
+                disabled={pending || !state || retryDelay > 0}
+                aria-busy={pending}
                 onClick={() => void add(true)}
               >
-                바로 주문하기
+                {pending
+                  ? '담는 중…'
+                  : retryDelay
+                    ? `${retryDelay}초 후 다시 시도`
+                    : '바로 주문하기'}
               </button>
               <button
                 className="button outline"
-                disabled={pending || !state}
+                disabled={pending || !state || retryDelay > 0}
+                aria-busy={pending}
                 onClick={() => void add()}
               >
-                장바구니 담기
+                {pending ? '담는 중…' : '장바구니 담기'}
               </button>
             </div>
           </div>

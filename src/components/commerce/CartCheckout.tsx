@@ -1,4 +1,6 @@
 'use client';
+import { commerceError, errorMessage, type CommerceError } from './client-api';
+import { useRetryDelay } from './useRetryDelay';
 import { SERVICE_COPY } from '@/content/copy';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -98,18 +100,28 @@ function Totals({
   );
 }
 export function Cart() {
-  const { state, mutate, notify } = useDemo();
+  const { state, mutate } = useDemo();
+  const router = useRouter();
   const [excluded, setExcluded] = useState<string[]>([]),
-    [busy, setBusy] = useState<string | null>(null);
+    [busy, setBusy] = useState<string | null>(null),
+    [failure, setFailure] = useState<{
+      error: CommerceError;
+      op: string;
+      data: unknown;
+      id: string;
+    } | null>(null);
+  const retryDelay = useRetryDelay(failure?.error);
   const cart = state?.cart ?? [];
   const selected = cart.filter(l => !excluded.includes(l.id)),
     subtotal = selected.reduce((n, l) => n + l.unitPrice * l.quantity, 0);
   async function change(op: string, data: unknown, id: string) {
+    if (busy || retryDelay) return;
     setBusy(id);
+    setFailure(null);
     try {
       await mutate(op, data);
     } catch (e) {
-      notify((e as Error).message);
+      setFailure({ error: commerceError(e), op, data, id });
     } finally {
       setBusy(null);
     }
@@ -130,10 +142,32 @@ export function Cart() {
         {cart.length ? (
           <div className="checkout-grid">
             <section>
+              {failure && (
+                <div
+                  className="notice-box"
+                  role="alert"
+                  data-error-code={failure.error.code}
+                >
+                  <p>{errorMessage(failure.error)}</p>
+                  <button
+                    className="text-link"
+                    disabled={!!busy || retryDelay > 0}
+                    onClick={() =>
+                      void change(failure.op, failure.data, failure.id)
+                    }
+                  >
+                    {retryDelay
+                      ? `${retryDelay}초 후 다시 시도`
+                      : '장바구니 변경 다시 시도'}
+                  </button>
+                </div>
+              )}
+              {busy && <p role="status">장바구니 변경 중…</p>}
               <div className="cart-select-all">
                 <label className="check-label">
                   <input
                     type="checkbox"
+                    disabled={!!busy}
                     checked={selected.length === cart.length}
                     onChange={e =>
                       setExcluded(e.target.checked ? [] : cart.map(l => l.id))
@@ -145,10 +179,15 @@ export function Cart() {
               </div>
               <ul className="cart-lines">
                 {cart.map(line => (
-                  <li key={line.id} className="cart-line">
+                  <li
+                    key={line.id}
+                    className="cart-line"
+                    aria-busy={busy === line.id}
+                  >
                     <input
                       aria-label={`${line.product.name} 주문 선택`}
                       type="checkbox"
+                      disabled={!!busy}
                       checked={!excluded.includes(line.id)}
                       onChange={e =>
                         setExcluded(old =>
@@ -163,7 +202,9 @@ export function Cart() {
                       <button
                         className="icon-button"
                         aria-label={`${line.product.name} 수량 감소`}
-                        disabled={line.quantity <= 1 || busy === line.id}
+                        disabled={
+                          line.quantity <= 1 || !!busy || retryDelay > 0
+                        }
                         onClick={() =>
                           void change(
                             'cart.quantity',
@@ -174,14 +215,20 @@ export function Cart() {
                       >
                         <Minus size={14} />
                       </button>
-                      <span>{line.quantity}</span>
+                      <span
+                        aria-live="polite"
+                        aria-label={`수량 ${line.quantity}`}
+                      >
+                        {line.quantity}
+                      </span>
                       <button
                         className="icon-button"
                         aria-label={`${line.product.name} 수량 증가`}
                         disabled={
                           line.quantity >= MAX_QUANTITY ||
                           line.quantity >= line.stock ||
-                          busy === line.id
+                          !!busy ||
+                          retryDelay > 0
                         }
                         onClick={() =>
                           void change(
@@ -199,7 +246,7 @@ export function Cart() {
                     </strong>
                     <button
                       className="icon-button cart-remove"
-                      disabled={busy === line.id}
+                      disabled={!!busy || retryDelay > 0}
                       aria-label={`${line.product.name} 제거`}
                       onClick={() =>
                         void change('cart.remove', line.id, line.id)
@@ -221,12 +268,20 @@ export function Cart() {
             </section>
             {selected.length ? (
               <Totals subtotal={subtotal}>
-                <Link
+                <button
                   className="button"
-                  href={`/checkout?items=${selected.map(l => l.id).join(',')}`}
+                  data-testid="cart-checkout"
+                  disabled={
+                    !!busy || selected.some(line => line.quantity > line.stock)
+                  }
+                  onClick={() =>
+                    router.push(
+                      `/checkout?items=${selected.map(l => l.id).join(',')}`,
+                    )
+                  }
                 >
                   선택 상품 주문 <ArrowUpRight size={18} />
-                </Link>
+                </button>
               </Totals>
             ) : (
               <div className="notice-box">주문할 상품을 선택해 주세요.</div>
@@ -251,7 +306,9 @@ export function Checkout() {
     [pending, setPending] = useState(false),
     [stage, setStage] = useState(''),
     [error, setError] = useState(''),
+    [failure, setFailure] = useState<CommerceError | null>(null),
     [submitted, setSubmitted] = useState<CartLine[] | null>(null);
+  const retryDelay = useRetryDelay(failure);
   const requestKey = useRef<string | null>(null);
   const requested = params.get('items')?.split(',').filter(Boolean);
   const selected = (state?.cart ?? []).filter(
@@ -262,12 +319,13 @@ export function Checkout() {
   const missing =
     !!requested && requested.some(id => !state?.cart.some(l => l.id === id));
   async function checkout() {
-    if (!selected.length) return;
+    if (!selected.length || pending || retryDelay) return;
     requestKey.current ??= crypto.randomUUID();
     setSubmitted(selected);
     setPending(true);
     setStage('모의 결제를 처리하는 중입니다.');
     setError('');
+    setFailure(null);
     try {
       const order = await mutate<DemoOrder>('checkout', {
         requestKey: requestKey.current,
@@ -290,7 +348,8 @@ export function Checkout() {
         router.push(`/orders/${existing.id}`);
         return;
       }
-      setError((e as Error).message);
+      setFailure(commerceError(e));
+      setError(errorMessage(e));
       setPending(false);
       setStage('');
     }
@@ -397,7 +456,11 @@ export function Checkout() {
             </div>
             <Totals subtotal={subtotal}>
               {error && (
-                <p role="alert" className="error-text">
+                <p
+                  role="alert"
+                  className="error-text"
+                  data-error-code={failure?.code}
+                >
                   {error}
                 </p>
               )}
@@ -408,12 +471,16 @@ export function Checkout() {
               )}
               <button
                 className="button"
-                disabled={pending || missing}
+                data-testid="checkout-submit"
+                aria-busy={pending}
+                disabled={pending || missing || retryDelay > 0}
                 onClick={() => void checkout()}
               >
                 {pending
                   ? '주문 처리 중…'
-                  : `${money(subtotal + (subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE))} 모의 결제하기`}
+                  : retryDelay
+                    ? `${retryDelay}초 후 다시 시도`
+                    : `${money(subtotal + (subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE))} 모의 결제하기`}
                 <ArrowUpRight size={17} />
               </button>
             </Totals>

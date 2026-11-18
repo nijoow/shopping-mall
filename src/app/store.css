@@ -2013,3 +2013,111 @@
     font-size: 16px !important;
   }
 }
+
+/* Recovery and keyboard access stay visible within the existing editorial layout. */
+.confirm-dialog {
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+.confirm-dialog h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.confirm-dialog p {
+  line-height: 1.7;
+  margin-bottom: 20px;
+  overflow-wrap: anywhere;
+}
+.confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.confirm-actions .button {
+  flex: 1;
+  min-width: 0;
+}
+.search-dialog {
+  max-height: calc(100dvh - 130px);
+  overflow-y: auto;
+}
+.menu-dialog {
+  overflow-y: auto;
+}
+.search-input input,
+.product-information,
+.order-summary,
+.studio-panel,
+.studio-panel-content {
+  min-width: 0;
+}
+.studio-panel-content :focus-visible {
+  scroll-margin-block: 20px;
+}
+.studio-purchase-buttons,
+.studio-secondary-actions {
+  flex-wrap: wrap;
+}
+.studio-purchase .button,
+.confirm-actions .button,
+.order-summary .button {
+  white-space: normal;
+  text-align: center;
+}
+.studio-error p,
+.notice-box,
+.toast {
+  overflow-wrap: anywhere;
+}
+[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: wait;
+}
+@media (max-width: 767px) {
+  .studio-view-controls {
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .studio-view-controls button {
+    min-width: 32px;
+    min-height: 36px;
+    padding-inline: 7px;
+  }
+  .studio-purchase .button {
+    min-height: 44px;
+    padding-inline: 9px;
+  }
+  .search-dialog {
+    top: 16px;
+    max-height: calc(100dvh - 32px);
+  }
+  .confirm-dialog {
+    padding: 24px;
+  }
+  .studio {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+@media (max-width: 767px) and (max-height: 660px) {
+  .studio-body {
+    grid-template-rows: minmax(150px, 30svh) minmax(0, 1fr);
+  }
+}
+
+/* Keep the project story readable independently of the shopping grid width. */
+.about-page > p,
+.about-page > ul {
+  max-width: 78ch;
+  font-size: 15px;
+  line-height: 1.9;
+}
+.about-page h2 {
+  margin-top: 42px;
+}
+
+.page-shell.about-page {
+  max-width: 1000px;
+}
