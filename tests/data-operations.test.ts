@@ -6,7 +6,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DemoRepository } from '../src/server/repository';
 import { databaseConfiguration } from '../src/server/database-config';
-import { consumeGuestLimit, GUEST_LIMITS } from '../src/server/guest-limits';
+import {
+  consumeVisitorLimit,
+  VISITOR_LIMITS,
+} from '../src/server/guest-limits';
 import { planRetention, applyRetention } from '../src/server/data-retention';
 import { backupSqlite, restoreSqlite } from '../src/server/data-backup';
 import {
@@ -21,6 +24,24 @@ const design = (id = randomUUID()) => ({
   config: defaultConfig('low'),
   version: 0,
 });
+
+async function historicalWorkspace(repo: DemoRepository) {
+  const workspace = await repo.workspace();
+  const accountId = randomUUID();
+  await repo.run(
+    'INSERT INTO accounts VALUES(?,?,?,?)',
+    accountId,
+    'historical',
+    randomUUID(),
+    'Previous member',
+  );
+  await repo.run(
+    'UPDATE workspaces SET account_id=? WHERE id=?',
+    accountId,
+    workspace.id,
+  );
+  return { ...workspace, accountId };
+}
 
 test('blank settings normalize, cloud fails closed, and isolated SQLite overrides ambient deployment settings', () => {
   assert.equal(
@@ -65,7 +86,8 @@ test('blank settings normalize, cloud fails closed, and isolated SQLite override
   );
 });
 
-test('concurrent guest saves/shares stop at transactional limits and retain the last successful snapshot', async () => {
+test('concurrent visitor saves/shares stop at transactional limits and retain the last successful snapshot', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1800000000000 });
   const repo = new DemoRepository(':memory:');
   try {
     const w = await repo.workspace();
@@ -74,7 +96,7 @@ test('concurrent guest saves/shares stop at transactional limits and retain the 
     );
     assert.equal(
       results.filter(r => r.status === 'fulfilled').length,
-      GUEST_LIMITS.save.maximum,
+      VISITOR_LIMITS.save.maximum,
     );
     for (const r of results.filter(r => r.status === 'rejected')) {
       assert.equal(r.reason.code, 'RATE_LIMITED');
@@ -100,7 +122,7 @@ test('concurrent guest saves/shares stop at transactional limits and retain the 
     );
     assert.equal(
       shares.filter(r => r.status === 'fulfilled').length,
-      GUEST_LIMITS.share.maximum,
+      VISITOR_LIMITS.share.maximum,
     );
     assert.equal(
       (await repo.row('SELECT COUNT(*) AS count FROM operation_limits'))!.count,
@@ -123,27 +145,28 @@ test('concurrent guest saves/shares stop at transactional limits and retain the 
   }
 });
 
-test('creation window expires, guest storage has caps, and member mutations bypass anonymous rate limits', async () => {
+test('creation window expires and converted historical spaces obey visitor storage and rate limits', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1800000000000 + 1200000 });
   const repo = new DemoRepository(':memory:');
   try {
     const clock = 1800000000000;
-    for (let i = 0; i < GUEST_LIMITS.create.maximum; i++) {
+    for (let i = 0; i < VISITOR_LIMITS.create.maximum; i++) {
       await repo.transaction(() =>
-        consumeGuestLimit(repo.store, 'create', undefined, clock),
+        consumeVisitorLimit(repo.store, 'create', undefined, clock),
       );
     }
     await assert.rejects(
       repo.transaction(() =>
-        consumeGuestLimit(repo.store, 'create', undefined, clock),
+        consumeVisitorLimit(repo.store, 'create', undefined, clock),
       ),
       { code: 'RATE_LIMITED', status: 429 },
     );
     await repo.transaction(() =>
-      consumeGuestLimit(
+      consumeVisitorLimit(
         repo.store,
         'create',
         undefined,
-        clock + GUEST_LIMITS.create.windowMs,
+        clock + VISITOR_LIMITS.create.windowMs,
       ),
     );
     const w = await repo.workspace();
@@ -160,31 +183,50 @@ test('creation window expires, guest storage has caps, and member mutations bypa
       code: 'DEMO_CAPACITY',
       status: 429,
     });
-    const account = await repo.account('test', randomUUID(), 'Member');
-    const member = await repo.workspace(w.token, account);
+    const historical = await historicalWorkspace(repo);
+    const visitor = await repo.workspace(historical.token);
     const updates = await Promise.allSettled(
-      Array.from({ length: 31 }, () => repo.saveDesign(member.id, design())),
+      Array.from({ length: 31 }, () => repo.saveDesign(visitor.id, design())),
     );
-    assert.equal(updates.filter(r => r.status === 'fulfilled').length, 31);
+    assert.equal(
+      updates.filter(r => r.status === 'fulfilled').length,
+      VISITOR_LIMITS.save.maximum,
+    );
+    const rejected = updates.find(
+      r => r.status === 'rejected',
+    ) as PromiseRejectedResult;
+    assert.equal(rejected.reason.code, 'RATE_LIMITED');
+    assert.equal(rejected.reason.status, 429);
   } finally {
     await repo.close();
   }
 });
 
-test('global guest volume cap does not mint another token or affect existing members', async () => {
+test('visitor volume cap preserves existing access and rolls back historical conversion', async () => {
   const repo = new DemoRepository(':memory:');
   try {
-    const account = await repo.account('test', randomUUID(), 'Member');
-    const member = await repo.workspace(undefined, account);
+    const current = await repo.workspace();
+    const historical = await historicalWorkspace(repo);
     await repo.run(
-      "WITH RECURSIVE counter(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM counter WHERE n<5000) INSERT INTO workspaces SELECT 'guest-' || n,'token-' || n,NULL,? FROM counter",
+      "WITH RECURSIVE counter(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM counter WHERE n<4999) INSERT INTO workspaces SELECT 'visitor-' || n,'token-' || n,NULL,? FROM counter",
       new Date().toISOString(),
     );
     await assert.rejects(repo.workspace(), {
       code: 'DEMO_CAPACITY',
       status: 429,
     });
-    assert.equal((await repo.workspace(member.token, account)).id, member.id);
+    assert.equal((await repo.workspace(current.token)).id, current.id);
+    await assert.rejects(repo.workspace(historical.token), {
+      code: 'DEMO_CAPACITY',
+      status: 429,
+    });
+    assert.equal(
+      (await repo.row(
+        'SELECT account_id FROM workspaces WHERE id=?',
+        historical.id,
+      ))!.account_id,
+      historical.accountId,
+    );
     assert.equal(
       (await repo.row('SELECT COUNT(*) AS count FROM workspaces'))!.count,
       5001,
@@ -194,7 +236,7 @@ test('global guest volume cap does not mint another token or affect existing mem
   }
 });
 
-test('retention dry-run and transactional rechecks preserve accounts, recent guests and active shares', async () => {
+test('retention protects unclaimed historical rows, current visitors and active shares', async () => {
   const repo = new DemoRepository(':memory:');
   try {
     const clock = Date.now();
@@ -206,8 +248,8 @@ test('retention dry-run and transactional rechecks preserve accounts, recent gue
     const touched = await repo.workspace();
     const newlyShared = await repo.workspace();
     const exactBoundary = await repo.workspace();
-    const memberAccount = await repo.account('test', randomUUID(), 'Member');
-    const member = await repo.workspace(undefined, memberAccount);
+    const member = await historicalWorkspace(repo);
+    const memberAccount = member.accountId;
     for (const w of [
       guest,
       activeShareGuest,
@@ -294,7 +336,7 @@ test('retention dry-run and transactional rechecks preserve accounts, recent gue
   }
 });
 
-test('expiry denies guest adoption while a live shared version survives guest cleanup planning', async () => {
+test('expiry isolates a fresh visitor while a live shared snapshot protects the old workspace', async () => {
   const repo = new DemoRepository(':memory:');
   try {
     const w = await repo.workspace();
@@ -305,8 +347,7 @@ test('expiry denies guest adoption while a live shared version survives guest cl
       new Date(Date.now() - 8 * 86400000).toISOString(),
       w.id,
     );
-    const account = await repo.account('test', randomUUID(), 'Member');
-    const adopted = await repo.workspace(w.token, account);
+    const adopted = await repo.workspace(w.token);
     assert.notEqual(adopted.id, w.id);
     assert.equal((await repo.state(adopted.id)).designs.length, 0);
     assert.ok(await repo.shared(share));
@@ -322,7 +363,56 @@ test('expiry denies guest adoption while a live shared version survives guest cl
   }
 });
 
-test('online SQLite backup restores member orders and versioned design/share snapshots into an unused path', async () => {
+test('seven-day boundary and malformed or expired historical tokens fail closed without deleting old records', async t => {
+  const clock = 1800000000000;
+  t.mock.timers.enable({ apis: ['Date'], now: clock });
+  const repo = new DemoRepository(':memory:');
+  try {
+    const boundary = await repo.workspace();
+    await repo.run(
+      'UPDATE workspaces SET updated_at=? WHERE id=?',
+      new Date(clock - 7 * 86400000).toISOString(),
+      boundary.id,
+    );
+    assert.deepEqual(await repo.workspace(boundary.token), boundary);
+    for (const updatedAt of [
+      new Date(clock - 7 * 86400000 - 1).toISOString(),
+      'invalid-date',
+    ]) {
+      const historical = await historicalWorkspace(repo);
+      const preserved = await repo.saveDesign(historical.id, design());
+      await repo.run(
+        'UPDATE workspaces SET updated_at=? WHERE id=?',
+        updatedAt,
+        historical.id,
+      );
+      const isolated = await repo.workspace(historical.token);
+      assert.notEqual(isolated.id, historical.id);
+      assert.equal((await repo.state(isolated.id)).designs.length, 0);
+      assert.equal(
+        (await repo.row(
+          'SELECT account_id FROM workspaces WHERE id=?',
+          historical.id,
+        ))!.account_id,
+        historical.accountId,
+      );
+      assert.equal(
+        (await repo.state(historical.id)).designs[0].id,
+        preserved.id,
+      );
+      assert.equal(
+        (await planRetention(repo.store)).guests.some(
+          g => g.id === historical.id,
+        ),
+        false,
+      );
+    }
+  } finally {
+    await repo.close();
+  }
+});
+
+test('online SQLite backup restores visitor orders and untouched historical rows into an unused path', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'nijoow-backup-test-'));
   const source = join(directory, 'source.sqlite');
   const backup = join(directory, 'backup.sqlite');
@@ -330,8 +420,8 @@ test('online SQLite backup restores member orders and versioned design/share sna
   const repo = new DemoRepository(source);
   let recovered: DemoRepository | undefined;
   try {
-    const account = await repo.account('test', randomUUID(), 'Restore member');
-    const w = await repo.workspace(undefined, account);
+    const historical = await historicalWorkspace(repo);
+    const w = await repo.workspace();
     const saved = await repo.saveDesign(w.id, design());
     const shared = await repo.share(w.id, saved.id);
     const line = await repo.addCart(w.id, {
@@ -356,7 +446,20 @@ test('online SQLite backup restores member orders and versioned design/share sna
     await assert.rejects(backupSqlite(source, backup), { code: 'EEXIST' });
     recovered = new DemoRepository(restored);
     const restoredState = await recovered.state(w.id);
-    assert.equal(restoredState.signedIn, true);
+    assert.equal(Object.hasOwn(restoredState, 'signedIn'), false);
+    assert.equal(
+      (await recovered.row(
+        'SELECT account_id FROM workspaces WHERE id=?',
+        historical.id,
+      ))!.account_id,
+      historical.accountId,
+    );
+    assert.ok(
+      await recovered.row(
+        'SELECT id FROM accounts WHERE id=?',
+        historical.accountId,
+      ),
+    );
     assert.deepEqual(restoredState.orders[0], order);
     assert.deepEqual(restoredState.designs, (await repo.state(w.id)).designs);
     assert.deepEqual(await recovered.shared(shared), await repo.shared(shared));

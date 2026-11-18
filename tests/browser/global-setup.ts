@@ -32,14 +32,8 @@ export default async function globalSetup() {
     NIJOOW_POSTGRES_URL: '',
     POSTGRES_URL: '',
     VERCEL: '',
-    AUTH_SECRET: 'nijoow-isolated-browser-test-only-not-a-production-secret',
-    AUTH_URL: baseURL,
-    AUTH_TRUST_HOST: 'true',
+    NIJOOW_APP_URL: baseURL,
   };
-  for (const provider of ['GOOGLE', 'KAKAO', 'NAVER']) {
-    env[`AUTH_${provider}_ID`] = '';
-    env[`AUTH_${provider}_SECRET`] = '';
-  }
   const server = spawn(
     process.execPath,
     [

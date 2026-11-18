@@ -1072,89 +1072,9 @@
   margin-top: 15px;
   max-width: 320px;
 }
-.checkout-login {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.8;
-}
 .payment-stage {
   font-size: 12px;
   margin-bottom: 20px;
-}
-.login-page {
-  max-width: 1200px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 100px;
-  padding: 70px 50px 100px;
-}
-.login-intro h1 {
-  font: 400 90px/0.97 var(--font-display);
-  margin: 25px 0;
-}
-.login-intro h1 > span {
-  color: var(--red);
-}
-.login-intro p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.8;
-}
-.login-panel {
-  align-self: center;
-}
-.login-panel h2 {
-  font-size: 28px;
-  font-weight: 500;
-  margin: 15px 0;
-}
-.login-panel > p {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.9;
-}
-.social-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-  margin: 30px 0 20px;
-}
-.social-button {
-  min-height: 52px;
-  padding: 14px 18px;
-  border: 1px solid var(--rule);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 12px;
-}
-.social-button > span {
-  font:
-    700 18px Arial,
-    sans-serif;
-  width: 22px;
-  text-align: center;
-}
-.social-button > svg {
-  margin-left: auto;
-}
-.social-button.kakao > span {
-  color: #554819;
-}
-.social-button.naver > span {
-  color: #269457;
-}
-.social-button.google > span {
-  color: #3157ac;
-}
-.login-panel > .button {
-  width: 100%;
-  margin-top: 10px;
-}
-.login-panel > .demo-caption {
-  font-size: 10px;
-  margin-top: 20px;
 }
 .account-stats {
   display: grid;
@@ -1450,13 +1370,6 @@
   .cart-quantity {
     grid-column: 3;
     grid-row: 2;
-  }
-  .login-page {
-    gap: 60px;
-    padding: 60px 35px;
-  }
-  .login-intro h1 {
-    font-size: 74px;
   }
   .order-detail-image {
     width: 90px;
@@ -1813,28 +1726,6 @@
   }
   .checkout-content {
     gap: 28px;
-  }
-  .login-page {
-    grid-template-columns: 1fr;
-    gap: 42px;
-    padding: 35px 22px 65px;
-  }
-  .login-intro h1 {
-    font-size: 58px;
-    line-height: 1;
-    margin: 20px 0;
-  }
-  .login-intro h1 br {
-    display: none;
-  }
-  .login-intro p {
-    font-size: 12px;
-  }
-  .login-panel h2 {
-    font-size: 25px;
-  }
-  .login-panel > p {
-    font-size: 12px;
   }
   .account-stats {
     gap: 9px;

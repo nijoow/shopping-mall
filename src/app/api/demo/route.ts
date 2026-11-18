@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from 'auth';
 import { repository } from '@/server/repository';
 import { DomainError, idSchema } from '@/domain/validation';
 import { z } from 'zod';
@@ -8,21 +7,10 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 const COOKIE = 'nijoow-demo-v2';
 async function actor(request: NextRequest) {
-  const hasMemberSession = request.cookies
-    .getAll()
-    .some(cookie =>
-      ['authjs.session-token', '__Secure-authjs.session-token'].some(
-        name => cookie.name === name || cookie.name.startsWith(`${name}.`),
-      ),
-    );
-  const session = hasMemberSession ? await auth() : null;
   const repo = repository();
   return {
     repo,
-    workspace: await repo.workspace(
-      request.cookies.get(COOKIE)?.value,
-      session?.user?.id,
-    ),
+    workspace: await repo.workspace(request.cookies.get(COOKIE)?.value),
   };
 }
 function response(data: unknown, token: string) {
@@ -92,29 +80,31 @@ export async function GET(request: NextRequest) {
   }
 }
 export async function POST(request: NextRequest) {
-  const origin = request.headers.get('origin');
-  const requestUrl = new URL(request.url);
-  const hostOrigin = new URL(
-    `${requestUrl.protocol}//${request.headers.get('host') ?? requestUrl.host}`,
-  ).origin;
-  const allowedOrigins = new Set([
-    hostOrigin,
-    process.env.AUTH_URL ? new URL(process.env.AUTH_URL).origin : hostOrigin,
-  ]);
-  if (
-    (origin && !allowedOrigins.has(origin)) ||
-    request.headers.get('sec-fetch-site') === 'cross-site'
-  )
-    return NextResponse.json(
-      { error: '허용되지 않은 요청입니다.', code: 'FORBIDDEN' },
-      { status: 403 },
-    );
-  if (!request.headers.get('content-type')?.includes('application/json'))
-    return NextResponse.json(
-      { error: 'JSON 요청이 필요합니다.', code: 'UNSUPPORTED_MEDIA_TYPE' },
-      { status: 415 },
-    );
   try {
+    const origin = request.headers.get('origin');
+    const requestUrl = new URL(request.url);
+    const hostOrigin = new URL(
+      `${requestUrl.protocol}//${request.headers.get('host') ?? requestUrl.host}`,
+    ).origin;
+    const allowedOrigins = new Set([
+      hostOrigin,
+      process.env.NIJOOW_APP_URL?.trim()
+        ? new URL(process.env.NIJOOW_APP_URL.trim()).origin
+        : hostOrigin,
+    ]);
+    if (
+      (origin && !allowedOrigins.has(origin)) ||
+      request.headers.get('sec-fetch-site') === 'cross-site'
+    )
+      return NextResponse.json(
+        { error: '허용되지 않은 요청입니다.', code: 'FORBIDDEN' },
+        { status: 403 },
+      );
+    if (!request.headers.get('content-type')?.includes('application/json'))
+      return NextResponse.json(
+        { error: 'JSON 요청이 필요합니다.', code: 'UNSUPPORTED_MEDIA_TYPE' },
+        { status: 415 },
+      );
     const raw = await request.text();
     if (raw.length > 200000)
       return NextResponse.json(

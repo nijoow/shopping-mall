@@ -1,7 +1,7 @@
 import { DomainError } from '@/domain/validation';
 import type { Store } from './database';
 
-export const GUEST_LIMITS = {
+export const VISITOR_LIMITS = {
   create: { maximum: 120, windowMs: 10 * 60 * 1000 },
   save: { maximum: 30, windowMs: 60 * 1000 },
   share: { maximum: 10, windowMs: 60 * 1000 },
@@ -12,13 +12,13 @@ export const GUEST_LIMITS = {
 } as const;
 
 /** Call inside the mutation transaction. Retries/rollbacks preserve atomic counters. */
-export async function consumeGuestLimit(
+export async function consumeVisitorLimit(
   store: Store,
   operation: 'create' | 'save' | 'share',
   workspace?: string,
   clock = Date.now(),
 ) {
-  const { maximum, windowMs } = GUEST_LIMITS[operation];
+  const { maximum, windowMs } = VISITOR_LIMITS[operation];
   const start = Math.floor(clock / windowMs) * windowMs;
   const key =
     operation === 'create' ? 'create:global' : `${operation}:${workspace}`;
@@ -46,7 +46,7 @@ export async function consumeGuestLimit(
   }
 }
 
-export async function assertGuestCapacity(
+export async function assertVisitorCapacity(
   store: Store,
   table: 'workspaces' | 'designs' | 'shares',
   workspace?: string,
@@ -69,14 +69,14 @@ export async function assertGuestCapacity(
         )
       : 0;
   if (
-    Number(count.count) >= GUEST_LIMITS[table] ||
-    localCount >= GUEST_LIMITS.workspaceShares
+    Number(count.count) >= VISITOR_LIMITS[table] ||
+    localCount >= VISITOR_LIMITS.workspaceShares
   ) {
     throw new DomainError(
       'DEMO_CAPACITY',
-      table === 'shares' && localCount >= GUEST_LIMITS.workspaceShares
+      table === 'shares' && localCount >= VISITOR_LIMITS.workspaceShares
         ? '공유 링크는 50개까지 보관할 수 있습니다. 기존 링크가 만료되고 정리된 후 다시 시도해 주세요.'
-        : '게스트 체험의 저장 공간이 가득 찼습니다. 편집 내용을 유지한 채 잠시 후 다시 시도하거나 로그인해 주세요.',
+        : '내 공간의 저장 용량이 가득 찼습니다. 편집 내용을 유지한 채 잠시 후 다시 시도해 주세요.',
       429,
       600,
     );

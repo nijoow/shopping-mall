@@ -177,42 +177,123 @@ test('shares freeze a design revision and optimistic revision checks prevent ove
   );
   await repo.close();
 });
-test('guest records merge into a member once without replacing existing designs or orders', async () => {
-  const { repo, workspace: guest } = await setup();
-  const account = await repo.account('google', 'provider-123', 'Member');
-  const member = await repo.workspace(undefined, account);
-  const d = await repo.saveDesign(member.id, {
-    id: randomUUID(),
-    name: 'Existing',
-    version: 0,
-    config: defaultConfig('low'),
-  });
-  const cartId = await add(repo, guest.id);
-  const order = await repo.checkout(
-    guest.id,
-    await input(repo, guest.id, [cartId]),
-  );
-  await repo.favorite(guest.id, 'runner');
-  const merged = await repo.workspace(guest.token, account);
-  const state = await repo.state(merged.id);
-  assert.equal(merged.id, member.id);
-  assert.equal(state.designs[0].id, d.id);
-  assert.equal(state.orders[0].id, order.id);
-  assert.deepEqual(state.favorites, ['runner']);
-  const again = await repo.workspace(merged.token, account);
-  assert.equal((await repo.state(again.id)).orders.length, 1);
-  const loggedOut = await repo.workspace(again.token);
-  assert.notEqual(loggedOut.id, member.id);
-  assert.equal((await repo.state(loggedOut.id)).orders.length, 0);
-  await repo.close();
+test('a browser token revisits only its own designs, favorites, cart and orders', async () => {
+  const { repo, workspace: w } = await setup();
+  try {
+    const d = await repo.saveDesign(w.id, {
+      id: randomUUID(),
+      name: 'Owned',
+      version: 0,
+      config: defaultConfig('low'),
+    });
+    await repo.favorite(w.id, 'runner');
+    const purchased = await add(repo, w.id);
+    const order = await repo.checkout(
+      w.id,
+      await input(repo, w.id, [purchased]),
+    );
+    const remaining = await add(repo, w.id, 1, '#ffffff');
+    const before = await repo.state(w.id);
+    const revisit = await repo.workspace(w.token);
+    assert.deepEqual(revisit, w);
+    assert.deepEqual(await repo.state(revisit.id), before);
+    assert.equal(before.designs[0].id, d.id);
+    assert.equal(before.orders[0].id, order.id);
+    assert.equal(before.cart[0].id, remaining);
+    assert.deepEqual(before.favorites, ['runner']);
+    assert.equal(Object.hasOwn(before, 'signedIn'), false);
+    assert.equal(Object.hasOwn(before, 'name'), false);
+    for (const invalid of [
+      undefined,
+      w.id,
+      'a'.repeat(64),
+      'invalid-token',
+      w.token.slice(0, -1),
+    ]) {
+      const stranger = await repo.workspace(invalid);
+      assert.notEqual(stranger.id, w.id);
+      assert.equal((await repo.state(stranger.id)).designs.length, 0);
+      await assert.rejects(
+        repo.saveDesign(stranger.id, {
+          id: d.id,
+          name: 'Foreign',
+          version: d.version,
+          config: d.config,
+        }),
+        { code: 'NOT_FOUND', status: 404 },
+      );
+      await assert.rejects(
+        repo.advanceOrder(stranger.id, order.id, 'CANCELLED'),
+        { code: 'NOT_FOUND', status: 404 },
+      );
+    }
+  } finally {
+    await repo.close();
+  }
 });
-test('provider identity is unique and never joins separate providers by display name', async () => {
-  const { repo } = await setup();
-  const a = await repo.account('google', '123', 'Same');
-  const b = await repo.account('kakao', '123', 'Same');
-  assert.notEqual(a, b);
-  assert.equal(await repo.account('google', '123', 'Renamed'), a);
-  await repo.close();
+
+test('a live historical member cookie detaches only its own workspace without merging data', async () => {
+  const { repo, workspace: w } = await setup();
+  try {
+    const accountId = randomUUID();
+    await repo.run(
+      'INSERT INTO accounts VALUES(?,?,?,?)',
+      accountId,
+      'historical',
+      randomUUID(),
+      'Previous member',
+    );
+    const unclaimed = await repo.workspace();
+    const design = await repo.saveDesign(w.id, {
+      id: randomUUID(),
+      name: 'History',
+      version: 0,
+      config: defaultConfig('low'),
+    });
+    const shared = await repo.share(w.id, design.id);
+    await repo.favorite(w.id, 'low');
+    const line = await add(repo, w.id);
+    const order = await repo.checkout(w.id, await input(repo, w.id, [line]));
+    const cartLine = await add(repo, w.id, 1, '#ffffff');
+    for (const space of [w, unclaimed])
+      await repo.run(
+        'UPDATE workspaces SET account_id=? WHERE id=?',
+        accountId,
+        space.id,
+      );
+    const before = await repo.state(w.id);
+    const claimed = await repo.workspace(w.token);
+    assert.deepEqual(claimed, w);
+    assert.deepEqual(await repo.state(claimed.id), before);
+    assert.equal(
+      (await repo.row('SELECT account_id FROM workspaces WHERE id=?', w.id))!
+        .account_id,
+      null,
+    );
+    assert.equal(
+      (await repo.row(
+        'SELECT account_id FROM workspaces WHERE id=?',
+        unclaimed.id,
+      ))!.account_id,
+      accountId,
+    );
+    assert.ok(await repo.row('SELECT id FROM accounts WHERE id=?', accountId));
+    assert.equal(before.orders[0].id, order.id);
+    assert.equal(before.cart[0].id, cartLine);
+    assert.deepEqual((await repo.shared(shared))!.config, design.config);
+    assert.deepEqual(await repo.workspace(w.token), claimed);
+    const stranger = await repo.workspace(unclaimed.id);
+    assert.notEqual(stranger.id, unclaimed.id);
+    assert.equal(
+      (await repo.row(
+        'SELECT account_id FROM workspaces WHERE id=?',
+        unclaimed.id,
+      ))!.account_id,
+      accountId,
+    );
+  } finally {
+    await repo.close();
+  }
 });
 
 test('cart design replacement preserves quantity and updates only its owned line', async () => {

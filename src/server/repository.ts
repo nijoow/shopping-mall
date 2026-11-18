@@ -1,7 +1,7 @@
 import { SqliteStore, PostgresStore, type Store } from './database';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { databaseConfiguration } from './database-config';
-import { consumeGuestLimit, assertGuestCapacity } from './guest-limits';
+import { consumeVisitorLimit, assertVisitorCapacity } from './guest-limits';
 import { z } from 'zod';
 import {
   findProduct,
@@ -52,27 +52,9 @@ export class DemoRepository {
   async close() {
     await this.store.close();
   }
-  async account(provider: string, providerId: string, name: string) {
+  async workspace(token?: string) {
     return this.transaction(async () => {
-      const id = randomUUID();
-      await this.run(
-        'INSERT INTO accounts VALUES(?,?,?,?) ON CONFLICT(provider,provider_id) DO NOTHING',
-        id,
-        provider,
-        providerId,
-        name.slice(0, 50) || 'NIJOOW 멤버',
-      );
-      return String(
-        (await this.row(
-          'SELECT id FROM accounts WHERE provider=? AND provider_id=?',
-          provider,
-          providerId,
-        ))!.id,
-      );
-    });
-  }
-  async workspace(token?: string, accountId?: string) {
-    return await this.transaction(async () => {
+      const clock = Date.now();
       let current =
         token && /^[a-f0-9]{64}$/.test(token)
           ? await this.row(
@@ -80,104 +62,40 @@ export class DemoRepository {
               tokenHash(token),
             )
           : undefined;
-      // A logged-out/different account never inherits a previous member's workspace.
-      if (current?.account_id && current.account_id !== accountId)
-        current = undefined;
+      const updatedAt = current ? Date.parse(String(current.updated_at)) : NaN;
+      // The cookie is the sole capability. Old IDs/provider accounts cannot recover a space.
       if (
         current &&
-        !current.account_id &&
-        Date.now() - Date.parse(String(current.updated_at)) > 7 * 86400000
+        (!Number.isFinite(updatedAt) || clock - updatedAt > 7 * 86400000)
       )
         current = undefined;
-      if (accountId) {
-        const member = await this.row(
-          'SELECT * FROM workspaces WHERE account_id=? ORDER BY updated_at DESC LIMIT 1',
-          accountId,
-        );
-        if (
-          member &&
-          current &&
-          member.id !== current.id &&
-          !current.account_id
-        ) {
-          const from = String(current.id),
-            to = String(member.id);
-          for (const table of ['cart', 'designs', 'orders', 'shares'])
-            await this.run(
-              `UPDATE ${table} SET workspace_id=? WHERE workspace_id=?`,
-              to,
-              from,
-            );
-          await this.run(
-            'INSERT OR IGNORE INTO favorites SELECT ?,product_id FROM favorites WHERE workspace_id=?',
-            to,
-            from,
-          );
-          await this.run('DELETE FROM favorites WHERE workspace_id=?', from);
-          for (const inv of await this.rows(
-            'SELECT * FROM inventory WHERE workspace_id=?',
-            from,
-          )) {
-            const productId = String(inv.product_id),
-              size = String(inv.size);
-            const merged = Math.max(
-              0,
-              (await this.stock(to, productId, size)) -
-                (20 - Number(inv.stock)),
-            );
-            await this.run(
-              'INSERT INTO inventory VALUES(?,?,?,?) ON CONFLICT(workspace_id,product_id,size) DO UPDATE SET stock=excluded.stock',
-              to,
-              productId,
-              size,
-              merged,
-            );
-          }
-          await this.run('DELETE FROM inventory WHERE workspace_id=?', from);
-          await this.run(
-            'DELETE FROM operation_limits WHERE key IN (?,?)',
-            `save:${from}`,
-            `share:${from}`,
-          );
-          await this.run('DELETE FROM workspaces WHERE id=?', from);
-          current = member;
-        } else if (member) current = member;
-        else if (current) {
-          await this.run(
-            'UPDATE workspaces SET account_id=? WHERE id=?',
-            accountId,
-            String(current.id),
-          );
-          current.account_id = accountId;
-        }
-      }
       if (!current) {
-        if (!accountId) {
-          await assertGuestCapacity(this.store, 'workspaces');
-          await consumeGuestLimit(this.store, 'create');
-        }
+        await assertVisitorCapacity(this.store, 'workspaces');
+        await consumeVisitorLimit(this.store, 'create');
         const fresh = randomBytes(32).toString('hex'),
           id = randomUUID();
         await this.run(
           'INSERT INTO workspaces VALUES(?,?,?,?)',
           id,
           tokenHash(fresh),
-          accountId ?? null,
-          now(),
+          null,
+          new Date(clock).toISOString(),
         );
         return { id, token: fresh };
       }
-      // Rotate the browser token on authenticated adoption; only the new cookie is usable.
-      const effectiveToken = accountId
-        ? randomBytes(32).toString('hex')
-        : token!;
+      if (current.account_id) {
+        // Claim only the row addressed by a live historical cookie; never merge or bulk detach.
+        // Unclaimed account-linked rows remain protected from visitor cleanup.
+        await assertVisitorCapacity(this.store, 'workspaces');
+        await consumeVisitorLimit(this.store, 'create');
+      }
       await this.run(
-        'UPDATE workspaces SET token_hash=?,updated_at=? WHERE id=?',
-        tokenHash(effectiveToken),
-        now(),
+        'UPDATE workspaces SET account_id=NULL,updated_at=? WHERE id=? AND token_hash=?',
+        new Date(clock).toISOString(),
         String(current.id),
+        tokenHash(token!),
       );
-      return { id: String(current.id), token: effectiveToken };
+      return { id: String(current.id), token: token! };
     });
   }
   async stock(workspace: string, product: string, size: string) {
@@ -193,20 +111,11 @@ export class DemoRepository {
     );
   }
   async state(workspace: string): Promise<DemoState> {
-    const ws = (await this.row(
-      'SELECT * FROM workspaces WHERE id=?',
-      workspace,
-    ))!;
-    const account = ws.account_id
-      ? await this.row(
-          'SELECT name FROM accounts WHERE id=?',
-          String(ws.account_id),
-        )
-      : null;
+    if (!(await this.row('SELECT id FROM workspaces WHERE id=?', workspace))) {
+      throw new DomainError('NOT_FOUND', '내 공간을 찾을 수 없습니다.', 404);
+    }
     return {
       workspaceId: workspace,
-      signedIn: !!account,
-      name: account ? String(account.name) : '게스트 에디터',
       favorites: (
         await this.rows(
           'SELECT product_id FROM favorites WHERE workspace_id=?',
@@ -475,17 +384,8 @@ export class DemoRepository {
           'DESIGN_LIMIT',
           '디자인은 50개까지 저장할 수 있습니다.',
         );
-      if (
-        !(
-          await this.row(
-            'SELECT account_id FROM workspaces WHERE id=?',
-            workspace,
-          )
-        )?.account_id
-      ) {
-        if (!existing) await assertGuestCapacity(this.store, 'designs');
-        await consumeGuestLimit(this.store, 'save', workspace);
-      }
+      if (!existing) await assertVisitorCapacity(this.store, 'designs');
+      await consumeVisitorLimit(this.store, 'save', workspace);
       const version = (Number(existing?.version) || 0) + 1;
       const updatedAt = now();
       await this.run(
@@ -521,17 +421,8 @@ export class DemoRepository {
           '저장한 디자인을 먼저 선택해 주세요.',
           404,
         );
-      if (
-        !(
-          await this.row(
-            'SELECT account_id FROM workspaces WHERE id=?',
-            workspace,
-          )
-        )?.account_id
-      ) {
-        await assertGuestCapacity(this.store, 'shares', workspace);
-        await consumeGuestLimit(this.store, 'share', workspace);
-      }
+      await assertVisitorCapacity(this.store, 'shares', workspace);
+      await consumeVisitorLimit(this.store, 'share', workspace);
       const token = randomBytes(18).toString('base64url');
       await this.run(
         'INSERT INTO shares VALUES(?,?,?,?)',

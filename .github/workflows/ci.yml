@@ -34,7 +34,6 @@ jobs:
           --health-retries 10
     env:
       NEXT_TELEMETRY_DISABLED: '1'
-      AUTH_SECRET: ci-only-secret-not-used-by-any-deployment
       NIJOOW_TEST_POSTGRES_URL: postgresql://nijoow_test:nijoow_ci_only@127.0.0.1:5432/nijoow_test
     steps:
       - uses: actions/checkout@v4

@@ -25,7 +25,45 @@ function client() {
 }
 const c = client(),
   stranger = client();
-assert.equal((await c()).status, 200);
+const initial = await c();
+assert.equal(initial.status, 200);
+assert.equal(Object.hasOwn(initial.state, 'signedIn'), false);
+assert.equal(Object.hasOwn(initial.state, 'name'), false);
+assert.equal((await c()).state.workspaceId, initial.state.workspaceId);
+// Obsolete authentication cookies cannot select an account or prevent visitor access.
+const retiredSession = await fetch(base + '/api/demo', {
+  headers: {
+    Cookie:
+      'authjs.session-token=retired; __Secure-authjs.session-token=retired',
+  },
+});
+assert.equal(retiredSession.status, 200);
+assert.notEqual(
+  (await retiredSession.json()).state.workspaceId,
+  initial.state.workspaceId,
+);
+for (const path of ['/auth/login', '/auth/sign-up']) {
+  const legacy = await fetch(
+    base +
+      path +
+      '?error=Configuration&code=retired&callbackUrl=https://untrusted.example',
+    { redirect: 'manual' },
+  );
+  assert.equal(legacy.status, 307);
+  const destination = new URL(legacy.headers.get('location'), base);
+  assert.equal(destination.origin, new URL(base).origin);
+  assert.equal(destination.pathname, '/my-page');
+  assert.equal(destination.search, '');
+}
+for (const path of [
+  '/api/auth/providers',
+  '/api/auth/callback/naver?code=retired',
+]) {
+  const retired = await fetch(base + path, { redirect: 'manual' });
+  assert.equal(retired.status, 404);
+  assert.equal(retired.headers.get('location'), null);
+}
+
 await stranger();
 const invalid = await c('cart.add', {
   productId: 'runner',
@@ -130,7 +168,10 @@ console.log(
   JSON.stringify({
     pass: true,
     checks: [
-      'session isolation',
+      'visitor persistence and isolation',
+      'retired authentication cookies ignored',
+      'legacy UI redirect clears OAuth query',
+      'OAuth endpoints unavailable',
       'HTTP validation 400',
       'cross-origin 403',
       'design persistence',

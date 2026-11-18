@@ -51,8 +51,6 @@ export interface DemoOrder {
 }
 export interface DemoState {
   workspaceId: string;
-  signedIn: boolean;
-  name: string;
   favorites: string[];
   cart: CartLine[];
   designs: SavedDesign[];
