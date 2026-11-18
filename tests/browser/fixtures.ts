@@ -6,17 +6,21 @@ import {
 } from '@playwright/test';
 import type { DemoState } from '../../src/domain/types';
 
-export const test = base.extend({
+export const test = base.extend<{ pageErrors: string[] }>({
+  pageErrors: async ({}, provide) => {
+    const errors: string[] = [];
+    await provide(errors);
+    expect(errors, 'No unexpected browser errors').toEqual([]);
+  },
   baseURL: async ({}, provide) => {
     const url = process.env.NIJOOW_BROWSER_BASE_URL;
     if (!url || new URL(url).hostname !== '127.0.0.1')
       throw new Error('The isolated browser server is required.');
     await provide(url);
   },
-  page: async ({ page, baseURL }, provide) => {
+  page: async ({ page, baseURL, pageErrors }, provide) => {
     const failures: string[] = [];
-    const errors: string[] = [];
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', error => pageErrors.push(error.message));
     await page.context().route('**/*', async route => {
       const url = new URL(route.request().url());
       if (
@@ -34,7 +38,6 @@ export const test = base.extend({
       failures,
       'Browser requests must stay on the temporary local server',
     ).toEqual([]);
-    expect(errors, 'No uncaught browser errors').toEqual([]);
   },
 });
 export { expect };

@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { defaultConfig, modelAsset, modelPoster } from '../src/domain/catalog';
-import { configSchema, configKey } from '../src/domain/validation';
+import {
+  configSchema,
+  configKey,
+  designDraftSchema,
+} from '../src/domain/validation';
 
 test('new low designs use v3 while saved v1/v2 designs keep their original assets', () => {
   const current = defaultConfig('low');
@@ -38,4 +42,31 @@ test('only available model versions are accepted', () => {
       .success,
     false,
   );
+});
+
+test('stored drafts preserve unfinished names and legacy models but reject invalid identity and revisions', () => {
+  const draft = {
+    id: 'local-draft',
+    name: '  ',
+    config: { ...defaultConfig('low'), modelVersion: 1 as const },
+  };
+  assert.deepEqual(designDraftSchema.parse(draft), { ...draft, version: 0 });
+  assert.deepEqual(designDraftSchema.parse({ ...draft, version: 7 }), {
+    ...draft,
+    version: 7,
+  });
+  for (const change of [
+    { id: undefined },
+    { id: '../invalid' },
+    { name: {} },
+    { name: 'x'.repeat(41) },
+    { version: -1 },
+    { version: '1' },
+    { config: { ...draft.config, modelVersion: 99 } },
+  ]) {
+    assert.equal(
+      designDraftSchema.safeParse({ ...draft, ...change }).success,
+      false,
+    );
+  }
 });

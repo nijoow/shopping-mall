@@ -37,7 +37,11 @@ import {
   type ModelId,
   type Part,
 } from '@/domain/catalog';
-import { configKey, configSchema } from '@/domain/validation';
+import {
+  configKey,
+  designDraftSchema,
+  type DesignDraft,
+} from '@/domain/validation';
 import type { SavedDesign, CartLine } from '@/domain/types';
 import ProductViewer, { type Capture } from '@/components/three/ProductViewer';
 import { useDemo } from './DemoProvider';
@@ -49,12 +53,6 @@ type Recovery = {
   buy?: boolean;
   href?: string;
 };
-interface Draft {
-  id: string;
-  name: string;
-  config: DesignConfig;
-  version: number;
-}
 export function Studio({
   model,
   shared,
@@ -129,7 +127,7 @@ function StudioEditor({
   const router = useRouter(),
     { mutate, notify } = useDemo();
   const product = findProduct(model)!;
-  const [draft] = useState<Draft>(() => {
+  const [draft] = useState<DesignDraft>(() => {
     if (initial)
       return {
         id: initial.id,
@@ -157,17 +155,9 @@ function StudioEditor({
       const raw = JSON.parse(
         localStorage.getItem(`nijoow:draft:${workspaceId}:${model}`) ?? 'null',
       );
-      if (
-        raw?.config &&
-        configSchema.safeParse(raw.config).success &&
-        raw.config.model === model
-      )
-        return {
-          id: raw.id,
-          name: raw.name,
-          config: raw.config,
-          version: raw.version ?? 0,
-        };
+      const parsed = designDraftSchema.safeParse(raw);
+      if (parsed.success && parsed.data.config.model === model)
+        return parsed.data;
     } catch {}
     return fallback;
   });
@@ -194,7 +184,7 @@ function StudioEditor({
     [shareUrl, setShareUrl] = useState('');
   const recoveryRef = useRef<Recovery | null>(null);
   const capture = useRef<Capture | null>(null),
-    latest = useRef<Draft>(draft),
+    latest = useRef<DesignDraft>(draft),
     saved = useRef<SavedDesign | null>(initial ?? null),
     savedKey = useRef(
       initial ? `${initial.name}:${configKey(initial.config)}` : '',

@@ -11,7 +11,6 @@ import {
 
 const studioName = 'BROWSER LOW 3';
 
-// Exactly three complete flows, rather than repeating each flow for every viewport.
 test('normal clothing order: keyboard size selection, mobile checkout and immutable order', async ({
   page,
 }) => {
@@ -74,6 +73,39 @@ test('normal clothing order: keyboard size selection, mobile checkout and immuta
   expect(visitor).not.toHaveProperty('signedIn');
   expect(visitor).not.toHaveProperty('name');
   await noHorizontalOverflow(page);
+  await page.goto(`/orders/${after.orders[0].id}`);
+  for (const label of [
+    '출고 준비로 진행',
+    '배송 중으로 진행',
+    '배송 완료로 진행',
+  ])
+    await page.getByRole('button', { name: label, exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: '주문 취소', exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole('button', { name: '전체 주문 반품 신청' }).click();
+  const returnDialog = page.getByRole('alertdialog', {
+    name: '전체 주문 반품',
+    exact: true,
+  });
+  await returnDialog.getByRole('button', { name: '확인', exact: true }).click();
+  await page
+    .getByRole('button', { name: '회수 완료 · 모의 환불', exact: true })
+    .click();
+  await expect(
+    page.getByRole('heading', { name: /^ORDER REFUNDED/ }),
+  ).toBeVisible();
+  const refunded = (await state(page)).orders[0];
+  expect(refunded.items).toEqual(after.orders[0].items);
+  expect(refunded.total).toBe(after.orders[0].total);
+  expect(refunded.events.map(event => event.status)).toEqual([
+    'CONFIRMED',
+    'PREPARING',
+    'SHIPPED',
+    'DELIVERED',
+    'RETURN_REQUESTED',
+    'REFUNDED',
+  ]);
 });
 
 test('low v3: real 3D edit, PNG export, save/reopen/share, dialog keyboard and configured order', async ({
@@ -110,6 +142,16 @@ test('low v3: real 3D edit, PNG export, save/reopen/share, dialog keyboard and c
     colors: { upper: '#315684' },
   });
   expect(saved.preview).toMatch(/^data:image\/(webp|png);base64,/);
+  for (const label of ['전체', '측면', '후면', '밑창']) {
+    await page.getByRole('button', { name: label, exact: true }).click();
+    await expect(
+      page.getByRole('button', { name: label, exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await page.screenshot({
+      path: test.info().outputPath(`low-v3-${label}.png`),
+    });
+  }
+  await page.getByRole('button', { name: '전체', exact: true }).click();
   const downloadEvent = page.waitForEvent('download');
   await page
     .getByRole('button', { name: 'PNG 이미지 저장', exact: true })
@@ -311,4 +353,101 @@ test('failed save keeps edits: network retry, real revision conflict and indepen
   await expect(
     page.getByRole('heading', { name: 'PRESERVED LOCAL COPY', exact: true }),
   ).toBeVisible();
+});
+
+test('runner v2 recovers model loading and WebGL context loss without losing the draft', async ({
+  page,
+  pageErrors,
+}) => {
+  let failModel = true;
+  await page.route('**/models/runner-v2.glb', async route => {
+    if (failModel) {
+      failModel = false;
+      await route.fulfill({ status: 503, body: 'Temporary model failure' });
+    } else await route.continue();
+  });
+  await page.goto('/studio/runner');
+  const retry = page.getByRole('button', {
+    name: '다시 시도',
+    exact: true,
+  });
+  await expect(retry).toBeVisible();
+  // R3F reports its renderer error before the outer DOM boundary recovers it.
+  expect(pageErrors.splice(0)).toEqual([
+    expect.stringMatching(/Could not load \/models\/runner-v2\.glb:.*503/),
+  ]);
+  await expect(
+    page.getByRole('button', { name: 'PNG 이미지 저장', exact: true }),
+  ).toBeDisabled();
+  await retry.click();
+  await modelLoaded(page, 'runner', 2);
+  await page.getByTestId('design-name').fill('RUNNER RECOVERY');
+  await page.getByLabel('YOUR SIGNATURE', { exact: true }).fill('RUN2');
+  await expect
+    .poll(async () => (await state(page)).designs[0]?.config.engraving)
+    .toBe('RUN2');
+  for (const label of ['전체', '측면', '후면', '밑창']) {
+    await page.getByRole('button', { name: label, exact: true }).click();
+    await page.screenshot({
+      path: test.info().outputPath(`runner-v2-${label}.png`),
+    });
+  }
+  const lost = await page.locator('canvas').evaluate(canvas => {
+    const gl = (canvas as HTMLCanvasElement).getContext('webgl2');
+    const extension = gl?.getExtension('WEBGL_lose_context');
+    extension?.loseContext();
+    return !!extension;
+  });
+  expect(lost).toBe(true);
+  await expect(retry).toBeVisible();
+  expect(pageErrors.splice(0)).toEqual(['WebGL context lost']);
+  await expect(
+    page.getByRole('button', { name: 'PNG 이미지 저장', exact: true }),
+  ).toBeDisabled();
+  await retry.click();
+  await modelLoaded(page, 'runner', 2);
+  await expect(page.getByTestId('design-name')).toHaveValue('RUNNER RECOVERY');
+  await expect(page.getByLabel('YOUR SIGNATURE', { exact: true })).toHaveValue(
+    'RUN2',
+  );
+  await expect(
+    page.getByRole('button', { name: 'PNG 이미지 저장', exact: true }),
+  ).toBeEnabled();
+});
+
+test('an invalid stored draft cannot strand the editor in a failed-save loop', async ({
+  page,
+}) => {
+  await page.goto('/my-page');
+  const visitor = await state(page);
+  await page.evaluate(workspaceId => {
+    localStorage.setItem(
+      `nijoow:draft:${workspaceId}:low`,
+      JSON.stringify({
+        id: null,
+        name: { invalid: true },
+        version: 'broken',
+        config: {
+          model: 'low',
+          modelVersion: 1,
+          material: 'leather',
+          engraving: '',
+          colors: {
+            upper: '#ffffff',
+            panel: '#ffffff',
+            sole: '#ffffff',
+            laces: '#ffffff',
+          },
+        },
+      }),
+    );
+  }, visitor.workspaceId);
+  await page.goto('/studio/low');
+  await modelLoaded(page, 'low', 3);
+  await expect(page.getByTestId('design-name')).toHaveValue(
+    'EVERYDAY LOW — MY EDIT',
+  );
+  await expect.poll(async () => (await state(page)).designs.length).toBe(1);
+  expect((await state(page)).designs[0].config.modelVersion).toBe(3);
+  await expect(page.locator('[role="alert"][data-error-code]')).toHaveCount(0);
 });

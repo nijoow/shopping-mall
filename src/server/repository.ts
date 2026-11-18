@@ -3,13 +3,8 @@ import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { databaseConfiguration } from './database-config';
 import { consumeVisitorLimit, assertVisitorCapacity } from './guest-limits';
 import { z } from 'zod';
-import {
-  findProduct,
-  MAX_QUANTITY,
-  unitPrice,
-  FREE_SHIPPING,
-  SHIPPING_FEE,
-} from '@/domain/catalog';
+import { findProduct, MAX_QUANTITY, unitPrice } from '@/domain/catalog';
+import { canAdvanceOrder, orderTotals } from '@/domain/orders';
 import {
   configKey,
   configSchema,
@@ -520,12 +515,7 @@ export class DemoRepository {
           preview: line.preview,
         };
       });
-      const subtotal = items.reduce(
-          (sum, line) => sum + line.unitPrice * line.quantity,
-          0,
-        ),
-        shipping = subtotal >= FREE_SHIPPING ? 0 : SHIPPING_FEE,
-        total = subtotal + shipping;
+      const { subtotal, shipping, total } = orderTotals(items);
       if (total !== data.quotedTotal)
         throw new DomainError(
           'QUOTE_CHANGED',
@@ -597,16 +587,7 @@ export class DemoRepository {
         throw new DomainError('NOT_FOUND', '주문을 찾을 수 없습니다.', 404);
       const order = JSON.parse(String(row.payload)) as DemoOrder;
       if (order.status === target) return order;
-      const allowed: Record<OrderStatus, OrderStatus[]> = {
-        CONFIRMED: ['PREPARING', 'CANCELLED'],
-        PREPARING: ['SHIPPED', 'CANCELLED'],
-        SHIPPED: ['DELIVERED'],
-        DELIVERED: ['RETURN_REQUESTED'],
-        RETURN_REQUESTED: ['REFUNDED'],
-        CANCELLED: [],
-        REFUNDED: [],
-      };
-      if (!allowed[order.status].includes(target))
+      if (!canAdvanceOrder(order.status, target))
         throw new DomainError(
           'INVALID_TRANSITION',
           '현재 주문 상태에서는 이 작업을 할 수 없습니다.',
