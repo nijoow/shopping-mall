@@ -53,3 +53,10 @@ next-env.d.ts
 **/public/sw.js.map
 **/public/workbox-*.js.map
 **/public/worker-*.js.map
+
+# Isolated local demo database and QA output
+/.data/
+/artifacts/
+/.work/
+
+!.env.example
