@@ -101,7 +101,11 @@ export function Designs() {
           </h1>
           <p>내 취향으로 완성한, 하나뿐인 조합.</p>
         </div>
-        <Link className="button" href="/studio/runner" data-confirm-fallback>
+        <Link
+          className="button"
+          href="/studio/runner?new=1"
+          data-confirm-fallback
+        >
           새 디자인 <ArrowUpRight size={18} />
         </Link>
       </div>
@@ -137,7 +141,7 @@ export function Designs() {
                     unoptimized={!!d.preview}
                     sizes="33vw"
                   />
-                  <span>EDIT ↗</span>
+                  <span>이어서 편집 ↗</span>
                 </Link>
                 <div className="design-card-info">
                   <h2>{d.name}</h2>
@@ -188,7 +192,7 @@ export function Designs() {
           <EmptyState
             title="저장한 디자인이 없습니다."
             text="색상·재질·각인을 선택해 나만의 디자인을 만들어 보세요."
-            href="/studio/runner"
+            href="/studio/runner?new=1"
             action="디자인 만들기"
           />
         )}

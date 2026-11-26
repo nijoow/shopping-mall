@@ -123,11 +123,20 @@ export async function POST(request: NextRequest) {
         break;
       case 'cart.replace': {
         const d = z
-          .object({ id: idSchema, changes: z.unknown() })
+          .object({
+            id: idSchema,
+            changes: z.unknown(),
+            forCheckout: z.boolean().optional(),
+          })
           .strict()
           .parse(body.data);
         result = {
-          lineId: await repo.replaceCart(workspace.id, d.id, d.changes),
+          lineId: await repo.replaceCart(
+            workspace.id,
+            d.id,
+            d.changes,
+            d.forCheckout,
+          ),
         };
         break;
       }

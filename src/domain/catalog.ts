@@ -266,7 +266,7 @@ export function unitPrice(product: Product, config: DesignConfig | null) {
   const base = defaultConfig(product.model).material;
   const materialFee =
     config.material === base ? 0 : config.material === 'suede' ? 15000 : 10000;
-  return product.price + materialFee + (config.engraving ? 5000 : 0);
+  return product.price + materialFee + (config.engraving.trim() ? 5000 : 0);
 }
 export const PART_LABELS = Object.fromEntries(
   PARTS.map(p => [p.id, p.name]),

@@ -27,11 +27,20 @@ test('normal clothing order: keyboard size selection, mobile checkout and immuta
   await medium.focus();
   await page.keyboard.press('Enter');
   await expect(medium).toHaveAttribute('aria-pressed', 'true');
+  await page
+    .getByRole('button', { name: '장바구니 담기', exact: true })
+    .click();
+  await expect.poll(async () => (await state(page)).cart.length).toBe(1);
   await buy.click();
-  await expect(page).toHaveURL(/\/checkout\?items=/);
-  await expect(page.getByTestId('checkout-submit')).toBeEnabled();
+  await expect(page).toHaveURL(/\/checkout\?buy=/);
+  await page.reload();
+  await expect(page.getByTestId('checkout-submit')).toContainText('189,000');
   await page.setViewportSize({ width: 390, height: 844 });
   await noHorizontalOverflow(page);
+  await expect(page.getByText('배송비 포함 합계')).toBeVisible();
+  await expect(page.locator('.checkout-mobile-total strong')).toContainText(
+    '189,000',
+  );
   await visibleControlWithinViewport(page, page.getByTestId('checkout-submit'));
   const before = await state(page);
   expect(before.cart).toHaveLength(1);
@@ -51,7 +60,10 @@ test('normal clothing order: keyboard size selection, mobile checkout and immuta
   ).toBeVisible();
   await noHorizontalOverflow(page);
   const after = await state(page);
-  expect(after.cart).toHaveLength(0);
+  expect(after.cart).toEqual(
+    before.cart.map(line => ({ ...line, stock: line.stock - 1 })),
+  );
+  expect(after.orders[0].total).toBe(189000);
   expect(after.orders).toHaveLength(1);
   expect(after.orders[0].items[0]).toMatchObject({
     productId: 'field-jacket',
@@ -110,7 +122,7 @@ test('normal clothing order: keyboard size selection, mobile checkout and immuta
 
 test('low v3: real 3D edit, PNG export, save/reopen/share, dialog keyboard and configured order', async ({
   page,
-  context,
+  browser,
 }) => {
   await page.setViewportSize({ width: 1280, height: 960 });
   const modelResponse = page.waitForResponse(
@@ -125,7 +137,7 @@ test('low v3: real 3D edit, PNG export, save/reopen/share, dialog keyboard and c
   await page.getByTestId('design-name').fill(studioName);
   await page.getByRole('button', { name: '코발트 색상', exact: true }).click();
   await page.getByRole('button', { name: /^스웨이드/ }).click();
-  await page.getByLabel('YOUR SIGNATURE', { exact: true }).fill('LOW3');
+  await page.getByLabel('각인', { exact: true }).fill('LOW3');
   await expect
     .poll(
       async () =>
@@ -197,34 +209,33 @@ test('low v3: real 3D edit, PNG export, save/reopen/share, dialog keyboard and c
   await expect(page).toHaveURL(new RegExp(`/studio/low\\?design=${saved.id}`));
   await modelLoaded(page, 'low', 3);
   await expect(page.getByTestId('design-name')).toHaveValue(studioName);
-  await expect(page.getByLabel('YOUR SIGNATURE', { exact: true })).toHaveValue(
-    'LOW3',
-  );
+  await expect(page.getByLabel('각인', { exact: true })).toHaveValue('LOW3');
   await expect(
     page.getByRole('button', { name: '코발트 색상', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '공유', exact: true }).click();
   const shareLink = page.getByRole('textbox', { name: /공유 링크/ });
   await expect(shareLink).toHaveValue(/\/share\/[A-Za-z0-9_-]+$/);
-  const sharedPage = await context.newPage();
+  const guest = await browser.newContext();
+  const sharedPage = await guest.newPage();
   await sharedPage.goto(await shareLink.inputValue());
   await expect(
     sharedPage.getByRole('heading', { name: studioName, exact: true }),
   ).toBeVisible();
   await modelLoaded(sharedPage, 'low', 3);
   await expect(sharedPage.getByText('LOW3', { exact: true })).toBeVisible();
-  await sharedPage.close();
+  await guest.close();
   await page
-    .getByRole('button', { name: '02 사이즈 · 주문', exact: true })
+    .getByRole('button', { name: '사이즈 · 주문', exact: true })
     .click();
   await page
-    .getByRole('group', { name: 'SIZE — MM' })
+    .getByRole('group', { name: '사이즈 (mm)' })
     .getByRole('button', { name: '270', exact: true })
     .click();
   await page
     .getByRole('button', { name: '이 디자인 주문하기', exact: true })
     .click();
-  await expect(page).toHaveURL(/\/checkout\?items=/);
+  await expect(page).toHaveURL(/\/checkout\?buy=/);
   await page.getByTestId('checkout-submit').click();
   await expect(page).toHaveURL(/\/orders\/[a-z0-9-]+$/);
   const ordered = (await state(page)).orders[0];
@@ -321,13 +332,11 @@ test('failed save keeps edits: network retry, real revision conflict and indepen
   }, original);
   expect(concurrent).toBe(200);
   await name.fill('PRESERVED LOCAL COPY');
-  await page.getByLabel('YOUR SIGNATURE', { exact: true }).fill('LOCAL');
+  await page.getByLabel('각인', { exact: true }).fill('LOCAL');
   const conflict = page.locator('[role="alert"][data-error-code="CONFLICT"]');
   await expect(conflict).toBeVisible();
   await expect(name).toHaveValue('PRESERVED LOCAL COPY');
-  await expect(page.getByLabel('YOUR SIGNATURE', { exact: true })).toHaveValue(
-    'LOCAL',
-  );
+  await expect(page.getByLabel('각인', { exact: true })).toHaveValue('LOCAL');
   await expect(page.getByTestId('studio-save-copy')).toBeEnabled();
   await page.getByTestId('studio-save-copy').click();
   await expect(conflict).toBeHidden();
@@ -382,7 +391,7 @@ test('runner v2 recovers model loading and WebGL context loss without losing the
   await retry.click();
   await modelLoaded(page, 'runner', 2);
   await page.getByTestId('design-name').fill('RUNNER RECOVERY');
-  await page.getByLabel('YOUR SIGNATURE', { exact: true }).fill('RUN2');
+  await page.getByLabel('각인', { exact: true }).fill('RUN2');
   await expect
     .poll(async () => (await state(page)).designs[0]?.config.engraving)
     .toBe('RUN2');
@@ -407,9 +416,7 @@ test('runner v2 recovers model loading and WebGL context loss without losing the
   await retry.click();
   await modelLoaded(page, 'runner', 2);
   await expect(page.getByTestId('design-name')).toHaveValue('RUNNER RECOVERY');
-  await expect(page.getByLabel('YOUR SIGNATURE', { exact: true })).toHaveValue(
-    'RUN2',
-  );
+  await expect(page.getByLabel('각인', { exact: true })).toHaveValue('RUN2');
   await expect(
     page.getByRole('button', { name: 'PNG 이미지 저장', exact: true }),
   ).toBeEnabled();
@@ -450,4 +457,100 @@ test('an invalid stored draft cannot strand the editor in a failed-save loop', a
   await expect.poll(async () => (await state(page)).designs.length).toBe(1);
   expect((await state(page)).designs[0].config.modelVersion).toBe(3);
   await expect(page.locator('[role="alert"][data-error-code]')).toHaveCount(0);
+});
+
+test('two runner designs can be saved independently and the first shared with another visitor', async ({
+  page,
+  browser,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('link', { name: '러너 편집하기', exact: true }).click();
+  await modelLoaded(page, 'runner', 2);
+  const palette = page.getByRole('button', { name: '코발트 색상' });
+  await expect(palette).toBeInViewport({ ratio: 0.9 });
+  await palette.click();
+  const engraving = page.getByLabel('각인', { exact: true });
+  await page.getByRole('button', { name: /^스웨이드/ }).click();
+  await engraving.fill('   ');
+  await expect(page.locator('.studio-purchase strong')).toContainText(
+    '234,000',
+  );
+  await engraving.fill('FIRST');
+  await page.getByRole('button', { name: '색상 초기화', exact: true }).click();
+  await expect(engraving).toHaveValue('FIRST');
+  await expect(page.getByRole('button', { name: /^스웨이드/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(palette).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('design-name').fill('첫 번째 러너');
+  const shelf = page.getByRole('link', { name: '내 디자인', exact: true });
+  await shelf.click();
+  await expect(page).toHaveURL('/designs');
+  const first = (await state(page)).designs[0];
+  await page.getByRole('link', { name: '새 디자인', exact: true }).click();
+  await expect(engraving).toHaveValue('');
+  await page.getByTestId('design-name').fill('두 번째 러너');
+  await engraving.fill('SECOND');
+  await expect
+    .poll(async () =>
+      (await state(page)).designs.some(d => d.config.engraving === 'SECOND'),
+    )
+    .toBe(true);
+  await page.reload();
+  await expect(engraving).toHaveValue('SECOND');
+  await shelf.click();
+  await expect(page).toHaveURL('/designs');
+  const designs = (await state(page)).designs;
+  expect(designs).toHaveLength(2);
+  expect(designs.find(d => d.id === first.id)).toMatchObject({
+    name: '첫 번째 러너',
+    config: first.config,
+  });
+  await page
+    .locator('article')
+    .filter({ hasText: '첫 번째 러너' })
+    .getByRole('link')
+    .click();
+  await expect(engraving).toHaveValue('FIRST');
+  await page.getByRole('button', { name: '공유', exact: true }).click();
+  const link = page.getByRole('textbox', { name: /공유 링크/ });
+  await expect(link).toHaveValue(/\/share\//);
+  const visitor = await browser.newContext();
+  try {
+    const shared = await visitor.newPage();
+    await shared.goto(await link.inputValue());
+    await expect(
+      shared.getByRole('heading', { name: '첫 번째 러너' }),
+    ).toBeVisible();
+    await expect(shared.getByText('FIRST', { exact: true })).toBeVisible();
+    expect((await state(shared)).designs).toHaveLength(0);
+  } finally {
+    await visitor.close();
+  }
+});
+
+test('product purchase controls recover after the visitor data fails to load', async ({
+  page,
+}) => {
+  await page.route('**/api/demo', route =>
+    route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: '일시 오류' }),
+    }),
+  );
+  await page.goto('/product/field-jacket');
+  const retry = page.getByRole('button', { name: '다시 불러오기' });
+  await expect(retry).toBeVisible();
+  await page.getByRole('button', { name: 'M', exact: true }).click();
+  await page.unroute('**/api/demo');
+  await retry.click();
+  await expect(
+    page.getByRole('button', { name: '바로 주문하기' }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole('button', { name: 'M', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
 });

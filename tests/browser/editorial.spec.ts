@@ -12,9 +12,26 @@ test('editorial home keeps shopping, studio and mobile navigation accessible', a
   await expect(page).toHaveURL('/shop/sneakers');
   await page.goBack();
   await expect(
-    page.locator('main').getByRole('link', { name: '디자인 만들기', exact: true }),
-  ).toHaveAttribute('href', '/studio/runner');
-  await page.setViewportSize({ width: 390, height: 844 });
+    page
+      .locator('main')
+      .getByRole('link', { name: '러너 편집하기', exact: true }),
+  ).toHaveAttribute('href', '/studio/runner?new=1');
+  for (const width of [320, 430, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate(() => document.fonts.ready);
+    const rects = await page.locator('.hero-title').evaluate(title => {
+      const range = document.createRange();
+      range.selectNodeContents(title);
+      return Array.from(range.getClientRects(), r => ({
+        left: r.left,
+        right: r.right,
+        top: r.top,
+      }));
+    });
+    expect(Math.min(...rects.map(r => r.left))).toBeGreaterThanOrEqual(0);
+    expect(Math.max(...rects.map(r => r.right))).toBeLessThanOrEqual(width);
+    expect(rects.at(-1)!.top).toBeGreaterThan(rects[0].top);
+  }
   await noHorizontalOverflow(page);
   for (let i = 0; i < 2; i++) {
     await page.getByRole('button', { name: '메뉴', exact: true }).click();

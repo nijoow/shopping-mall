@@ -269,7 +269,7 @@ img {
   overflow: hidden;
 }
 .hero-copy {
-  z-index: 4;
+  z-index: 6;
   padding: 13px 0 32px 34px;
   display: flex;
   align-items: flex-start;
@@ -401,13 +401,15 @@ img {
 }
 .vertical-note {
   position: absolute;
-  right: 25px;
-  top: 36px;
-  font:
-    600 11px/1.7 Arial,
-    sans-serif;
-  letter-spacing: 0.22em;
-  color: var(--red);
+  right: 16px;
+  bottom: 16px;
+  background: var(--paper);
+  color: #8c2b22;
+  padding: 4px 7px;
+  font-size: 10px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.09em;
 }
 .curation-strip {
   display: grid;
@@ -867,10 +869,7 @@ img {
   .hero-actions .button {
     min-width: 160px;
   }
-  .vertical-note {
-    font-size: 9px;
-    right: 15px;
-  }
+
   .curation-strip {
     height: 280px;
     grid-template-columns: 29% 28% 25% 18%;
@@ -931,11 +930,8 @@ img {
     margin-bottom: 16px;
   }
   .hero-title {
-    font-size: clamp(79px, 22vw, 150px);
+    font-size: clamp(72px, 20.5vw, 126px);
     line-height: 0.97;
-  }
-  .hero-title br {
-    display: none;
   }
   .hero-title .red-dot {
     font-size: 0.65em;
@@ -999,8 +995,10 @@ img {
     border-top: 0;
   }
   .vertical-note {
-    font-size: 8px;
-    top: 20px;
+    right: 8px;
+    bottom: 8px;
+    font-size: 9px;
+    padding: 2px 5px;
   }
   .curation-strip {
     grid-template-columns: 1fr 1fr;

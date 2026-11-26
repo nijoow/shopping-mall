@@ -400,3 +400,68 @@ test('delivery and return preserve the order snapshot and refund inventory only 
     await repo.close();
   }
 });
+
+test('direct checkout validates price and stock, retries once and preserves the cart', async () => {
+  const { repo, workspace: w } = await setup();
+  try {
+    const config = defaultConfig('runner');
+    config.engraving = '   ';
+    const item = { productId: 'runner', config, size: '270', quantity: 1 };
+    const lineId = await repo.addCart(w.id, { ...item, quantity: 2 });
+    const data = {
+      item,
+      requestKey: randomUUID(),
+      addressId: 'studio',
+      scenario: 'success',
+      quotedTotal: 219000,
+    };
+    await assert.rejects(repo.checkout(w.id, { ...data, quotedTotal: 1 }), {
+      code: 'QUOTE_CHANGED',
+    });
+    await assert.rejects(
+      repo.checkout(w.id, { ...data, scenario: 'declined' }),
+      { code: 'DEMO_DECLINED' },
+    );
+    const order = await repo.checkout(w.id, data);
+    assert.equal((await repo.checkout(w.id, data)).id, order.id);
+    assert.equal(order.items[0].config?.engraving, '');
+    assert.equal(order.items[0].quantity, 1);
+    assert.equal(await repo.stock(w.id, 'runner', '270'), 19);
+    await repo.run('UPDATE inventory SET stock=0 WHERE workspace_id=?', w.id);
+    await assert.rejects(
+      repo.checkout(w.id, { ...data, requestKey: randomUUID() }),
+      { code: 'OUT_OF_STOCK' },
+    );
+    const final = await repo.state(w.id);
+    assert.equal(final.orders.length, 1);
+    assert.deepEqual(
+      final.cart.map(l => [l.id, l.quantity]),
+      [[lineId, 2]],
+    );
+  } finally {
+    await repo.close();
+  }
+});
+
+test('ordering an edited cart item preserves a matching item already in the cart', async () => {
+  const { repo, workspace: w } = await setup();
+  try {
+    const keep = await add(repo, w.id, 2);
+    const edit = await add(repo, w.id, 1, '#ffffff');
+    const target = (await repo.state(w.id)).cart.find(l => l.id === keep)!;
+    const changed = await repo.replaceCart(
+      w.id,
+      edit,
+      { size: target.size, config: target.config },
+      true,
+    );
+    const order = await repo.checkout(w.id, await input(repo, w.id, [changed]));
+    assert.equal(order.items[0].quantity, 1);
+    assert.deepEqual(
+      (await repo.state(w.id)).cart.map(l => [l.id, l.quantity]),
+      [[keep, 2]],
+    );
+  } finally {
+    await repo.close();
+  }
+});

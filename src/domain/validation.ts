@@ -22,7 +22,8 @@ export const configSchema = z
     engraving: z
       .string()
       .max(8)
-      .regex(/^[A-Z0-9 ]*$/),
+      .regex(/^[A-Z0-9 ]*$/)
+      .transform(text => (text.trim() ? text : '')),
   })
   .strict()
   .refine(
@@ -48,17 +49,19 @@ export class DomainError extends Error {
     super(message);
   }
 }
+export const productInputSchema = z
+  .object({
+    productId: z.string(),
+    size: z.string(),
+    quantity: z.number().int().min(1).max(MAX_QUANTITY),
+    config: configSchema.nullable().optional(),
+    preview: previewSchema,
+  })
+  .strict();
+export type ProductSelection = z.input<typeof productInputSchema>;
+
 export function productInput(input: unknown) {
-  const parsed = z
-    .object({
-      productId: z.string(),
-      size: z.string(),
-      quantity: z.number().int().min(1).max(MAX_QUANTITY),
-      config: configSchema.nullable().optional(),
-      preview: previewSchema,
-    })
-    .strict()
-    .parse(input);
+  const parsed = productInputSchema.parse(input);
   const product = findProduct(parsed.productId);
   if (!product)
     throw new DomainError(
