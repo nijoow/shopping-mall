@@ -98,7 +98,7 @@ export function Account() {
             <EmptyState
               title="주문 내역이 없습니다."
               text="디자인을 만들고 주문 과정을 체험해 보세요."
-              href="/studio/runner"
+              href="/studio/runner?new=1"
               action="디자인 만들기"
             />
           )}

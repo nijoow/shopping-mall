@@ -11,6 +11,7 @@ import {
   DomainError,
   idSchema,
   productInput,
+  productInputSchema,
   previewSchema,
 } from '@/domain/validation';
 import {
@@ -250,7 +251,12 @@ export class DemoRepository {
       );
     });
   }
-  async replaceCart(workspace: string, id: string, input: unknown) {
+  async replaceCart(
+    workspace: string,
+    id: string,
+    input: unknown,
+    forCheckout = false,
+  ) {
     const changes = z
       .object({
         size: z.string(),
@@ -277,14 +283,16 @@ export class DemoRepository {
         ...changes,
       });
       const key = configKey(item.config);
-      const same = await this.row(
-        'SELECT * FROM cart WHERE workspace_id=? AND id!=? AND product_id=? AND size=? AND config_key=?',
-        workspace,
-        id,
-        item.product.id,
-        item.size,
-        key,
-      );
+      const same = forCheckout
+        ? undefined
+        : await this.row(
+            'SELECT * FROM cart WHERE workspace_id=? AND id!=? AND product_id=? AND size=? AND config_key=?',
+            workspace,
+            id,
+            item.product.id,
+            item.size,
+            key,
+          );
       const quantity = item.quantity + Number(same?.quantity ?? 0);
       if (
         quantity > MAX_QUANTITY ||
@@ -452,15 +460,17 @@ export class DemoRepository {
     });
   }
   async checkout(workspace: string, input: unknown) {
+    const common = z.object({
+      requestKey: z.string().uuid(),
+      addressId: z.enum(['studio', 'home']),
+      quotedTotal: z.number().int().positive(),
+      scenario: z.enum(['success', 'declined', 'delayed']),
+    });
     const data = z
-      .object({
-        requestKey: z.string().uuid(),
-        lineIds: z.array(idSchema).min(1).max(30),
-        addressId: z.enum(['studio', 'home']),
-        quotedTotal: z.number().int().positive(),
-        scenario: z.enum(['success', 'declined', 'delayed']),
-      })
-      .strict()
+      .union([
+        common.extend({ lineIds: z.array(idSchema).min(1).max(30) }).strict(),
+        common.extend({ item: productInputSchema }).strict(),
+      ])
       .parse(input);
     return await this.transaction(async () => {
       const existing = await this.row(
@@ -474,8 +484,8 @@ export class DemoRepository {
           'DEMO_DECLINED',
           '모의 결제가 거절되었습니다. 구성을 유지한 채 다시 시도할 수 있습니다.',
         );
-      const cart = (await this.state(workspace)).cart;
-      const ids = [...new Set(data.lineIds)];
+      const ids = 'lineIds' in data ? [...new Set(data.lineIds)] : [];
+      const cart = ids.length ? (await this.state(workspace)).cart : [];
       const selected = ids.map(id => cart.find(line => line.id === id));
       if (selected.some(line => !line))
         throw new DomainError(
@@ -486,11 +496,20 @@ export class DemoRepository {
       const lines = selected.filter(
         (line): line is NonNullable<typeof line> => !!line,
       );
+      const direct = 'item' in data ? productInput(data.item) : null;
+      const orderLines = direct
+        ? [
+            {
+              ...direct,
+              unitPrice: unitPrice(direct.product, direct.config),
+            },
+          ]
+        : lines;
       const quantities = new Map<
         string,
         { product: string; size: string; quantity: number }
       >();
-      const items: OrderItem[] = lines.map(line => {
+      const items: OrderItem[] = orderLines.map(line => {
         productInput({
           productId: line.productId,
           size: line.size,

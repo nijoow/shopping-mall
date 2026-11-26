@@ -5,9 +5,10 @@ import { SERVICE_COPY } from '@/content/copy';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, Minus, Plus, X, Check } from 'lucide-react';
 import {
+  unitPrice,
   FREE_SHIPPING,
   MAX_QUANTITY,
   money,
@@ -16,9 +17,17 @@ import {
 import { orderTotals } from '@/domain/orders';
 import { ADDRESSES, type CartLine, type DemoOrder } from '@/domain/types';
 import { useDemo } from './DemoProvider';
+import { readDirectOrder } from './direct-order';
 import { DataGuard, EmptyState } from './StateView';
 
-function LineSummary({ line }: { line: CartLine }) {
+type CheckoutLine = Omit<CartLine, 'stock'>;
+function LineSummary({
+  line,
+  editable = false,
+}: {
+  line: CheckoutLine;
+  editable?: boolean;
+}) {
   return (
     <>
       <Link href={`/product/${line.productId}`} className="cart-photo">
@@ -51,7 +60,7 @@ function LineSummary({ line }: { line: CartLine }) {
             {line.config.engraving && <span>“{line.config.engraving}”</span>}
           </div>
         )}
-        {line.config && (
+        {editable && line.config && (
           <Link
             className="cart-edit-link"
             href={`/studio/${line.config.model}?cart=${line.id}`}
@@ -73,8 +82,7 @@ function Totals({
   const { subtotal, shipping, total } = totals;
   return (
     <aside className="order-summary">
-      <span className="eyebrow">YOUR ORDER</span>
-      <h2>A GOOD COMBINATION.</h2>
+      <h2>결제 금액</h2>
       <dl>
         <div>
           <dt>상품 금액</dt>
@@ -91,7 +99,7 @@ function Totals({
         </p>
       )}
       <div className="order-total">
-        <span>TOTAL</span>
+        <span>합계</span>
         <strong>{money(total)}</strong>
       </div>
       {children}
@@ -197,7 +205,7 @@ export function Cart() {
                         )
                       }
                     />
-                    <LineSummary line={line} />
+                    <LineSummary line={line} editable />
                     <div className="cart-quantity">
                       <button
                         className="icon-button"
@@ -298,8 +306,23 @@ export function Cart() {
   );
 }
 export function Checkout() {
+  const params = useSearchParams();
+  return (
+    <CheckoutForm
+      key={params.toString()}
+      buy={params.get('buy')}
+      items={params.get('items')}
+    />
+  );
+}
+function CheckoutForm({
+  buy,
+  items,
+}: {
+  buy: string | null;
+  items: string | null;
+}) {
   const { state, mutate, refresh } = useDemo(),
-    params = useSearchParams(),
     router = useRouter();
   const [address, setAddress] = useState<'studio' | 'home'>('studio'),
     [scenario, setScenario] = useState('success'),
@@ -307,20 +330,35 @@ export function Checkout() {
     [stage, setStage] = useState(''),
     [error, setError] = useState(''),
     [failure, setFailure] = useState<CommerceError | null>(null),
-    [submitted, setSubmitted] = useState<CartLine[] | null>(null);
+    [submitted, setSubmitted] = useState<CheckoutLine[] | null>(null);
   const retryDelay = useRetryDelay(failure);
   const requestKey = useRef<string | null>(null);
-  const requested = params.get('items')?.split(',').filter(Boolean);
-  const selected = (state?.cart ?? []).filter(
-    l => !requested || requested.includes(l.id),
+  const requested = items?.split(',').filter(Boolean);
+  const placed = buy && state?.orders.find(order => order.requestKey === buy);
+  const workspace = state?.workspaceId;
+  const direct = useMemo(
+    () => (buy && workspace ? readDirectOrder(workspace, buy) : null),
+    [buy, workspace],
   );
+  const selected =
+    buy !== null
+      ? direct
+        ? [
+            {
+              ...direct,
+              id: buy,
+              unitPrice: unitPrice(direct.product, direct.config),
+            },
+          ]
+        : []
+      : (state?.cart ?? []).filter(l => !requested || requested.includes(l.id));
   const lines = pending && submitted ? submitted : selected,
     totals = orderTotals(lines);
   const missing =
     !!requested && requested.some(id => !state?.cart.some(l => l.id === id));
   async function checkout() {
     if (!selected.length || pending || retryDelay) return;
-    requestKey.current ??= crypto.randomUUID();
+    requestKey.current = buy ?? requestKey.current ?? crypto.randomUUID();
     setSubmitted(selected);
     setPending(true);
     setStage('모의 결제를 처리하는 중입니다.');
@@ -329,7 +367,17 @@ export function Checkout() {
     try {
       const order = await mutate<DemoOrder>('checkout', {
         requestKey: requestKey.current,
-        lineIds: selected.map(l => l.id),
+        ...(direct
+          ? {
+              item: {
+                productId: direct.productId,
+                quantity: direct.quantity,
+                size: direct.size,
+                config: direct.config,
+                preview: direct.preview,
+              },
+            }
+          : { lineIds: selected.map(l => l.id) }),
         addressId: address,
         quotedTotal: totals.total,
         scenario,
@@ -355,18 +403,22 @@ export function Checkout() {
     }
   }
   return (
-    <div className="page-shell">
+    <div className="page-shell checkout-page">
       <div className="page-heading">
         <div>
-          <span className="eyebrow">ONE LAST LOOK</span>
-          <h1>
-            CHECKOUT<span className="red-dot">.</span>
-          </h1>
-          <p>상품과 옵션을 확인하고 모의 결제를 진행해 주세요.</p>
+          <h1>주문 확인</h1>
+          <p>주문할 상품과 수량을 확인해 주세요.</p>
         </div>
       </div>
       <DataGuard>
-        {pending || selected.length ? (
+        {placed && !pending ? (
+          <EmptyState
+            title="이미 완료된 주문입니다."
+            text="주문 상세에서 결제 금액과 구성을 확인할 수 있습니다."
+            href={`/orders/${placed.id}`}
+            action="주문 상세 보기"
+          />
+        ) : pending || selected.length ? (
           <div className="checkout-grid">
             <div className="checkout-content">
               {missing && !pending && (
@@ -377,7 +429,26 @@ export function Checkout() {
               )}
               <section>
                 <div className="subheading">
-                  <span>01</span>
+                  <h2>주문 상품</h2>
+                </div>
+                <ul className="checkout-lines">
+                  {lines.map(l => (
+                    <li key={l.id}>
+                      <LineSummary line={l} />
+                      <div className="checkout-line-price">
+                        <span>수량 {l.quantity}</span>
+                        <strong>{money(l.unitPrice * l.quantity)}</strong>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <div className="checkout-mobile-total">
+                  <span>배송비 포함 합계</span>
+                  <strong>{money(totals.total)}</strong>
+                </div>
+              </section>
+              <section>
+                <div className="subheading">
                   <h2>가상 배송지</h2>
                 </div>
                 <div className="address-grid">
@@ -403,30 +474,11 @@ export function Checkout() {
               </section>
               <section>
                 <div className="subheading">
-                  <span>02</span>
-                  <h2>주문할 아이템</h2>
-                </div>
-                <ul className="checkout-lines">
-                  {lines.map(l => (
-                    <li key={l.id}>
-                      <LineSummary line={l} />
-                      <div className="checkout-line-price">
-                        <span>수량 {l.quantity}</span>
-                        <strong>{money(l.unitPrice * l.quantity)}</strong>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <section>
-                <div className="subheading">
-                  <span>03</span>
                   <h2>모의 결제</h2>
                 </div>
                 <div className="notice-box">
-                  실제 결제와 배송은 진행되지 않습니다. 주문과 디자인은 현재
-                  체험에 저장되며, 같은 브라우저의 내 공간에서 확인할 수
-                  있습니다.
+                  {SERVICE_COPY.demoNotice} 주문 내역은 이 브라우저의 내
+                  공간에서 확인할 수 있습니다.
                 </div>
                 <details className="scenario-options">
                   <summary>다른 결제 상황 체험하기</summary>
@@ -482,10 +534,18 @@ export function Checkout() {
           </div>
         ) : (
           <EmptyState
-            title="주문할 상품이 없습니다."
-            text="장바구니에서 주문할 상품을 선택해 주세요."
-            href="/cart"
-            action="장바구니 확인"
+            title={
+              buy
+                ? '바로 주문할 구성을 찾을 수 없습니다.'
+                : '주문할 상품이 없습니다.'
+            }
+            text={
+              buy
+                ? '상품 상세에서 다시 선택해 주세요.'
+                : '장바구니에서 주문할 상품을 선택해 주세요.'
+            }
+            href={buy ? '/shop/all' : '/cart'}
+            action={buy ? '상품 보기' : '장바구니 확인'}
           />
         )}
       </DataGuard>

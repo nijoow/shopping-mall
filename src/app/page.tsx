@@ -24,12 +24,11 @@ export default function Home() {
           </h1>
           <p className="hero-intro">
             나만의 스타일을
-            <br />
-            다시 그리다.
+            <br /> 다시 그리다.
           </p>
           <div className="hero-actions">
-            <Link className="button" href="/studio/runner">
-              디자인 만들기 <ArrowUpRight size={18} />
+            <Link className="button" href="/studio/runner?new=1">
+              러너 편집하기 <ArrowUpRight size={18} />
             </Link>
             <Link className="button outline" href="/shop/sneakers">
               상품 보기
@@ -69,15 +68,7 @@ export default function Home() {
               fill
               sizes="30vw"
             />
-            <span className="vertical-note">
-              DETAIL
-              <br />
-              SHAPES
-              <br />
-              YOUR
-              <br />
-              EVERYDAY.
-            </span>
+            <span className="vertical-note">03 — FIELD JACKET</span>
           </Link>
         </div>
       </section>
@@ -111,7 +102,7 @@ export default function Home() {
           />
           <span>OBJECTS ↗</span>
         </Link>
-        <Link className="curation-detail" href="/studio/runner">
+        <Link className="curation-detail" href="/studio/runner?new=1">
           <Image
             src={modelDetail(defaultConfig('runner'))}
             alt="3D 스니커즈 디테일"
@@ -152,7 +143,7 @@ export default function Home() {
             <br />
             3D로 완성한 디자인을 저장하고 주문까지.
           </p>
-          <Link className="button" href="/studio/runner">
+          <Link className="button" href="/studio/runner?new=1">
             나의 디자인 시작하기 <ArrowUpRight size={18} />
           </Link>
         </div>

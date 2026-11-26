@@ -10,7 +10,7 @@ export default function Page() {
         색상·재질·각인을 3D로 편집해 나만의 조합을 만들 수 있습니다. 만든
         디자인은 저장하거나 공유하고, 주문 과정까지 이어서 체험해 보세요.
       </p>
-      <Link className="button" href="/studio/low">
+      <Link className="button" href="/studio/low?new=1">
         디자인 만들기 ↗
       </Link>
       <h2>하나의 디자인으로 이어지는 쇼핑</h2>

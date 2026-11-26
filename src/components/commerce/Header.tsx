@@ -202,7 +202,7 @@ export function Footer() {
           익숙한 것들의 새로운 조합.
           <br />A SELECT SHOP FOR YOUR EVERYDAY.
         </p>
-        <Link href="/studio/runner">
+        <Link href="/studio/runner?new=1">
           디자인 만들기 <ArrowUpRight size={18} />
         </Link>
       </div>

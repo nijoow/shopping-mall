@@ -324,11 +324,6 @@
   gap: 8px;
   font-size: 11px;
 }
-.studio-header-label {
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  color: var(--muted);
-}
 .studio-top-actions {
   margin-left: auto;
   display: flex;
@@ -374,12 +369,7 @@
 }
 .studio-stage-title h1 {
   font: 400 clamp(31px, 4.1vw, 60px)/1.1 var(--font-display);
-  margin-top: 14px;
-}
-.studio-stage-title p {
-  font-size: 12px;
-  margin-top: 10px;
-  color: var(--muted);
+  margin-top: 0;
 }
 .studio-view-controls {
   position: absolute;
@@ -1345,9 +1335,6 @@
   .studio-body {
     grid-template-columns: minmax(0, 1fr) 320px;
   }
-  .studio-header-label {
-    display: none;
-  }
   .studio-panel-content,
   .studio-purchase {
     padding-inline: 18px;
@@ -1474,7 +1461,7 @@
     gap: 0;
   }
   .studio-top-actions .text-link {
-    font-size: 9px;
+    font-size: 11px;
     margin-left: 6px;
   }
   .studio-top-actions .icon-button {
@@ -1482,7 +1469,7 @@
   }
   .save-status {
     min-width: 55px;
-    font-size: 8px;
+    font-size: 10px;
   }
   .studio-body {
     display: flex;
@@ -1502,14 +1489,7 @@
     top: 16px;
   }
   .studio-stage-title h1 {
-    font-size: 29px;
-    margin-top: 7px;
-  }
-  .studio-stage-title .eyebrow {
-    font-size: 7px;
-  }
-  .studio-stage-title p {
-    display: none;
+    font-size: 34px;
   }
   .studio-stage .viewer-poster {
     padding: 30px;
@@ -1521,7 +1501,7 @@
     gap: 4px;
   }
   .studio-view-controls button {
-    font-size: 9px;
+    font-size: 11px;
     padding: 5px 9px;
     min-height: 32px;
     min-width: 32px;
@@ -1599,7 +1579,7 @@
     font-size: 19px;
   }
   .studio-purchase > p {
-    font-size: 8px;
+    font-size: 11px;
     margin-top: 7px;
   }
   .studio-review h2 {
@@ -2011,4 +1991,59 @@
 
 .page-shell.about-page {
   max-width: 1000px;
+}
+
+.studio-panel .eyebrow,
+.studio-preset-fold summary {
+  font:
+    600 14px/1.4 var(--font-body),
+    sans-serif;
+  letter-spacing: 0;
+}
+.studio-preset-fold summary {
+  cursor: pointer;
+}
+.studio-panel-tabs button {
+  font-size: 14px;
+}
+.studio-panel-content > .design-name-label {
+  margin-top: 20px;
+}
+.studio-options > .option-section:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+}
+.studio-options .color-palette {
+  margin-top: 14px;
+}
+.studio-drag-hint {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.checkout-page .page-heading h1,
+.checkout-page .subheading h2,
+.order-summary > h2 {
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.checkout-page .page-heading h1 {
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.18;
+}
+.order-summary > h2 {
+  font-size: 24px;
+  margin: 0 0 18px;
+}
+
+.checkout-mobile-total {
+  display: none;
+}
+@media (max-width: 767px) {
+  .checkout-mobile-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    font-size: 14px;
+  }
 }

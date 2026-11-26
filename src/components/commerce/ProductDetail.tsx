@@ -8,6 +8,8 @@ import Image from 'next/image';
 import { ArrowUpRight, Heart, RotateCcw } from 'lucide-react';
 import { money, PRESETS, presetConfig, type Product } from '@/domain/catalog';
 import ProductViewer from '@/components/three/ProductViewer';
+import { startDirectOrder } from './direct-order';
+import { DataGuard } from './StateView';
 import { useDemo } from './DemoProvider';
 import { useRouter } from 'next/navigation';
 
@@ -39,14 +41,18 @@ export function ProductDetail({ product }: { product: Product }) {
     setError('');
     setFailure(null);
     try {
-      const result = await mutate<{ lineId: string }>('cart.add', {
+      const item = {
         productId: product.id,
         size,
         quantity: 1,
         config,
-      });
-      if (buy) router.push(`/checkout?items=${result.lineId}`);
-      else notify(SERVICE_COPY.addedToCart);
+      };
+      if (!state) return;
+      if (buy) router.push(startDirectOrder(state.workspaceId, item));
+      else {
+        await mutate('cart.add', item);
+        notify(SERVICE_COPY.addedToCart);
+      }
     } catch (e) {
       setFailure(commerceError(e));
       setError(errorMessage(e));
@@ -221,7 +227,7 @@ export function ProductDetail({ product }: { product: Product }) {
                 내 디자인으로 만들기 <ArrowUpRight size={19} />
               </Link>
             )}
-            <div>
+            <DataGuard>
               <button
                 className={`button ${product.model ? 'outline' : ''}`}
                 disabled={pending || !state || retryDelay > 0}
@@ -242,7 +248,7 @@ export function ProductDetail({ product }: { product: Product }) {
               >
                 {pending ? '담는 중…' : '장바구니 담기'}
               </button>
-            </div>
+            </DataGuard>
           </div>
           <p className="demo-caption">{SERVICE_COPY.demoNotice}</p>
           <div className="product-accordions">

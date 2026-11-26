@@ -45,6 +45,7 @@ import {
 import type { SavedDesign, CartLine } from '@/domain/types';
 import ProductViewer, { type Capture } from '@/components/three/ProductViewer';
 import { useDemo } from './DemoProvider';
+import { startDirectOrder } from './direct-order';
 import { DataGuard, EmptyState } from './StateView';
 
 type Recovery = {
@@ -53,6 +54,16 @@ type Recovery = {
   buy?: boolean;
   href?: string;
 };
+function storeDraft(workspace: string, draft: DesignDraft) {
+  try {
+    const value = JSON.stringify(draft);
+    localStorage.setItem(
+      `nijoow:draft:${workspace}:${draft.config.model}`,
+      value,
+    );
+    localStorage.setItem(`nijoow:draft:${workspace}:${draft.id}`, value);
+  } catch {}
+}
 export function Studio({
   model,
   shared,
@@ -78,7 +89,7 @@ export function Studio({
       <EmptyState
         title="디자인을 찾을 수 없습니다."
         text="삭제되었거나 현재 브라우저의 체험에서 열 수 없는 디자인입니다."
-        href={`/studio/${model}`}
+        href={`/studio/${model}?new=1`}
         action="새 디자인 만들기"
       />
     );
@@ -98,6 +109,8 @@ export function Studio({
     <StudioEditor
       key={`${state.workspaceId}:${designId ?? cartId ?? params.get('source') ?? model}`}
       model={model}
+      fresh={params.has('new') || params.has('preset')}
+      draftId={params.get('draft')}
       cartLine={cartLine}
       initial={existing}
       shared={shared}
@@ -113,6 +126,8 @@ function StudioEditor({
   shared,
   preset,
   initialSize,
+  fresh,
+  draftId,
   workspaceId,
   cartLine,
 }: {
@@ -121,11 +136,13 @@ function StudioEditor({
   shared?: Pick<SavedDesign, 'name' | 'config'>;
   preset: string;
   initialSize: string;
+  fresh: boolean;
+  draftId: string | null;
   workspaceId: string;
   cartLine?: CartLine;
 }) {
   const router = useRouter(),
-    { mutate, notify } = useDemo();
+    { state, mutate, notify } = useDemo();
   const product = findProduct(model)!;
   const [draft] = useState<DesignDraft>(() => {
     if (initial)
@@ -150,15 +167,31 @@ function StudioEditor({
       config: shared?.config ?? presetConfig(model, preset),
       version: 0,
     };
-    if (shared) return fallback;
+    if (shared || fresh) return fallback;
     try {
       const raw = JSON.parse(
-        localStorage.getItem(`nijoow:draft:${workspaceId}:${model}`) ?? 'null',
+        localStorage.getItem(
+          `nijoow:draft:${workspaceId}:${draftId ?? model}`,
+        ) ?? 'null',
       );
       const parsed = designDraftSchema.safeParse(raw);
-      if (parsed.success && parsed.data.config.model === model)
+      if (
+        parsed.success &&
+        parsed.data.config.model === model &&
+        (!draftId || parsed.data.id === draftId)
+      )
         return parsed.data;
     } catch {}
+    const stored =
+      draftId &&
+      state?.designs.find(d => d.id === draftId && d.config.model === model);
+    if (stored)
+      return {
+        id: stored.id,
+        name: stored.name,
+        config: stored.config,
+        version: stored.version,
+      };
     return fallback;
   });
   const [config, setConfig] = useState(draft.config),
@@ -235,12 +268,7 @@ function StudioEditor({
         latest.current = { ...latest.current, version: result.version };
         saved.current = result;
         savedKey.current = key;
-        try {
-          localStorage.setItem(
-            `nijoow:draft:${workspaceId}:${model}`,
-            JSON.stringify(latest.current),
-          );
-        } catch {}
+        storeDraft(workspaceId, latest.current);
         setSaving(
           `${latest.current.name}:${configKey(latest.current.config)}` === key
             ? '저장 완료'
@@ -262,17 +290,21 @@ function StudioEditor({
     return queue.current;
   }, [mutate, model, workspaceId, report, clearRecovery]);
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        `nijoow:draft:${workspaceId}:${model}`,
-        JSON.stringify(latest.current),
-      );
-    } catch {}
+    storeDraft(workspaceId, latest.current);
+    if (fresh || draftId) {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('draft') !== latest.current.id) {
+        url.searchParams.delete('preset');
+        url.searchParams.delete('new');
+        url.searchParams.set('draft', latest.current.id);
+        window.history.replaceState(null, '', url);
+      }
+    }
     const timer = setTimeout(() => {
       void save().catch(() => undefined);
     }, 1100);
     return () => clearTimeout(timer);
-  }, [config, name, save, model, workspaceId, renderReady]);
+  }, [config, name, save, model, workspaceId, renderReady, fresh, draftId]);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       const current = latest.current;
@@ -351,9 +383,22 @@ function StudioEditor({
       try {
         preview = capture.current?.() ?? null;
       } catch {}
+      if (buy && !cartLine) {
+        router.push(
+          startDirectOrder(workspaceId, {
+            productId: model,
+            size,
+            quantity: 1,
+            config: latest.current.config,
+            preview,
+          }),
+        );
+        return;
+      }
       const result = cartLine
         ? await mutate<{ lineId: string }>('cart.replace', {
             id: cartLine.id,
+            forCheckout: buy,
             changes: { size, config: latest.current.config, preview },
           })
         : await mutate<{ lineId: string }>('cart.add', {
@@ -439,7 +484,6 @@ function StudioEditor({
         >
           NIJOOW
         </Link>
-        <span className="studio-header-label">YOUR PERSONAL EDIT</span>
         <div className="studio-top-actions">
           <span className="save-status" role="status">
             {saving === '저장 완료' && <Check size={13} />}{' '}
@@ -474,9 +518,7 @@ function StudioEditor({
       <div className="studio-body">
         <section className="studio-stage" aria-label="3D 디자인 미리보기">
           <div className="studio-stage-title">
-            <span className="eyebrow">01 — YOUR DESIGN STUDIO</span>
             <h1>{product.name}</h1>
-            <p>작은 선택이 만드는 나만의 조합.</p>
           </div>
           <ProductViewer
             config={config}
@@ -531,38 +573,25 @@ function StudioEditor({
             </button>
             <button
               aria-label="색상 초기화"
-              onClick={() => change(defaultConfig(model))}
+              onClick={() =>
+                change({ ...config, colors: defaultConfig(model).colors })
+              }
             >
               <RotateCcw size={15} />
             </button>
           </div>
-          <span className="studio-drag-hint">
-            DRAG TO ROTATE · 편집할 부위를 선택해 주세요
-          </span>
+          <span className="studio-drag-hint">드래그해서 돌려보세요</span>
         </section>
         <aside className="studio-panel">
           <div className="studio-panel-tabs">
             <button aria-pressed={!review} onClick={() => setReview(false)}>
-              01 디자인
+              디자인
             </button>
             <button aria-pressed={review} onClick={() => setReview(true)}>
-              02 사이즈 · 주문
+              사이즈 · 주문
             </button>
           </div>
           <div className="studio-panel-content">
-            <label className="design-name-label">
-              디자인 이름
-              <input
-                data-testid="design-name"
-                disabled={pending || leaving || sharing}
-                maxLength={40}
-                value={name}
-                onChange={e => {
-                  setName(e.target.value);
-                  latest.current = { ...latest.current, name: e.target.value };
-                }}
-              />
-            </label>
             {!review ? (
               <fieldset
                 className="studio-options"
@@ -570,21 +599,7 @@ function StudioEditor({
               >
                 <legend className="sr-only">디자인 편집</legend>
                 <div className="option-section">
-                  <span className="eyebrow">START WITH A COLORWAY</span>
-                  <div className="studio-presets">
-                    {PRESETS.map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => change(presetConfig(model, p.id))}
-                      >
-                        <i style={{ background: p.color }} />
-                        <span>{p.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="option-section">
-                  <span className="eyebrow">SELECT A PART</span>
+                  <span className="eyebrow">바꿀 부위</span>
                   <div className="part-options">
                     {PARTS.map(p => (
                       <button
@@ -600,7 +615,7 @@ function StudioEditor({
                 <div className="option-section">
                   <div className="option-title">
                     <span className="eyebrow">
-                      COLOR — {PARTS.find(p => p.id === part)?.name}
+                      {PARTS.find(p => p.id === part)?.name} 색상
                     </span>
                     <span>{config.colors[part].toUpperCase()}</span>
                   </div>
@@ -642,7 +657,7 @@ function StudioEditor({
                   </div>
                 </div>
                 <div className="option-section">
-                  <span className="eyebrow">UPPER MATERIAL</span>
+                  <span className="eyebrow">어퍼 재질</span>
                   <div className="material-options">
                     {MATERIALS.map(m => (
                       <button
@@ -662,7 +677,7 @@ function StudioEditor({
                 </div>
                 <div className="option-section">
                   <label className="eyebrow" htmlFor="engraving">
-                    YOUR SIGNATURE
+                    각인
                   </label>
                   <input
                     id="engraving"
@@ -682,6 +697,25 @@ function StudioEditor({
                     영문·숫자·공백 최대 8자 · 각인 +₩5,000
                   </p>
                 </div>
+                <details className="option-section studio-preset-fold">
+                  <summary>기본 색 조합 보기</summary>
+                  <div className="studio-presets">
+                    {PRESETS.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() =>
+                          change({
+                            ...config,
+                            colors: presetConfig(model, p.id).colors,
+                          })
+                        }
+                      >
+                        <i style={{ background: p.color }} />
+                        <span>{p.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </details>
               </fieldset>
             ) : (
               <div className="studio-review">
@@ -700,7 +734,7 @@ function StudioEditor({
                       {MATERIALS.find(m => m.id === config.material)?.name}
                     </strong>
                   </div>
-                  {config.engraving && (
+                  {config.engraving.trim() && (
                     <div>
                       <span>각인</span>
                       <strong>{config.engraving}</strong>
@@ -709,7 +743,7 @@ function StudioEditor({
                 </div>
                 <div className="option-section">
                   <span className="eyebrow" id="studio-size-label">
-                    SIZE — MM
+                    사이즈 (mm)
                   </span>
                   <div
                     className="size-options"
@@ -743,6 +777,19 @@ function StudioEditor({
                 </p>
               </div>
             )}
+            <label className="design-name-label">
+              디자인 이름
+              <input
+                data-testid="design-name"
+                disabled={pending || leaving || sharing}
+                maxLength={40}
+                value={name}
+                onChange={e => {
+                  setName(e.target.value);
+                  latest.current = { ...latest.current, name: e.target.value };
+                }}
+              />
+            </label>
             {error && (
               <div
                 className="studio-error"
@@ -844,7 +891,7 @@ function StudioEditor({
           </div>
           <div className="studio-purchase">
             <div>
-              <span className="eyebrow">YOUR DESIGN TOTAL</span>
+              <span className="eyebrow">예상 금액</span>
               <strong>{money(unitPrice(product, config))}</strong>
             </div>
             {review ? (
@@ -871,7 +918,7 @@ function StudioEditor({
                 disabled={pending || leaving || sharing}
                 onClick={() => setReview(true)}
               >
-                사이즈 · 주문 검토 <ArrowUpRight size={17} />
+                사이즈 선택 <ArrowUpRight size={17} />
               </button>
             )}
             <p>체험용 주문 · 실제 결제와 배송 없음</p>
